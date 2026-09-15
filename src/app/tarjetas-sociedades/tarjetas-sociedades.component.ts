@@ -6,6 +6,12 @@ import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 
+export interface TableColumn {
+  key: string;
+  label: string;
+  visible: boolean;
+}
+
 interface TarjetaSociedad {
   id: number;
   client_id?: number;
@@ -15,9 +21,16 @@ interface TarjetaSociedad {
   solicitante: string; // Razón Social
   documento: string; // NIT
   matricula: string; // N.° Registro
+  tipo_sociedad?: string;
   correo: string;
   representante: string; // Representante Legal
   tarjeta: string;
+  tipo_asociado?: string;
+  estado_sociedad?: string;
+  resolucion?: string;
+  fecha_resolucion?: string;
+  acta_jcc?: string;
+  fecha_inscripcion?: string;
   fecha: string;
 }
 
@@ -37,6 +50,28 @@ export class TarjetasSociedadesComponent implements OnInit {
   tarjetas: TarjetaSociedad[] = [];
   loading: boolean = false;
   currentError: AppError | null = null;
+
+  // Catálogo ampliado de columnas correspondientes al Microservicio
+  availableColumns: TableColumn[] = [
+    { key: 'id', label: '# (ID)', visible: false },
+    { key: 'expediente', label: 'Expediente', visible: true },
+    { key: 'solicitante', label: 'Razón Social', visible: true },
+    { key: 'documento', label: 'NIT', visible: true },
+    { key: 'matricula', label: 'N.° Registro', visible: true },
+    { key: 'tipo_sociedad', label: 'Tipo Sociedad', visible: false },
+    { key: 'resolucion', label: 'Resolución', visible: true },
+    { key: 'fecha_resolucion', label: 'Fecha resolución', visible: false },
+    { key: 'acta_jcc', label: 'Acta JCC', visible: false },
+    { key: 'fecha_inscripcion', label: 'Fecha inscripción', visible: false },
+    { key: 'tipo_asociado', label: 'Tipo trámite', visible: true },
+    { key: 'estado_sociedad', label: 'Estado sociedad', visible: true },
+    { key: 'representante', label: 'Representante Legal', visible: true },
+    { key: 'correo', label: 'Correo', visible: false },
+    { key: 'tarjeta', label: 'Estado tarjeta', visible: true },
+    { key: 'fecha', label: 'Fecha emisión', visible: true }
+  ];
+  isColumnsMenuOpen: boolean = false;
+  columnMessageWarning: string = '';
 
   // Búsqueda, Filtros y Paginación Nativa en Angular
   searchQuery: string = '';
@@ -68,6 +103,13 @@ export class TarjetasSociedadesComponent implements OnInit {
   mensajeExito: string = '';
   mensajeError: string = '';
 
+  // Branding de Credencial para Vista Previa (Sociedades - tipoId 2)
+  brandingColorFondo: string = '#134567';
+  brandingColorLetra: string = '#ffffff';
+  brandingFuenteLetra: string = 'Arial, sans-serif';
+  brandingLogoUrl: string | null = null;
+  brandingPatronUrl: string | null = null;
+
   // Variables para Emisión Masiva
   bulkFile: File | null = null;
   bulkResultText: string = '';
@@ -75,20 +117,195 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   // Menú de acciones
   activeMenuId: number | null = null;
+  totalRecordsCount: number = 0;
+  totalPagesCount: number = 0;
+  searchTimeout: any = null;
 
   ngOnInit(): void {
+    this.loadColumnsPreference();
     this.cargarTarjetas();
+    this.cargarBrandingPublicado();
+  }
+
+  cargarBrandingPublicado(): void {
+    this.http
+      .get<any>(`${API_BASE}/tarjetas/branding-credentials/info-published/2?client_id=${this.clientId}`)
+      .subscribe({
+        next: (res) => {
+          if (this.aplicarDatosBranding(res)) {
+            return;
+          }
+          this.cargarBrandingGeneral(2);
+        },
+        error: () => {
+          this.cargarBrandingGeneral(2);
+        }
+      });
+  }
+
+  private cargarBrandingGeneral(tipoId: number): void {
+    this.http
+      .get<any>(`${API_BASE}/tarjetas/branding-credentials/info/${tipoId}?client_id=${this.clientId}`)
+      .subscribe({
+        next: (res) => {
+          this.aplicarDatosBranding(res);
+        },
+        error: (err) => {
+          console.warn('No se encontró configuración de branding:', err);
+        }
+      });
+  }
+
+  private aplicarDatosBranding(res: any): boolean {
+    if (!res) return false;
+    const data = Array.isArray(res) ? res[0] : res;
+    if (data) {
+      let aplicado = false;
+      if (data.color_fondo) { this.brandingColorFondo = data.color_fondo; aplicado = true; }
+      if (data.color_letra) { this.brandingColorLetra = data.color_letra; aplicado = true; }
+      if (data.fuente_letra) { this.brandingFuenteLetra = data.fuente_letra; aplicado = true; }
+      if (data.logo) { this.brandingLogoUrl = data.logo; aplicado = true; }
+      if (data.patron) { this.brandingPatronUrl = data.patron; aplicado = true; }
+      this.cdr.detectChanges();
+      return aplicado;
+    }
+    return false;
+  }
+
+  get visibleColumnsCount(): number {
+    return this.availableColumns.filter(c => c.visible).length;
+  }
+
+  isColumnVisible(key: string): boolean {
+    const col = this.availableColumns.find(c => c.key === key);
+    return col ? col.visible : false;
+  }
+
+  toggleColumnsMenu(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.isColumnsMenuOpen = !this.isColumnsMenuOpen;
+  }
+
+  toggleColumn(col: TableColumn): void {
+    const visibleCount = this.availableColumns.filter(c => c.visible).length;
+    if (col.visible && visibleCount <= 1) {
+      this.columnMessageWarning = 'Debe mantener al menos una columna visible.';
+      return;
+    }
+
+    this.columnMessageWarning = '';
+    col.visible = !col.visible;
+    this.saveColumnsPreference();
+  }
+
+  resetColumns(): void {
+    const defaultVisibleKeys = new Set(['expediente', 'solicitante', 'documento', 'matricula', 'correo', 'tarjeta', 'fecha']);
+    this.availableColumns.forEach(c => {
+      c.visible = defaultVisibleKeys.has(c.key);
+    });
+    this.columnMessageWarning = '';
+    this.saveColumnsPreference();
+  }
+
+  private saveColumnsPreference(): void {
+    try {
+      const state = this.availableColumns.map(c => ({ key: c.key, visible: c.visible }));
+      localStorage.setItem('jcc_cols_sociedades', JSON.stringify(state));
+    } catch (e) {
+      console.warn('No se pudo guardar la preferencia de columnas:', e);
+    }
+  }
+
+  private loadColumnsPreference(): void {
+    try {
+      const saved = localStorage.getItem('jcc_cols_sociedades');
+      if (saved) {
+        const parsed: { key: string; visible: boolean }[] = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const map = new Map(parsed.map(p => [p.key, p.visible]));
+          this.availableColumns.forEach(col => {
+            if (map.has(col.key)) {
+              col.visible = !!map.get(col.key);
+            }
+          });
+          if (this.availableColumns.every(c => !c.visible)) {
+            this.resetColumns();
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('No se pudo cargar la preferencia de columnas:', e);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    this.activeMenuId = null;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.columns-selector-host')) {
+      this.isColumnsMenuOpen = false;
+    }
   }
 
   cargarTarjetas(): void {
     this.loading = true;
     this.currentError = null;
 
+    let url = `${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&page=${this.currentPage}&page_size=${this.pageSize}`;
+
+    const q = this.searchQuery ? this.searchQuery.trim() : '';
+    if (q) {
+      url += `&filtro_nombre=${encodeURIComponent(q)}`;
+    }
+
+    if (this.filterColumn && this.filterValue) {
+      const val = encodeURIComponent(this.filterValue.trim());
+      if (this.filterColumn === 'documento') {
+        url += `&filtro_documento=${val}`;
+      } else if (this.filterColumn === 'matricula') {
+        url += `&filtro_inscripcion=${val}`;
+      } else if (this.filterColumn === 'solicitante') {
+        url += `&filtro_nombre=${val}`;
+      } else if (this.filterColumn === 'expediente') {
+        url += `&filtro_expediente=${val}`;
+      }
+    }
+
     const ts = new Date().getTime();
-    this.http.get<TarjetaSociedad[]>(`${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&_t=${ts}`)
+    url += `&_t=${ts}`;
+
+    this.http.get<any>(url)
       .subscribe({
-        next: (data) => {
-          this.tarjetas = data || [];
+        next: (res) => {
+          const rawList = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
+          this.totalRecordsCount = Array.isArray(res) ? rawList.length : (res?.total ?? rawList.length);
+          this.totalPagesCount = Array.isArray(res) 
+            ? Math.ceil(this.totalRecordsCount / this.pageSize) 
+            : (res?.total_pages ?? Math.ceil(this.totalRecordsCount / this.pageSize));
+
+          this.tarjetas = rawList.map((item: any) => ({
+            id: item.id,
+            client_id: this.clientId,
+            tipo_tarjeta: item.tipo_tarjeta || 'sociedades',
+            codigo: item.codigo || `SOC-${item.id}`,
+            expediente: item.expediente ?? item.no_expd ?? 0,
+            solicitante: item.solicitante || item.razon_social || '',
+            documento: item.documento ? String(item.documento) : (item.nit ? String(item.nit) : ''),
+            matricula: item.matricula || item.inscripcion || item.resolucion || '',
+            tipo_sociedad: item.tipo_sociedad || '',
+            correo: item.correo || '',
+            representante: item.representante || '',
+            resolucion: item.resolucion || '',
+            fecha_resolucion: item.fecha_resolucion || '',
+            acta_jcc: item.acta_jcc || '',
+            fecha_inscripcion: item.fecha_inscripcion || '',
+            tipo_asociado: item.tipo_asociado || 'primeraVez',
+            estado_sociedad: item.estado_sociedad || 'ACTIVO',
+            tarjeta: item.tarjeta || item.estado_tarjeta || 'Activa',
+            fecha: item.fecha || item.fecha_emision || ''
+          }));
           this.loading = false;
           this.cdr.detectChanges();
         },
@@ -103,74 +320,31 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   // Filtrado reactivo
   get filteredTarjetas(): TarjetaSociedad[] {
-    return this.tarjetas.filter(t => {
-      const q = this.searchQuery.toLowerCase().trim();
-      const matchSearch = !q ||
-        t.solicitante.toLowerCase().includes(q) ||
-        t.documento.toLowerCase().includes(q) ||
-        t.matricula.toLowerCase().includes(q) ||
-        (t.representante && t.representante.toLowerCase().includes(q)) ||
-        (t.correo && t.correo.toLowerCase().includes(q)) ||
-        t.codigo.toLowerCase().includes(q) ||
-        (t.expediente && t.expediente.toString().includes(q));
-
-      let matchColumn = true;
-      if (this.filterColumn && this.filterValue) {
-        const val = this.filterValue.toLowerCase();
-        if (this.filterColumn === 'documento') {
-          matchColumn = t.documento.toLowerCase().includes(val);
-        } else if (this.filterColumn === 'matricula') {
-          matchColumn = t.matricula.toLowerCase().includes(val);
-        } else if (this.filterColumn === 'solicitante') {
-          matchColumn = t.solicitante.toLowerCase().includes(val);
-        } else if (this.filterColumn === 'tarjeta') {
-          matchColumn = t.tarjeta.toLowerCase() === val;
-        }
-      }
-
-      return matchSearch && matchColumn;
-    });
+    return this.tarjetas;
   }
 
   get sortedTarjetas(): TarjetaSociedad[] {
-    const list = [...this.filteredTarjetas];
-    const col = this.sortColumn;
-    const dir = this.sortDirection === 'asc' ? 1 : -1;
-
-    return list.sort((a, b) => {
-      const valA = (a as any)[col];
-      const valB = (b as any)[col];
-
-      if (valA === valB) return 0;
-      if (valA === undefined || valA === null) return 1 * dir;
-      if (valB === undefined || valB === null) return -1 * dir;
-
-      if (typeof valA === 'number' && typeof valB === 'number') {
-        return (valA - valB) * dir;
-      }
-      return String(valA).localeCompare(String(valB), 'es', { numeric: true }) * dir;
-    });
+    return this.tarjetas;
   }
 
   get paginatedTarjetas(): TarjetaSociedad[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.sortedTarjetas.slice(start, start + this.pageSize);
+    return this.tarjetas;
   }
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredTarjetas.length / this.pageSize));
+    return Math.max(1, this.totalPagesCount || 1);
   }
 
   get totalRecords(): number {
-    return this.filteredTarjetas.length;
+    return this.totalRecordsCount;
   }
 
   get recordRangeStart(): number {
-    return this.filteredTarjetas.length ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+    return this.totalRecordsCount ? (this.currentPage - 1) * this.pageSize + 1 : 0;
   }
 
   get recordRangeEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.filteredTarjetas.length);
+    return Math.min(this.currentPage * this.pageSize, this.totalRecordsCount);
   }
 
   get pagesArray(): number[] {
@@ -197,21 +371,30 @@ export class TarjetasSociedadesComponent implements OnInit {
       this.sortDirection = 'asc';
     }
     this.currentPage = 1;
+    this.cargarTarjetas();
   }
 
   cambiarPagina(p: number): void {
-    if (p >= 1 && p <= this.totalPages) {
+    if (p >= 1 && p <= this.totalPages && p !== this.currentPage) {
       this.currentPage = p;
+      this.cargarTarjetas();
     }
   }
 
   cambiarTamanoPagina(nuevoTamano: number): void {
     this.pageSize = Number(nuevoTamano);
     this.currentPage = 1;
+    this.cargarTarjetas();
   }
 
   onSearchChange(): void {
     this.currentPage = 1;
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.cargarTarjetas();
+    }, 300);
   }
 
   trackBySociedadId(index: number, item: TarjetaSociedad): number | string {
@@ -353,7 +536,7 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.mensajeExito = '';
     this.cargandoBusqueda = true;
 
-    this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&client_id=${this.clientId}`)
+    this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&tipo=primeraVez&client_id=${this.clientId}`)
       .subscribe({
         next: (res) => {
           this.cargandoBusqueda = false;
@@ -406,31 +589,23 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.mensajeError = '';
     this.mensajeExito = '';
 
+    const doc = (this.nuevaIdentificacion || (this.datosConsulta.documento ? this.datosConsulta.documento.replace(/[^\d-]/g, '') : '')).trim();
     const payload = {
-      tipo_tarjeta: "sociedades",
-      codigo: `SOC-${new Date().getTime()}-${this.datosConsulta.matricula.replace(/\D/g, '')}`,
-      expediente: this.datosConsulta.expediente,
-      solicitante: this.datosConsulta.solicitante,
-      documento: this.datosConsulta.documento,
-      matricula: this.datosConsulta.matricula,
-      correo: this.datosConsulta.correo,
-      representante: this.datosConsulta.representante,
-      tarjeta: "Activa",
-      fecha: new Date().toISOString().split('T')[0],
-      client_id: this.clientId
+      documento: doc,
+      tipo: "primeraVez"
     };
 
-    this.http.post(`${API_BASE}/tarjetas/create?client_id=${this.clientId}`, payload)
+    this.http.post<any>(`${API_BASE}/tarjetas/sociedad/create?client_id=${this.clientId}`, payload)
       .subscribe({
-        next: () => {
-          this.mensajeExito = "Emisión de tarjeta para sociedad confirmada correctamente.";
+        next: (res) => {
+          this.mensajeExito = res?.message || "Emisión de tarjeta para sociedad confirmada correctamente.";
           this.loading = false;
           this.cargarTarjetas();
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error al emitir tarjeta de sociedad:', err);
-          const appErr = this.errorHandler.parseError(err, 'MS_3831_TARJETAS_CREATE', `${API_BASE}/tarjetas/create`);
+          const appErr = this.errorHandler.parseError(err, 'MS_3831_TARJETAS_CREATE', `${API_BASE}/tarjetas/sociedad/create`);
           this.mensajeError = `${appErr.title}: ${appErr.message}`;
           this.loading = false;
           this.cdr.detectChanges();
@@ -441,11 +616,6 @@ export class TarjetasSociedadesComponent implements OnInit {
   toggleActionsMenu(event: Event, id: number): void {
     event.stopPropagation();
     this.activeMenuId = this.activeMenuId === id ? null : id;
-  }
-
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.activeMenuId = null;
   }
 
   abrirHistorial(t: TarjetaSociedad): void {

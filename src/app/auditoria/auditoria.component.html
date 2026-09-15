@@ -1,0 +1,327 @@
+<!-- Alertas del Sistema -->
+<nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
+
+<!-- Tabla de Auditoría 100% Nativa Angular MFE -->
+<div class="nx-table-card shadow-sm mb-4">
+  <!-- Cabecera de la Tarjeta -->
+  <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h5 class="card-title fw-bold mb-0 text-dark">
+        Registros de peticiones
+      </h5>
+      <small class="text-muted">Trazabilidad detallada de llamados y respuestas con la JCC.</small>
+    </div>
+
+    <div class="nx-table-length">
+      <span>Mostrar</span>
+      <select class="nx-table-length-select" [ngModel]="pageSize" (ngModelChange)="cambiarTamanoPagina($event)">
+        <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+      </select>
+      <span>registros</span>
+    </div>
+  </div>
+
+  <!-- Filtros Integrados Dentro de la Tabla -->
+  <div class="p-3 border-bottom bg-white">
+    <div class="row g-2 align-items-end">
+      <!-- Desde -->
+      <div class="col-sm-6 col-lg-2">
+        <label for="auditFrom" class="form-label small fw-semibold text-dark mb-1">Desde (fecha y hora)</label>
+        <input 
+          type="datetime-local" 
+          class="form-control form-control-sm" 
+          id="auditFrom" 
+          [(ngModel)]="filterFrom" 
+          (ngModelChange)="onFilterChange()"
+        >
+      </div>
+
+      <!-- Hasta -->
+      <div class="col-sm-6 col-lg-2">
+        <label for="auditTo" class="form-label small fw-semibold text-dark mb-1">Hasta (fecha y hora)</label>
+        <input 
+          type="datetime-local" 
+          class="form-control form-control-sm" 
+          id="auditTo" 
+          [(ngModel)]="filterTo" 
+          (ngModelChange)="onFilterChange()"
+        >
+      </div>
+
+      <!-- Texto (petición o respuesta) -->
+      <div class="col-md-6 col-lg-3">
+        <label for="auditText" class="form-label small fw-semibold text-dark mb-1">Texto (petición o respuesta)</label>
+        <input 
+          type="text" 
+          class="form-control form-control-sm" 
+          id="auditText" 
+          placeholder="Buscar en petición o respuesta..." 
+          [(ngModel)]="filterText" 
+          (ngModelChange)="onFilterChange()"
+        >
+      </div>
+
+      <!-- Endpoint -->
+      <div class="col-sm-6 col-lg-2">
+        <label for="auditEndpoint" class="form-label small fw-semibold text-dark mb-1">Endpoint</label>
+        <select 
+          class="form-select form-select-sm" 
+          id="auditEndpoint" 
+          [(ngModel)]="filterEndpoint" 
+          (ngModelChange)="onEndpointChange()"
+        >
+          <option value="">Todos</option>
+          <option value="contadores">/contadores/</option>
+          <option value="sociedades">/sociedades/</option>
+        </select>
+      </div>
+
+      <!-- Tipo -->
+      <div class="col-sm-6 col-lg-2">
+        <label for="auditType" class="form-label small fw-semibold text-dark mb-1">Tipo</label>
+        <select 
+          class="form-select form-select-sm" 
+          id="auditType" 
+          [(ngModel)]="filterType" 
+          (ngModelChange)="onFilterChange()"
+        >
+          <option value="">Todos</option>
+          <option *ngFor="let t of availableTypes" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+
+      <!-- Cambiar Estado -->
+      <div class="col-sm-6 col-lg-1">
+        <label for="auditChangeState" class="form-label small fw-semibold text-dark mb-1">Cambiar est.</label>
+        <select 
+          class="form-select form-select-sm" 
+          id="auditChangeState" 
+          [(ngModel)]="filterChangeState" 
+          (ngModelChange)="onFilterChange()"
+        >
+          <option value="">Todos</option>
+          <option value="true">True</option>
+          <option value="false">False</option>
+        </select>
+      </div>
+
+      <!-- Barra de Resumen de Filtros y Botón Limpiar -->
+      <div class="col-12 d-flex justify-content-between align-items-center pt-2 border-top mt-2 flex-wrap gap-2">
+        <div class="small text-muted">
+          <span *ngIf="hasActiveFilters">
+            <span class="fa fa-filter text-primary me-1"></span>
+            Filtros aplicados. Registros encontrados: <strong>{{ filteredLogs.length }}</strong>
+          </span>
+          <span *ngIf="!hasActiveFilters">
+            Total registros disponibles: <strong>{{ logs.length }}</strong>
+          </span>
+        </div>
+        <div>
+          <button 
+            type="button" 
+            class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" 
+            (click)="limpiarFiltros()"
+            [disabled]="!hasActiveFilters"
+            title="Limpiar filtros"
+          >
+            <span class="fa fa-eraser"></span>
+            <span>Limpiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla Responsiva -->
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 w-100">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" class="ps-3 nx-sortable" style="width: 60px;" (click)="ordenarPor('id')">
+            #
+            <span class="fa nx-sort-icon" [ngClass]="{
+              'fa-sort': sortColumn !== 'id',
+              'fa-sort-asc': sortColumn === 'id' && sortDirection === 'asc',
+              'fa-sort-desc': sortColumn === 'id' && sortDirection === 'desc'
+            }"></span>
+          </th>
+          <th scope="col" class="nx-sortable" (click)="ordenarPor('fecha_hora')">
+            Fecha y hora
+            <span class="fa nx-sort-icon" [ngClass]="{
+              'fa-sort': sortColumn !== 'fecha_hora',
+              'fa-sort-asc': sortColumn === 'fecha_hora' && sortDirection === 'asc',
+              'fa-sort-desc': sortColumn === 'fecha_hora' && sortDirection === 'desc'
+            }"></span>
+          </th>
+          <th scope="col" class="nx-sortable" (click)="ordenarPor('endpoint')">
+            Endpoint
+            <span class="fa nx-sort-icon" [ngClass]="{
+              'fa-sort': sortColumn !== 'endpoint',
+              'fa-sort-asc': sortColumn === 'endpoint' && sortDirection === 'asc',
+              'fa-sort-desc': sortColumn === 'endpoint' && sortDirection === 'desc'
+            }"></span>
+          </th>
+          <th scope="col" class="nx-sortable" (click)="ordenarPor('metodo')">
+            Método
+            <span class="fa nx-sort-icon" [ngClass]="{
+              'fa-sort': sortColumn !== 'metodo',
+              'fa-sort-asc': sortColumn === 'metodo' && sortDirection === 'asc',
+              'fa-sort-desc': sortColumn === 'metodo' && sortDirection === 'desc'
+            }"></span>
+          </th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Cambiar estado</th>
+          <th scope="col">HTTP</th>
+          <th scope="col" class="nx-sortable" (click)="ordenarPor('duracion_ms')">
+            Duración
+            <span class="fa nx-sort-icon" [ngClass]="{
+              'fa-sort': sortColumn !== 'duracion_ms',
+              'fa-sort-asc': sortColumn === 'duracion_ms' && sortDirection === 'asc',
+              'fa-sort-desc': sortColumn === 'duracion_ms' && sortDirection === 'desc'
+            }"></span>
+          </th>
+          <th scope="col" class="text-end pe-3" style="width: 100px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Cargando -->
+        <tr *ngIf="loading && logs.length === 0">
+          <td colspan="9" class="text-center py-5 text-muted">
+            <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+            Cargando registros de auditoría...
+          </td>
+        </tr>
+
+        <!-- Sin registros -->
+        <tr *ngIf="!loading && filteredLogs.length === 0">
+          <td colspan="9" class="text-center py-4 text-muted">
+            <span class="fa fa-info-circle me-1"></span> No se encontraron registros de auditoría con los filtros aplicados.
+          </td>
+        </tr>
+
+        <!-- Filas de Datos -->
+        <ng-container *ngFor="let log of paginatedLogs">
+          <tr>
+            <td class="ps-3 text-muted small fw-semibold">
+              {{ log.id }}
+            </td>
+            <td class="text-nowrap">
+              <span class="fa fa-clock-o text-muted me-1 small"></span>
+              <span class="fw-medium text-dark">{{ log.fecha_hora }}</span>
+            </td>
+            <td>
+              <code class="px-2 py-1 bg-light text-primary rounded border small">/{{ log.endpoint.toLowerCase() }}/</code>
+            </td>
+            <td>
+              <span 
+                class="badge" 
+                [ngClass]="{
+                  'bg-primary-subtle text-primary border border-primary-subtle': log.metodo === 'POST',
+                  'bg-success-subtle text-success border border-success-subtle': log.metodo === 'GET'
+                }"
+              >
+                {{ log.metodo }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ getTipoLabel(log.tipo) }}</span>
+            </td>
+            <td>
+              <span 
+                class="badge" 
+                [ngClass]="hasChangeState(log) ? 'bg-warning text-dark' : 'bg-light text-muted border'"
+              >
+                {{ hasChangeState(log) ? 'True' : 'False' }}
+              </span>
+            </td>
+            <td>
+              <span 
+                class="badge" 
+                [ngClass]="getHttpStatus(log).isError ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle'"
+              >
+                {{ getHttpStatus(log).code }}
+              </span>
+            </td>
+            <td class="text-muted small">
+              {{ log.duracion_ms ? (log.duracion_ms + ' ms') : '—' }}
+            </td>
+            <td class="text-end pe-3">
+              <button 
+                type="button" 
+                class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1"
+                (click)="toggleExpand(log.id)"
+                [title]="isExpanded(log.id) ? 'Ocultar detalles' : 'Ver parámetros y respuesta'"
+              >
+                <span class="fa" [ngClass]="isExpanded(log.id) ? 'fa-chevron-up' : 'fa-eye'"></span>
+                <span>{{ isExpanded(log.id) ? 'Ocultar' : 'Ver' }}</span>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Detalle Acordeón JSON (Diseño exacto y limpio de index.html) -->
+          <tr *ngIf="isExpanded(log.id)" class="audit-detail-row">
+            <td colspan="9" class="audit-detail-cell">
+              <div class="audit-detail-grid">
+                <div class="audit-request-panel">
+                  <strong>URL</strong>
+                  <pre class="audit-code">{{ log.url }}</pre>
+
+                  <strong>Parámetros / cuerpo</strong>
+                  <pre class="audit-code">{{ formatJson(log.parametros_peticion) }}</pre>
+                </div>
+
+                <div class="audit-response-panel">
+                  <strong>Cuerpo de la respuesta</strong>
+                  <pre class="audit-code">{{ formatJson(log.cuerpo_respuesta_peticion) }}</pre>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pie de Tabla Estándar del MFE -->
+  <div class="nx-table-footer">
+    <div class="nx-table-info">
+      Mostrando {{ recordRangeStart }} a {{ recordRangeEnd }} de {{ filteredLogs.length }} registros
+      <span *ngIf="hasActiveFilters" class="text-muted">(filtrado de {{ logs.length }} totales)</span>
+      <span class="text-muted ms-2 fst-italic">· Credenciales de autorización enmascaradas.</span>
+    </div>
+
+    <ul class="nx-table-pagination" *ngIf="totalPages > 1">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button type="button" class="page-link" (click)="cambiarPagina(1)" [disabled]="currentPage === 1" aria-label="Primera página">
+          ««
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button type="button" class="page-link" (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Página anterior">
+          «
+        </button>
+      </li>
+
+      <li 
+        class="page-item" 
+        *ngFor="let p of pagesArray" 
+        [class.active]="p === currentPage"
+      >
+        <button type="button" class="page-link" (click)="cambiarPagina(p)">
+          {{ p }}
+        </button>
+      </li>
+
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button type="button" class="page-link" (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages" aria-label="Página siguiente">
+          »
+        </button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button type="button" class="page-link" (click)="cambiarPagina(totalPages)" [disabled]="currentPage === totalPages" aria-label="Última página">
+          »»
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>

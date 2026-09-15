@@ -1,1 +1,244 @@
 /* Estilos específicos de tarjetas de sociedades */
+
+/* Selector Dinámico de Columnas */
+.columns-selector-host {
+  position: relative;
+  z-index: 1050;
+}
+
+.columns-selector-menu {
+  position: absolute;
+  left: 0;
+  right: auto;
+  top: calc(100% + 6px);
+  z-index: 1060;
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  max-height: 400px;
+  padding: 10px;
+  display: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid #dce5ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+
+.columns-selector-menu.open {
+  display: block;
+}
+
+.columns-selector-header {
+  position: sticky;
+  top: -10px;
+  z-index: 2;
+  margin: -10px -10px 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.columns-selector-header strong {
+  font-size: 12px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.columns-selector-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.columns-selector-option {
+  padding: 6px 8px;
+  border-radius: 5px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #334155;
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 0;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.columns-selector-option:hover {
+  background: #f1f5f9;
+}
+
+.columns-selector-option input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  accent-color: #174a7e;
+  width: 15px;
+  height: 15px;
+}
+
+/* Estilos de Vista Previa de Branding en Credencial (Mockup Sociedades) */
+.branding-preview-card {
+  --branding-card-background: #134567;
+  --branding-card-text: #ffffff;
+  --branding-card-font: Arial, sans-serif;
+  max-width: 100%;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid #dce5ee;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.branding-preview-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  width: 100%;
+  max-width: 880px;
+  min-width: 0;
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.branding-id-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  aspect-ratio: 1.598 / 1;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 4.5%;
+  border-radius: 16px;
+  background: var(--branding-card-background);
+  box-shadow: 0 10px 24px rgba(20, 39, 95, 0.2);
+  box-sizing: border-box;
+  color: var(--branding-card-text);
+  font-family: var(--branding-card-font);
+}
+
+.branding-id-card::before {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background-image: var(--branding-card-pattern);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  content: "";
+  opacity: 0.45;
+  border-radius: 16px;
+}
+
+.branding-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  min-height: 14%;
+}
+
+.branding-card-head.back {
+  justify-content: flex-end;
+}
+
+.branding-logo-badge {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 44px;
+  box-shadow: none;
+}
+
+.branding-logo-badge img {
+  max-height: 38px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.branding-logo-placeholder {
+  background: rgba(255, 255, 255, 0.95);
+  color: #174a7e;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.branding-card-status {
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #58e681;
+  color: #176233;
+  font-size: clamp(8px, 1.25vw, 12px);
+  font-weight: 800;
+}
+
+.branding-card-front-body {
+  display: grid;
+  grid-template-columns: 28% 1fr;
+  gap: 7%;
+  align-items: center;
+  flex: 1;
+  padding: 4% 0 2%;
+}
+
+.branding-card-number {
+  text-align: right;
+}
+
+.branding-card-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: clamp(8px, 1.2vw, 12px);
+  line-height: 1.2;
+  opacity: 0.88;
+}
+
+.branding-card-value {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(11px, 2.1vw, 22px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.branding-card-front-footer {
+  display: grid;
+  grid-template-columns: 1fr 34%;
+  gap: 8%;
+  align-items: end;
+}
+
+.branding-card-front-footer > div:last-child {
+  text-align: right;
+}
+
+.branding-card-back-details {
+  display: grid;
+  grid-template-columns: 1fr 36%;
+  gap: 9% 7%;
+  align-items: end;
+  margin-top: auto;
+}
+
+.branding-card-back-details > div:nth-child(even) {
+  text-align: right;
+}
+
+.branding-card-back-details .branding-card-value {
+  font-size: clamp(9px, 1.6vw, 18px);
+}

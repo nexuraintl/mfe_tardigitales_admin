@@ -38,12 +38,50 @@
           </button>
         </div>
 
-        <div class="nx-table-length">
-          <span>Mostrar</span>
-          <select class="nx-table-length-select" [ngModel]="pageSize" (ngModelChange)="cambiarTamanoPagina($event)">
-            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
-          </select>
-          <span>registros</span>
+        <div class="d-flex align-items-center gap-2">
+          <!-- Selector Dinámico de Columnas -->
+          <div class="columns-selector-host">
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" 
+              (click)="toggleColumnsMenu($event)"
+              aria-haspopup="true"
+              [attr.aria-expanded]="isColumnsMenuOpen"
+              title="Mostrar u ocultar columnas"
+            >
+              <span class="fa fa-columns"></span>
+              <span>Columnas</span>
+              <span class="badge bg-secondary text-white">{{ visibleColumnsCount }}</span>
+            </button>
+
+            <div class="columns-selector-menu shadow" [class.open]="isColumnsMenuOpen" (click)="$event.stopPropagation()">
+              <div class="columns-selector-header">
+                <strong>Columnas visibles</strong>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small text-primary" (click)="resetColumns()">
+                  Restablecer
+                </button>
+              </div>
+
+              <div *ngIf="columnMessageWarning" class="alert alert-warning py-1 px-2 mb-2 small text-center" style="font-size: 11px;">
+                {{ columnMessageWarning }}
+              </div>
+
+              <div class="columns-selector-list">
+                <label *ngFor="let col of availableColumns" class="columns-selector-option">
+                  <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col)">
+                  <span>{{ col.label }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="nx-table-length">
+            <span>Mostrar</span>
+            <select class="nx-table-length-select" [ngModel]="pageSize" (ngModelChange)="cambiarTamanoPagina($event)">
+              <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+            </select>
+            <span>registros</span>
+          </div>
         </div>
       </div>
 
@@ -51,7 +89,7 @@
         <table class="table table-hover align-middle mb-0 w-100">
           <thead class="table-light">
             <tr>
-              <th scope="col" class="ps-3 nx-sortable" style="width: 60px;" (click)="ordenarPor('id')">
+              <th *ngIf="isColumnVisible('id')" scope="col" class="ps-3 nx-sortable" style="width: 60px;" (click)="ordenarPor('id')">
                 #
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'id',
@@ -59,7 +97,7 @@
                   'fa-sort-desc': sortColumn === 'id' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('expediente')">
+              <th *ngIf="isColumnVisible('expediente')" scope="col" class="nx-sortable" (click)="ordenarPor('expediente')">
                 Expediente
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'expediente',
@@ -67,7 +105,7 @@
                   'fa-sort-desc': sortColumn === 'expediente' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('solicitante')">
+              <th *ngIf="isColumnVisible('solicitante')" scope="col" class="nx-sortable" (click)="ordenarPor('solicitante')">
                 Contador
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'solicitante',
@@ -75,7 +113,7 @@
                   'fa-sort-desc': sortColumn === 'solicitante' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('documento')">
+              <th *ngIf="isColumnVisible('documento')" scope="col" class="nx-sortable" (click)="ordenarPor('documento')">
                 Documento
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'documento',
@@ -83,7 +121,7 @@
                   'fa-sort-desc': sortColumn === 'documento' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('matricula')">
+              <th *ngIf="isColumnVisible('matricula')" scope="col" class="nx-sortable" (click)="ordenarPor('matricula')">
                 Tarjeta profesional
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'matricula',
@@ -91,7 +129,7 @@
                   'fa-sort-desc': sortColumn === 'matricula' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('correo')">
+              <th *ngIf="isColumnVisible('correo')" scope="col" class="nx-sortable" (click)="ordenarPor('correo')">
                 Correo
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'correo',
@@ -99,7 +137,10 @@
                   'fa-sort-desc': sortColumn === 'correo' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('tarjeta')">
+              <th *ngIf="isColumnVisible('universidad')" scope="col">Universidad (IES)</th>
+              <th *ngIf="isColumnVisible('tipo_asociado')" scope="col">Tipo trámite</th>
+              <th *ngIf="isColumnVisible('estado_contador')" scope="col">Estado contador</th>
+              <th *ngIf="isColumnVisible('tarjeta')" scope="col" class="nx-sortable" (click)="ordenarPor('tarjeta')">
                 Estado
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'tarjeta',
@@ -107,7 +148,12 @@
                   'fa-sort-desc': sortColumn === 'tarjeta' && sortDirection === 'desc'
                 }"></span>
               </th>
-              <th scope="col" class="nx-sortable" (click)="ordenarPor('fecha')">
+              <th *ngIf="isColumnVisible('resolucion')" scope="col">Resolución</th>
+              <th *ngIf="isColumnVisible('fecha_resolucion')" scope="col">Fecha res.</th>
+              <th *ngIf="isColumnVisible('acta_jcc')" scope="col">Acta JCC</th>
+              <th *ngIf="isColumnVisible('fecha_grado')" scope="col">Fecha grado</th>
+              <th *ngIf="isColumnVisible('seccional')" scope="col">Seccional</th>
+              <th *ngIf="isColumnVisible('fecha')" scope="col" class="nx-sortable" (click)="ordenarPor('fecha')">
                 Fecha
                 <span class="fa nx-sort-icon" [ngClass]="{
                   'fa-sort': sortColumn !== 'fecha',
@@ -120,20 +166,28 @@
           </thead>
           <tbody>
             <tr *ngFor="let row of paginatedTarjetas; trackBy: trackByTarjetaId">
-              <td class="ps-3 text-muted small">#{{ row.id }}</td>
-              <td><code>{{ row.expediente }}</code></td>
-              <td><strong class="text-dark">{{ row.solicitante }}</strong></td>
-              <td>{{ row.documento }}</td>
-              <td><span class="badge bg-light text-dark border">{{ row.matricula }}</span></td>
-              <td class="text-muted small">{{ row.correo }}</td>
-              <td>
+              <td *ngIf="isColumnVisible('id')" class="ps-3 text-muted small">#{{ row.id }}</td>
+              <td *ngIf="isColumnVisible('expediente')"><code>{{ row.expediente }}</code></td>
+              <td *ngIf="isColumnVisible('solicitante')"><strong class="text-dark">{{ row.solicitante }}</strong></td>
+              <td *ngIf="isColumnVisible('documento')">{{ row.documento }}</td>
+              <td *ngIf="isColumnVisible('matricula')"><span class="badge bg-light text-dark border">{{ row.matricula }}</span></td>
+              <td *ngIf="isColumnVisible('correo')" class="text-muted small">{{ row.correo }}</td>
+              <td *ngIf="isColumnVisible('universidad')" class="text-muted small">{{ row.universidad }}</td>
+              <td *ngIf="isColumnVisible('tipo_asociado')"><span class="badge bg-light text-dark border">{{ row.tipo_asociado }}</span></td>
+              <td *ngIf="isColumnVisible('estado_contador')"><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ row.estado_contador }}</span></td>
+              <td *ngIf="isColumnVisible('tarjeta')">
                 <span class="badge" [ngClass]="{
                   'bg-success': row.tarjeta === 'Activa' || row.tarjeta === 'Emitida',
                   'bg-warning text-dark': row.tarjeta === 'Pendiente',
                   'bg-danger': row.tarjeta === 'Cancelada' || row.tarjeta === 'Suspendida'
                 }">{{ row.tarjeta }}</span>
               </td>
-              <td class="text-muted small">{{ row.fecha }}</td>
+              <td *ngIf="isColumnVisible('resolucion')" class="small">{{ row.resolucion }}</td>
+              <td *ngIf="isColumnVisible('fecha_resolucion')" class="text-muted small">{{ row.fecha_resolucion }}</td>
+              <td *ngIf="isColumnVisible('acta_jcc')" class="small">{{ row.acta_jcc }}</td>
+              <td *ngIf="isColumnVisible('fecha_grado')" class="text-muted small">{{ row.fecha_grado }}</td>
+              <td *ngIf="isColumnVisible('seccional')" class="small">{{ row.seccional }}</td>
+              <td *ngIf="isColumnVisible('fecha')" class="text-muted small">{{ row.fecha }}</td>
               <td class="text-end pe-3">
                 <div class="btn-group btn-group-sm">
                   <button class="btn btn-outline-primary" data-nx-tooltip="Ver detalle" aria-label="Ver detalle" (click)="abrirDetalle(row)">
@@ -149,7 +203,7 @@
               </td>
             </tr>
             <tr *ngIf="paginatedTarjetas.length === 0">
-              <td colspan="9" class="text-center py-4 text-muted">
+              <td [attr.colspan]="visibleColumnsCount + 1" class="text-center py-4 text-muted">
                 <span class="fa fa-info-circle me-1"></span> No se encontraron solicitudes registradas.
               </td>
             </tr>
@@ -164,7 +218,7 @@
           <span *ngIf="searchQuery" class="text-muted">(filtrado de {{ tarjetas.length }} totales)</span>
         </div>
 
-        <ul class="nx-table-pagination" *ngIf="totalPages > 1">
+        <ul class="nx-table-pagination" *ngIf="totalRecords > 0">
           <li class="page-item" [class.disabled]="currentPage === 1">
             <button type="button" class="page-link" (click)="cambiarPagina(1)" [disabled]="currentPage === 1" data-nx-tooltip="Primera página" aria-label="Primera página">
               ««
@@ -214,52 +268,150 @@
     </div>
 
     <div class="row g-4">
-      <div class="col-lg-6">
-        <div class="card shadow-sm border-0 mb-4">
+      <!-- Columna 1: Consulta de identificación + Ficha de datos -->
+      <div [class]="(busquedaRealizada && datosConsulta) ? 'col-12 col-lg-5 col-xl-4' : 'col-12 col-lg-8 mx-auto'">
+        <div class="card shadow-sm border-0 mb-3">
           <div class="card-header bg-white py-3 border-bottom">
             <h5 class="card-title fw-bold mb-0 text-dark">
               1. Identificación del contador
             </h5>
           </div>
-          <div class="card-body">
-            <p class="text-muted small mb-3">Ingrese el número de identificación. El sistema consultará el registro de matrícula.</p>
-            <div class="input-group mb-3">
-              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" placeholder="Número de identificación" [(ngModel)]="nuevaIdentificacion" (keyup.enter)="consultarMatricula()">
-              <button type="button" class="btn btn-primary" id="individualIssueSearch" (click)="consultarMatricula()" [disabled]="cargandoBusqueda">
+          <div class="card-body p-4">
+            <p class="text-muted small mb-3">Ingrese el número de identificación. El sistema consulta el registro de matrícula y muestra una vista previa antes de emitir.</p>
+            <div class="input-group">
+              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control form-control-lg" placeholder="Número de identificación" [(ngModel)]="nuevaIdentificacion" (keyup.enter)="consultarMatricula()">
+              <button type="button" class="btn btn-primary px-3 fw-bold" id="individualIssueSearch" (click)="consultarMatricula()" [disabled]="cargandoBusqueda">
                 <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar</span>
                 <span *ngIf="cargandoBusqueda"><span class="spinner-border spinner-border-sm me-1"></span> Buscando...</span>
               </button>
             </div>
-            <div *ngIf="mensajeError" class="alert alert-danger py-2 px-3 small mb-0">{{ mensajeError }}</div>
+            <div *ngIf="mensajeError" class="alert alert-danger py-2 px-3 small mt-3 mb-0">{{ mensajeError }}</div>
+          </div>
+        </div>
+
+        <!-- Ficha de Datos Consultados -->
+        <div *ngIf="busquedaRealizada && datosConsulta" class="card shadow-sm border-0 mb-3 bg-light">
+          <div class="card-header bg-white py-2.5 border-bottom">
+            <h6 class="card-title fw-bold mb-0 text-dark">
+              <span class="fa fa-user me-1 text-primary"></span> Datos del contador
+            </h6>
+          </div>
+          <div class="card-body p-3">
+            <div class="mb-2">
+              <small class="text-muted d-block">Solicitante</small>
+              <strong class="text-dark">{{ datosConsulta.solicitante }}</strong>
+            </div>
+            <div class="mb-2">
+              <small class="text-muted d-block">Documento de identidad</small>
+              <span class="text-dark fw-semibold">{{ datosConsulta.documento }}</span>
+            </div>
+            <div class="mb-2">
+              <small class="text-muted d-block">Matrícula Profesional</small>
+              <span class="badge bg-primary px-2 py-1 fs-6">{{ datosConsulta.matricula }}</span>
+            </div>
+            <div class="mb-2">
+              <small class="text-muted d-block">Correo Institucional</small>
+              <span class="text-dark small">{{ datosConsulta.correo || 'No registrado' }}</span>
+            </div>
+            <div>
+              <small class="text-muted d-block">Institución de Educación Superior</small>
+              <span class="text-dark small">{{ datosConsulta.universidad || 'Universidad Nacional de Colombia' }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="col-lg-6" *ngIf="busquedaRealizada && datosConsulta">
+      <!-- Columna 2: Vista previa de la tarjeta (Branding) -->
+      <div class="col-12 col-lg-7 col-xl-8" *ngIf="busquedaRealizada && datosConsulta">
         <div class="card shadow-sm border-0 mb-4">
-          <div class="card-header bg-white py-3 border-bottom">
+          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="card-title fw-bold mb-0 text-dark">
               2. Vista previa de la tarjeta
             </h5>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+              <span class="fa fa-check-circle me-1"></span> Branding activo
+            </span>
           </div>
-          <div class="card-body">
-            <div class="p-3 bg-light rounded-3 border mb-3">
-              <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="p-3 bg-primary text-white rounded-circle fs-3"><span class="fa fa-user"></span></div>
-                <div>
-                  <h5 class="fw-bold mb-0 text-dark">{{ datosConsulta?.solicitante }}</h5>
-                  <span class="badge bg-success">Activo</span>
-                </div>
-              </div>
-              <div class="row g-2 small">
-                <div class="col-6"><span class="text-muted">Documento:</span> <strong>{{ datosConsulta?.documento }}</strong></div>
-                <div class="col-6"><span class="text-muted">T. Profesional:</span> <strong>{{ datosConsulta?.matricula }}</strong></div>
-                <div class="col-12"><span class="text-muted">Universidad:</span> <strong>{{ datosConsulta?.universidad }}</strong></div>
+          <div class="card-body p-4">
+
+            <!-- Card Stack Previsualización de Branding (2 Columnas Frente/Reverso) -->
+            <div
+              class="branding-preview-card mb-4"
+              [style.--branding-card-background]="brandingColorFondo"
+              [style.--branding-card-text]="brandingColorLetra"
+              [style.--branding-card-font]="brandingFuenteLetra"
+              [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
+            >
+              <div class="branding-preview-stack">
+                <!-- TARJETA FRENTE -->
+                <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
+                  <div class="branding-card-head">
+                    <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
+                      <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                    </div>
+                    <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
+                      <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+                    </div>
+
+                    <span class="branding-card-status">Activa</span>
+                  </div>
+
+                  <div class="branding-card-front-body">
+                    <img class="branding-card-photo" [src]="samplePhotoUrl" alt="Fotografía del contador" />
+                    <div class="branding-card-number">
+                      <span class="branding-card-label">Tarjeta profesional</span>
+                      <strong class="branding-card-value">{{ datosConsulta.matricula }}</strong>
+                    </div>
+                  </div>
+
+                  <div class="branding-card-front-footer">
+                    <div>
+                      <span class="branding-card-label">Fecha Res. Inscripción</span>
+                      <strong class="branding-card-value">{{ datosConsulta.fecha_resolucion || '15 - Sep - 2026' }}</strong>
+                    </div>
+                    <div>
+                      <span class="branding-card-label">N. Expediente</span>
+                      <strong class="branding-card-value">{{ datosConsulta.expediente || 'Pendiente' }}</strong>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- TARJETA REVERSO -->
+                <article class="branding-id-card" aria-label="Vista previa del reverso de la tarjeta">
+                  <div class="branding-card-head back">
+                    <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
+                      <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                    </div>
+                    <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
+                      <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+                    </div>
+                  </div>
+
+                  <div class="branding-card-back-details">
+                    <div>
+                      <span class="branding-card-label">Nombre y apellido</span>
+                      <strong class="branding-card-value">{{ datosConsulta.solicitante }}</strong>
+                    </div>
+                    <div>
+                      <span class="branding-card-label">Cédula de ciudadanía</span>
+                      <strong class="branding-card-value">{{ datosConsulta.documento }}</strong>
+                    </div>
+                    <div>
+                      <span class="branding-card-label">Institución de Educación Superior</span>
+                      <strong class="branding-card-value">{{ datosConsulta.universidad || 'Universidad Nacional de Colombia' }}</strong>
+                    </div>
+                    <div>
+                      <span class="branding-card-label">Res. Inscripción</span>
+                      <strong class="branding-card-value">{{ datosConsulta.resolucion || '0001' }}</strong>
+                    </div>
+                  </div>
+                </article>
               </div>
             </div>
 
-            <div *ngIf="!mensajeExito">
-              <button type="button" id="individualIssueConfirm" class="btn btn-success w-100 py-2 fw-semibold" (click)="confirmarEmision()" [disabled]="loading">
+            <!-- BOTÓN DE CONFIRMACIÓN -->
+            <div *ngIf="!mensajeExito" class="d-flex justify-content-end">
+              <button type="button" id="individualIssueConfirm" class="btn btn-success px-4 py-2.5 fw-bold shadow-sm" (click)="confirmarEmision()" [disabled]="loading">
                 <span *ngIf="!loading"><span class="fa fa-check me-1"></span> Confirmar emisión</span>
                 <span *ngIf="loading"><span class="spinner-border spinner-border-sm me-1"></span> Procesando...</span>
               </button>

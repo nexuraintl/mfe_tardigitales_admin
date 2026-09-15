@@ -1,94 +1,27 @@
-/* Estilos específicos de tarjetas de contadores */
-
-/* Selector Dinámico de Columnas */
-.columns-selector-host {
-  position: relative;
-  z-index: 1050;
+.branding-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(430px, 1.1fr);
+  gap: 20px;
+  align-items: start;
 }
 
-.columns-selector-menu {
-  position: absolute;
-  left: 0;
-  right: auto;
-  top: calc(100% + 6px);
-  z-index: 1060;
-  width: 260px;
-  max-width: calc(100vw - 32px);
-  max-height: 400px;
-  padding: 10px;
-  display: none;
-  overflow-x: hidden;
-  overflow-y: auto;
-  border: 1px solid #dce5ee;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+.branding-layout > * {
+  min-width: 0;
 }
 
-.columns-selector-menu.open {
-  display: block;
+.active-version {
+  background-color: #eef5fb !important;
+  border-left: 4px solid var(--primary, #174a7e) !important;
 }
 
-.columns-selector-header {
-  position: sticky;
-  top: -10px;
-  z-index: 2;
-  margin: -10px -10px 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.columns-selector-header strong {
-  font-size: 12px;
-  color: #1e293b;
-  font-weight: 600;
-}
-
-.columns-selector-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.columns-selector-option {
-  padding: 6px 8px;
-  border-radius: 5px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  color: #334155;
-  font-size: 13px;
-  cursor: pointer;
-  margin-bottom: 0;
-  user-select: none;
-  transition: background 0.15s ease;
-}
-
-.columns-selector-option:hover {
-  background: #f1f5f9;
-}
-
-.columns-selector-option input[type="checkbox"] {
-  margin: 0;
-  cursor: pointer;
-  accent-color: #174a7e;
-  width: 15px;
-  height: 15px;
-}
-
-/* Estilos de Vista Previa de Branding en Credencial (Mockup) */
 .branding-preview-card {
   --branding-card-background: #14275f;
   --branding-card-text: #ffffff;
   --branding-card-font: Arial, sans-serif;
   max-width: 100%;
-  padding: 24px;
+  padding: 20px;
   overflow: hidden;
-  border: 1px solid #dce5ee;
+  border: 1px solid var(--border, #dce5ee);
   border-radius: 12px;
   background: #f8fafc;
   box-sizing: border-box;
@@ -96,11 +29,10 @@
 
 .branding-preview-stack {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   width: 100%;
-  max-width: 880px;
+  max-width: 440px;
   min-width: 0;
-  gap: 20px;
+  gap: 18px;
   margin: 0 auto;
 }
 
@@ -136,12 +68,14 @@
   border-radius: 16px;
 }
 
+
+
 .branding-card-head {
   display: flex;
   justify-content: space-between;
   gap: 14px;
   align-items: center;
-  min-height: 14%;
+  min-height: 12%;
 }
 
 .branding-card-head.back {
@@ -159,25 +93,14 @@
   box-shadow: none;
 }
 
-.branding-logo-badge img {
+.branding-preview-logo {
   max-height: 38px;
   max-width: 160px;
   object-fit: contain;
 }
 
-.branding-logo-placeholder {
-  background: rgba(255, 255, 255, 0.95);
-  color: #174a7e;
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 11px;
-  display: inline-flex;
-  align-items: center;
-}
-
 .branding-card-status {
-  padding: 4px 14px;
+  padding: 5px 16px;
   border-radius: 999px;
   background: #58e681;
   color: #176233;
@@ -250,4 +173,61 @@
 
 .branding-card-back-details .branding-card-value {
   font-size: clamp(9px, 1.6vw, 18px);
+}
+
+.branding-preview-note {
+  color: var(--muted, #66788a);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Skeleton Loader Shimmer */
+.skeleton-box {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background-color: #e2e8f0;
+  border-radius: 6px;
+}
+
+.skeleton-box::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.7) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.6s infinite;
+  content: '';
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-card {
+  width: 100%;
+  aspect-ratio: 1.598 / 1;
+  border-radius: 16px;
+  background-color: #e2e8f0;
+}
+
+@media (max-width: 992px) {
+  .branding-layout {
+    grid-template-columns: 1fr;
+  }
 }

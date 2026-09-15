@@ -8,6 +8,8 @@ export interface HeaderAction {
   id: string;
   label: string;
   icon?: string;
+  tooltip?: string;
+  forceTooltip?: boolean;
   btnClass?: string;
   action?: () => void;
 }
@@ -39,7 +41,9 @@ export class App implements OnInit {
     '/validador-qr': 'Campos del Validador QR',
     '/certificados': 'Certificados Oficiales',
     '/reportes': 'Reportes',
-    '/branding': 'Branding',
+    '/branding': 'Branding de credenciales',
+    '/branding-contadores': 'Branding de credenciales — Contadores',
+    '/branding-sociedades': 'Branding de credenciales — Sociedades',
     '/auditoria': 'Auditoría API',
     '/usuarios': 'Usuarios'
   };
@@ -104,7 +108,15 @@ export class App implements OnInit {
       sectionTitle: 'Administración',
       items: [
         { label: 'Certificados', icon: 'fa fa-certificate', path: '/certificados' },
-        { label: 'Branding', icon: 'fa fa-paint-brush', path: '/branding' },
+        {
+          id: 'grupo-branding',
+          label: 'Branding',
+          icon: 'fa fa-paint-brush',
+          children: [
+            { label: 'Contadores', icon: 'fa fa-user', path: '/branding-contadores' },
+            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/branding-sociedades' }
+          ]
+        },
         { label: 'Validador QR', icon: 'fa fa-qrcode', path: '/validador-qr' },
         { label: 'Auditoría API', icon: 'fa fa-shield', path: '/auditoria' },
         { label: 'Usuarios', icon: 'fa fa-users', path: '/usuarios' }
@@ -170,6 +182,9 @@ export class App implements OnInit {
           action: () => this.activeComponent?.abrirEmisionMasiva?.()
         }
       ];
+    } else if (cleanUrl.includes('branding')) {
+      this.primaryAction = null;
+      this.viewActions = [];
     } else if (cleanUrl.includes('sociedades')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
@@ -248,6 +263,17 @@ export class App implements OnInit {
           icon: 'fa fa-download',
           btnClass: 'btn btn-outline-secondary',
           action: () => this.activeComponent?.exportarCSV?.()
+        }
+      ];
+    } else if (cleanUrl.includes('auditoria')) {
+      this.primaryAction = null;
+      this.viewActions = [
+        {
+          id: 'actualizar-auditoria',
+          label: 'Actualizar',
+          icon: 'fa fa-refresh',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.cargarAuditoria?.()
         }
       ];
     } else {

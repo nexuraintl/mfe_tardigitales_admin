@@ -40,3 +40,14 @@ export interface PrimaryAction {
   icon?: string;
   action?: () => void;
 }
+
+export interface HeaderAction {
+  id: string;
+  label: string;
+  icon?: string;
+  tooltip?: string;
+  forceTooltip?: boolean;
+  btnClass?: string;
+  action?: () => void;
+}
+
