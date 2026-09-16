@@ -153,17 +153,24 @@ export class TarjetasContadoresComponent implements OnInit {
     this.loadColumnsPreference();
     this.cargarBrandingPublicado();
 
-    this.route.paramMap.subscribe(() => {
-      this.evaluarRutaActual();
+    this.route.paramMap.subscribe(params => {
+      this.evaluarRutaActual(params);
     });
   }
 
-  evaluarRutaActual(): void {
+  evaluarRutaActual(paramsMap?: any): void {
     const url = this.router.url;
-    const idParam = this.route.snapshot.paramMap.get('id');
+    let idStr = paramsMap ? paramsMap.get('id') : this.route.snapshot.paramMap.get('id');
 
-    if (idParam || url.includes('/historial/')) {
-      const id = idParam ? Number(idParam) : 0;
+    if (!idStr && url.includes('/historial/')) {
+      const parts = url.split('/historial/');
+      if (parts[1]) {
+        idStr = parts[1].split('?')[0];
+      }
+    }
+
+    if (idStr || url.includes('/historial/')) {
+      const id = idStr ? Number(idStr) : 0;
       this.cargarHistorialPorId(id);
     } else if (url.includes('/nueva') || url.includes('/crear')) {
       this.vistaActiva = 'emision-individual';
@@ -703,7 +710,7 @@ export class TarjetasContadoresComponent implements OnInit {
     this.selectedTarjetaHistorial = null;
     if (id <= 0) return;
 
-    this.http.get(`${API_BASE}/tarjetas/historial/${id}?client_id=${this.clientId}`)
+    this.http.get(`${API_BASE}/tarjetas/historial/${id}?client_id=${this.clientId}&tipo=contador`)
       .subscribe({
         next: (res: any) => {
           this.selectedTarjetaHistorial = res;
