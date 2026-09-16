@@ -65,3 +65,187 @@
   display: block;
   transform: translateY(0);
 }
+
+/* Anular hover de Bootstrap en filas expandidas de detalle de auditoría */
+.table-hover > tbody > tr.audit-detail-row,
+.table-hover > tbody > tr.audit-detail-row:hover,
+.table-hover > tbody > tr.audit-detail-row > td,
+.table-hover > tbody > tr.audit-detail-row:hover > td,
+.table-hover > tbody > tr.audit-detail-row > *,
+.table-hover > tbody > tr.audit-detail-row:hover > * {
+  --bs-table-hover-bg: transparent !important;
+  --bs-table-bg-state: transparent !important;
+  --bs-table-accent-bg: transparent !important;
+  --bs-table-hover-color: inherit !important;
+  box-shadow: none !important;
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+  color: inherit !important;
+}
+
+/* ============================================================================
+   AJUSTE GLOBAL: VISIBILIDAD DE MENÚS Y SELECTORES SOBRE TABLAS
+   ============================================================================ */
+.nx-table-card {
+  overflow: visible !important;
+}
+
+.nx-table-card > :first-child {
+  border-top-left-radius: var(--nx-radius-lg, 8px);
+  border-top-right-radius: var(--nx-radius-lg, 8px);
+}
+
+.nx-table-card > :last-child {
+  border-bottom-left-radius: var(--nx-radius-lg, 8px);
+  border-bottom-right-radius: var(--nx-radius-lg, 8px);
+}
+
+.nx-table-toolbar {
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+.table-responsive {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.columns-selector-host {
+  position: relative !important;
+  z-index: 1050 !important;
+}
+
+.columns-selector-menu {
+  position: absolute !important;
+  z-index: 1060 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Títulos refinados para tarjetas de secciones y formularios (Branding, Crear Notificación, Validador QR) */
+.card-title,
+.card-header h5,
+.card-header .h5,
+.card-section-header {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  letter-spacing: -0.01em;
+}
+
+/* Mantener el tamaño destacado para cabeceras principales de tablas */
+.nx-table-card .card-header .card-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+}
+
+/* ============================================================================
+   SISTEMA DE DISEÑO UNIFICADO DE COMPONENTES (ESTILO BRANDING)
+   ============================================================================ */
+
+/* 1. Estructura Global de Tarjetas (Cards) */
+.card {
+  border: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+  background-color: #ffffff !important;
+}
+
+/* 2. Cabeceras de Sección e Internas de Tarjetas */
+.card-header {
+  background-color: #ffffff !important;
+  padding: 14px 20px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+
+.card-header small,
+.card-header .text-muted {
+  font-size: 12px !important;
+  color: #64748b !important;
+}
+
+/* 3. Cuerpos de Tarjeta y Espaciado Generoso */
+.card-body {
+  padding: 20px 24px !important;
+}
+
+/* 4. Tipografía y Etiquetas de Campos (Labels & Values) */
+label.form-label,
+.field-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  margin-bottom: 4px !important;
+}
+
+.field-value,
+.data-value {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+/* 5. Sub-contenedores y Bloques de Información Generales */
+.info-block-box {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 14px 18px !important;
+}
+
+/* 6. Badges de Estado Nativos Unificados */
+.badge.bg-success-subtle {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-primary-subtle {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-secondary-subtle {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-warning-subtle {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-danger-subtle {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+
+
+
