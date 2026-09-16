@@ -8,6 +8,8 @@ export interface HeaderAction {
   id: string;
   label: string;
   icon?: string;
+  tooltip?: string;
+  forceTooltip?: boolean;
   btnClass?: string;
   action?: () => void;
 }
@@ -31,7 +33,13 @@ export class App implements OnInit {
   sidebarCollapsed = false;
 
   private routeTitles: { [key: string]: string } = {
+    '/tarjetas-contadores/historial': 'Historial de la tarjeta',
+    '/tarjetas-contadores/nueva': 'Emitir Tarjeta de Contador',
+    '/tarjetas-contadores/emision-masiva': 'Emisión Masiva de Credenciales',
     '/tarjetas-contadores': 'Tarjeta Digital para Contadores',
+    '/sociedades/historial': 'Historial de la sociedad',
+    '/sociedades/nueva': 'Emitir Tarjeta de Sociedad',
+    '/sociedades/emision-masiva': 'Emisión Masiva de Sociedades',
     '/sociedades': 'Tarjeta Digital para Sociedades',
     '/historial': 'Historial de Notificaciones',
     '/crear-notificacion': 'Crear Notificación',
@@ -39,7 +47,9 @@ export class App implements OnInit {
     '/validador-qr': 'Campos del Validador QR',
     '/certificados': 'Certificados Oficiales',
     '/reportes': 'Reportes',
-    '/branding': 'Branding',
+    '/branding': 'Branding de credenciales',
+    '/branding-contadores': 'Branding de credenciales — Contadores',
+    '/branding-sociedades': 'Branding de credenciales — Sociedades',
     '/auditoria': 'Auditoría API',
     '/usuarios': 'Usuarios'
   };
@@ -62,7 +72,7 @@ export class App implements OnInit {
       name: 'Tarjetas Digitales', 
       color: 'blue', 
       iconClass: 'fa fa-id-card', 
-      path: '/admin/tardigitales/crud', 
+      path: '/admin/tardigitales/tarjetas-contadores', 
       active: true 
     },
     { 
@@ -96,15 +106,22 @@ export class App implements OnInit {
             { label: 'Crear notificación', icon: 'fa fa-paper-plane', path: '/crear-notificacion' },
             { label: 'Historial de notificaciones', icon: 'fa fa-history', path: '/historial' }
           ]
-        },
-        { label: 'Gestión de Trámites (CRUD)', icon: 'fa fa-tasks', path: '/crud' }
+        }
       ]
     },
     {
       sectionTitle: 'Administración',
       items: [
         { label: 'Certificados', icon: 'fa fa-certificate', path: '/certificados' },
-        { label: 'Branding', icon: 'fa fa-paint-brush', path: '/branding' },
+        {
+          id: 'grupo-branding',
+          label: 'Branding',
+          icon: 'fa fa-paint-brush',
+          children: [
+            { label: 'Contadores', icon: 'fa fa-user', path: '/branding-contadores' },
+            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/branding-sociedades' }
+          ]
+        },
         { label: 'Validador QR', icon: 'fa fa-qrcode', path: '/validador-qr' },
         { label: 'Auditoría API', icon: 'fa fa-shield', path: '/auditoria' },
         { label: 'Usuarios', icon: 'fa fa-users', path: '/usuarios' }
@@ -148,6 +165,13 @@ export class App implements OnInit {
 
   private updateViewActions(url: string) {
     const cleanUrl = url.split('?')[0].split('#')[0];
+
+    if (cleanUrl.includes('/historial/') || cleanUrl.includes('/nueva') || cleanUrl.includes('/emision-masiva')) {
+      this.primaryAction = null;
+      this.viewActions = [];
+      return;
+    }
+
     if (cleanUrl.includes('tarjetas-contadores')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
@@ -156,13 +180,6 @@ export class App implements OnInit {
       };
       this.viewActions = [
         {
-          id: 'exportar-csv',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        },
-        {
           id: 'emision-masiva',
           label: 'Emisión masiva',
           icon: 'fa fa-file-excel-o',
@@ -170,6 +187,9 @@ export class App implements OnInit {
           action: () => this.activeComponent?.abrirEmisionMasiva?.()
         }
       ];
+    } else if (cleanUrl.includes('branding')) {
+      this.primaryAction = null;
+      this.viewActions = [];
     } else if (cleanUrl.includes('sociedades')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
@@ -250,6 +270,17 @@ export class App implements OnInit {
           action: () => this.activeComponent?.exportarCSV?.()
         }
       ];
+    } else if (cleanUrl.includes('auditoria')) {
+      this.primaryAction = null;
+      this.viewActions = [
+        {
+          id: 'actualizar-auditoria',
+          label: 'Actualizar',
+          icon: 'fa fa-refresh',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.cargarAuditoria?.()
+        }
+      ];
     } else {
       this.primaryAction = null;
       this.viewActions = [];
@@ -263,7 +294,7 @@ export class App implements OnInit {
       return;
     }
     if (path.startsWith('/admin/tardigitales/')) {
-      const internalPath = path.replace('/admin/tardigitales', '') || '/crud';
+      const internalPath = path.replace('/admin/tardigitales', '') || '/tarjetas-contadores';
       this.currentUrl = internalPath;
       this.updatePageTitle(internalPath);
       this.updateViewActions(internalPath);

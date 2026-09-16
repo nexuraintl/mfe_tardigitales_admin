@@ -126,6 +126,12 @@ export const ERROR_MESSAGES = {
     title: 'Error de Persistencia',
     template: 'No fue posible guardar la configuración del validador ({status})'
   },
+  MS_3852_AUDITORIA_GET: {
+    code: 'MS-3852',
+    title: 'Error de Auditoría',
+    template: 'No fue posible consultar el registro de auditoría de la API ({status})',
+    suggestion: 'Verifique los parámetros o intente nuevamente más tarde.'
+  },
   MS_3860_CERTIFICADOS_GET: {
     code: 'MS-3860',
     title: 'Error de Consulta',

@@ -1,0 +1,325 @@
+<!-- Alertas y Mensajes de Estado -->
+<nx-alert *ngIf="currentError" [error]="currentError"></nx-alert>
+
+<div *ngIf="mensajeExito" class="alert alert-success d-flex align-items-center mb-3 shadow-sm" role="alert">
+  <span class="fa fa-check-circle me-2 fs-5 text-success"></span>
+  <div>{{ mensajeExito }}</div>
+</div>
+
+<div class="branding-layout">
+  <!-- Columna Izquierda: Formulario de Configuración e Historial -->
+  <div class="d-flex flex-column gap-4">
+    <!-- Card 1: Formulario de Configuración -->
+    <section class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Configuración de Branding
+        </h5>
+        <small class="text-muted">
+          Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar' }}</strong>
+        </small>
+      </div>
+
+      <div class="card-body p-4">
+        <div class="branding-fields">
+          <div class="branding-field full mb-3">
+            <label for="brandingLogo" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Logo institucional (PNG, JPG, SVG - Máx. 300 KB)</span>
+              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+            </label>
+
+            <!-- Previsualización sobria y moderna del logo seleccionado -->
+            <div *ngIf="logoPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
+              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px;">
+                <img [src]="logoPreviewUrl" alt="Vista previa del logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25" style="font-size: 10px;">
+                    {{ logoSourceText || 'Logo seleccionado' }}
+                  </span>
+                </div>
+                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
+                  Se incluirá en la nueva versión a guardar
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                title="Quitar logo"
+                style="font-size: 12px;"
+                (click)="quitarLogo()"
+              >
+                <span class="fa fa-times me-1"></span> Quitar
+              </button>
+            </div>
+
+            <input
+              type="file"
+              id="brandingLogo"
+              accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm"
+              (change)="onLogoSelected($event)"
+            />
+          </div>
+
+          <!-- Campo: Patrón de Fondo -->
+          <div class="branding-field full mb-3">
+            <label for="brandingPatron" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Imagen de patrón de fondo (PNG, JPG, SVG - Máx. 3 MB)</span>
+              <span class="text-muted small" style="font-size: 11px;">Opcional</span>
+            </label>
+
+            <!-- Previsualización del patrón seleccionado -->
+            <div *ngIf="patronPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
+              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px; overflow: hidden;">
+                <img [src]="patronPreviewUrl" alt="Vista previa del patrón" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25" style="font-size: 10px;">
+                    {{ patronSourceText || 'Patrón seleccionado' }}
+                  </span>
+                </div>
+                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
+                  Se aplicará de fondo en la tarjeta
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                title="Quitar patrón"
+                style="font-size: 12px;"
+                (click)="quitarPatron()"
+              >
+                <span class="fa fa-times me-1"></span> Quitar
+              </button>
+            </div>
+
+            <input
+              type="file"
+              id="brandingPatron"
+              accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm"
+              (change)="onPatronSelected($event)"
+            />
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label for="brandingPrimary" class="form-label fw-semibold text-secondary small mb-1">Color de fondo</label>
+              <input
+                type="color"
+                id="brandingPrimary"
+                class="form-control form-control-color w-100"
+                style="height: 42px; cursor: pointer;"
+                [(ngModel)]="colorFondo"
+              />
+            </div>
+
+            <div class="col-6">
+              <label for="brandingSecondary" class="form-label fw-semibold text-secondary small mb-1">Color de letra</label>
+              <input
+                type="color"
+                id="brandingSecondary"
+                class="form-control form-control-color w-100"
+                style="height: 42px; cursor: pointer;"
+                [(ngModel)]="colorLetra"
+              />
+            </div>
+          </div>
+
+          <div class="branding-field full mb-3">
+            <label for="brandingFont" class="form-label fw-semibold text-secondary small mb-1">Fuente de la letra</label>
+            <select id="brandingFont" class="form-select" [(ngModel)]="fuenteLetra">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer bg-light border-top p-3 text-end">
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-4 py-2 fw-semibold"
+          [disabled]="saving || !hasFormChanges"
+          [title]="!hasFormChanges ? 'Modifique al menos un parámetro (colores, fuente o logo) para poder guardar una nueva versión' : ''"
+          (click)="guardarNuevaVersion()"
+        >
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          <span class="fa fa-save me-1" *ngIf="!saving"></span>
+          {{ saving ? 'Guardando...' : 'Guardar nueva versión' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Card 2: Historial de Versiones -->
+    <section class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Historial de Versiones
+        </h5>
+      </div>
+
+      <div class="card-body p-0">
+        <!-- Skeleton para Historial de versiones -->
+        <div *ngIf="loading" class="p-3 d-flex flex-column gap-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="skeleton-box" style="width: 50%; height: 18px;"></div>
+            <div class="skeleton-box" style="width: 25%; height: 26px; border-radius: 12px;"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="skeleton-box" style="width: 45%; height: 18px;"></div>
+            <div class="skeleton-box" style="width: 25%; height: 26px; border-radius: 12px;"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="skeleton-box" style="width: 55%; height: 18px;"></div>
+            <div class="skeleton-box" style="width: 25%; height: 26px; border-radius: 12px;"></div>
+          </div>
+        </div>
+
+        <ul class="list-group list-group-flush branding-history mb-0" *ngIf="!loading && historyVersions.length > 0">
+          <li
+            *ngFor="let item of historyVersions"
+            class="list-group-item p-3 d-flex justify-content-between align-items-center transition-all"
+            [class.active-version]="item.version === selectedVersionNumber"
+          >
+            <div class="cursor-pointer flex-grow-1" (click)="seleccionarVersionHistorial(item)">
+              <strong class="d-block text-dark">
+                Versión v{{ item.version }}
+                <span class="badge bg-primary-subtle text-primary ms-1 font-normal" *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
+              </strong>
+              <small class="text-muted">
+                {{ item.stamp || item.created_at || 'Fecha no disponible' }}
+              </small>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1" *ngIf="item.published">Publicada</span>
+              <button
+                *ngIf="!item.published"
+                type="button"
+                [class]="item.version === selectedVersionNumber ? 'btn btn-primary btn-sm px-3 py-1.5 fw-bold shadow-sm' : 'btn btn-outline-primary btn-sm px-3 py-1'"
+                style="font-size: 12px;"
+                (click)="seleccionarVersionHistorial(item); publicarVersion()"
+                [disabled]="publishing"
+              >
+                <span *ngIf="publishing && item.version === selectedVersionNumber" class="spinner-border spinner-border-sm me-1"></span>
+                <span class="fa fa-upload me-1" *ngIf="item.version === selectedVersionNumber && !publishing"></span>
+                {{ publishing && item.version === selectedVersionNumber ? 'Publicando...' : (item.version === selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
+              </button>
+            </div>
+          </li>
+        </ul>
+
+        <div *ngIf="!loading && historyVersions.length === 0" class="p-4 text-center text-muted small">
+          No hay versiones registradas en el historial.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Columna Derecha: Vista Previa -->
+  <div>
+    <section class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Vista Previa
+        </h5>
+      </div>
+
+      <div class="card-body p-4">
+        <!-- Skeleton para Vista Previa de tarjetas mientras carga -->
+        <div *ngIf="loading" class="branding-preview-stack p-2">
+          <div class="skeleton-card skeleton-box"></div>
+          <div class="skeleton-card skeleton-box"></div>
+        </div>
+
+        <div
+          *ngIf="!loading"
+          class="branding-preview-card"
+          [style.--branding-card-background]="colorFondo"
+          [style.--branding-card-text]="colorLetra"
+          [style.--branding-card-font]="fuenteLetra"
+          [style.--branding-card-pattern]="patronPreviewUrl ? 'url(' + patronPreviewUrl + ')' : null"
+        >
+          <div class="branding-preview-stack">
+            <!-- TARJETA FRENTE -->
+            <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
+              <div class="branding-card-head">
+                <img
+                  *ngIf="logoPreviewUrl"
+                  [src]="logoPreviewUrl"
+                  class="branding-preview-logo branding-card-logo"
+                  alt="Logo de la credencial"
+                />
+              </div>
+
+              <div class="branding-card-front-body">
+                <img
+                  class="branding-card-photo"
+                  [src]="samplePhotoUrl"
+                  alt="Fotografía o avatar de la credencial"
+                />
+                <div class="branding-card-number">
+                  <span class="branding-card-label">{{ registrationLabel }}</span>
+                  <strong class="branding-card-value">{{ registrationValue }}</strong>
+                </div>
+              </div>
+
+              <div class="branding-card-front-footer">
+                <div>
+                  <span class="branding-card-label">{{ dateLabel }}</span>
+                  <strong class="branding-card-value">{{ dateValue }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">N. Expediente</span>
+                  <strong class="branding-card-value">{{ expedientValue }}</strong>
+                </div>
+              </div>
+            </article>
+
+            <!-- TARJETA REVERSO -->
+            <article class="branding-id-card" aria-label="Vista previa del reverso de la tarjeta">
+              <div class="branding-card-head back">
+                <img
+                  *ngIf="logoPreviewUrl"
+                  [src]="logoPreviewUrl"
+                  class="branding-preview-logo branding-card-logo"
+                  alt="Logo de la credencial"
+                />
+              </div>
+
+              <div class="branding-card-back-details">
+                <div>
+                  <span class="branding-card-label">{{ holderLabel }}</span>
+                  <strong class="branding-card-value">{{ holderValue }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">{{ documentLabel }}</span>
+                  <strong class="branding-card-value">{{ documentValue }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">{{ extraLabel }}</span>
+                  <strong class="branding-card-value">{{ extraValue }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">Res. Inscripción</span>
+                  <strong class="branding-card-value">{{ resolutionValue }}</strong>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <p class="branding-preview-note mt-3 mb-0">
+            Vista previa oficial de la credencial digital para {{ label.toLowerCase() }}.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

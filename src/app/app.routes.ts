@@ -7,6 +7,8 @@ import { CrearNotificacionComponent } from './crear-notificacion/crear-notificac
 import { PlaceholderComponent } from './placeholder/placeholder.component';
 import { ValidadorQrComponent } from './validador-qr/validador-qr.component';
 import { CertificadosComponent } from './certificados/certificados.component';
+import { AuditoriaComponent } from './auditoria/auditoria.component';
+import { BrandingComponent } from './branding/branding.component';
 
 export const routes: Routes = [
   {
@@ -23,13 +25,39 @@ export const routes: Routes = [
     component: TramitesCrudComponent
   },
   
-  // Rutas semánticas reales
+  // Rutas semánticas reales - Contadores
   {
     path: 'tarjetas-contadores',
     component: TarjetasContadoresComponent
   },
   {
+    path: 'tarjetas-contadores/nueva',
+    component: TarjetasContadoresComponent
+  },
+  {
+    path: 'tarjetas-contadores/emision-masiva',
+    component: TarjetasContadoresComponent
+  },
+  {
+    path: 'tarjetas-contadores/historial/:id',
+    component: TarjetasContadoresComponent
+  },
+
+  // Rutas semánticas reales - Sociedades
+  {
     path: 'sociedades',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'sociedades/nueva',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'sociedades/emision-masiva',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'sociedades/historial/:id',
     component: TarjetasSociedadesComponent
   },
   {
@@ -46,7 +74,15 @@ export const routes: Routes = [
   },
   {
     path: 'branding',
-    component: PlaceholderComponent
+    component: BrandingComponent
+  },
+  {
+    path: 'branding-contadores',
+    component: BrandingComponent
+  },
+  {
+    path: 'branding-sociedades',
+    component: BrandingComponent
   },
   {
     path: 'validador-qr',
@@ -54,7 +90,7 @@ export const routes: Routes = [
   },
   {
     path: 'auditoria',
-    component: PlaceholderComponent
+    component: AuditoriaComponent
   },
   {
     path: 'usuarios',
