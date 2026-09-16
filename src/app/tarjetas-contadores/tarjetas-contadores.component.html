@@ -196,6 +196,9 @@
                   <button class="btn btn-outline-secondary" data-nx-tooltip="Ver tarjeta" aria-label="Ver tarjeta" (click)="abrirTarjeta(row)">
                     <span class="fa fa-id-card-o"></span>
                   </button>
+                  <button *ngIf="row.tarjeta === 'Emitida'" class="btn btn-outline-secondary" data-nx-tooltip="Regenerar" aria-label="Regenerar" (click)="regenerarTarjeta(row)">
+                    <span class="fa fa-refresh"></span>
+                  </button>
                   <button class="btn btn-outline-secondary" data-nx-tooltip="Historial" aria-label="Historial" (click)="abrirHistorial(row)">
                     <span class="fa fa-history"></span>
                   </button>
@@ -257,187 +260,154 @@
 
   <!-- VISTA NUEVA TARJETA - EMISION INDIVIDUAL -->
   <ng-container *ngIf="vistaActiva === 'emision-individual'">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="branding-layout">
+      <!-- Columna Izquierda: Consulta de Matrícula -->
       <div>
-        <h1 class="h3 fw-bold text-dark mb-1">Nueva tarjeta — emisión individual</h1>
-        <p class="text-muted mb-0">Emita una tarjeta profesional para un contador registrado.</p>
-      </div>
-      <button type="button" class="btn btn-outline-secondary" (click)="cerrarNuevaTarjeta()">
-        <span class="fa fa-arrow-left me-1"></span> Volver
-      </button>
-    </div>
-
-    <div class="row g-4">
-      <!-- Columna 1: Consulta de identificación + Ficha de datos -->
-      <div [class]="(busquedaRealizada && datosConsulta) ? 'col-12 col-lg-5 col-xl-4' : 'col-12 col-lg-8 mx-auto'">
-        <div class="card shadow-sm border-0 mb-3">
+        <section class="card shadow-sm border-0">
           <div class="card-header bg-white py-3 border-bottom">
             <h5 class="card-title fw-bold mb-0 text-dark">
-              1. Identificación del contador
+              Consulta de matrícula
             </h5>
           </div>
           <div class="card-body p-4">
-            <p class="text-muted small mb-3">Ingrese el número de identificación. El sistema consulta el registro de matrícula y muestra una vista previa antes de emitir.</p>
-            <div class="input-group">
-              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control form-control-lg" placeholder="Número de identificación" [(ngModel)]="nuevaIdentificacion" (keyup.enter)="consultarMatricula()">
-              <button type="button" class="btn btn-primary px-3 fw-bold" id="individualIssueSearch" (click)="consultarMatricula()" [disabled]="cargandoBusqueda">
-                <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar</span>
-                <span *ngIf="cargandoBusqueda"><span class="spinner-border spinner-border-sm me-1"></span> Buscando...</span>
-              </button>
+            <p class="text-muted small mb-3">Ingrese el número de identificación del contador para consultar el registro oficial y generar la vista previa de la tarjeta.</p>
+            <div class="mb-3">
+              <label for="individualIssueType" class="form-label fw-semibold text-secondary small mb-1">
+                Tipo de solicitud
+              </label>
+              <select id="individualIssueType" class="form-select" aria-label="Tipo de solicitud" [(ngModel)]="tipoSolicitud">
+                <option value="">Seleccionar tipo</option>
+                <option value="primeraVez">Primera vez</option>
+                <option value="duplicado">Duplicado</option>
+                <option value="sustitucion">Sustitución</option>
+              </select>
             </div>
+            <div class="mb-3">
+              <label for="individualIssueIdentification" class="form-label fw-semibold text-secondary small mb-1">
+                Número de identificación
+              </label>
+              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" placeholder="Ej. 1152226268" [(ngModel)]="nuevaIdentificacion" (keyup.enter)="consultarMatricula()">
+            </div>
+            <button type="button" class="btn btn-primary w-100 fw-semibold" id="individualIssueSearch" (click)="consultarMatricula()" [disabled]="cargandoBusqueda">
+              <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar matrícula</span>
+              <span *ngIf="cargandoBusqueda"><span class="spinner-border spinner-border-sm me-1"></span> Buscando...</span>
+            </button>
             <div *ngIf="mensajeError" class="alert alert-danger py-2 px-3 small mt-3 mb-0">{{ mensajeError }}</div>
           </div>
-        </div>
-
-        <!-- Ficha de Datos Consultados -->
-        <div *ngIf="busquedaRealizada && datosConsulta" class="card shadow-sm border-0 mb-3 bg-light">
-          <div class="card-header bg-white py-2.5 border-bottom">
-            <h6 class="card-title fw-bold mb-0 text-dark">
-              <span class="fa fa-user me-1 text-primary"></span> Datos del contador
-            </h6>
-          </div>
-          <div class="card-body p-3">
-            <div class="mb-2">
-              <small class="text-muted d-block">Solicitante</small>
-              <strong class="text-dark">{{ datosConsulta.solicitante }}</strong>
-            </div>
-            <div class="mb-2">
-              <small class="text-muted d-block">Documento de identidad</small>
-              <span class="text-dark fw-semibold">{{ datosConsulta.documento }}</span>
-            </div>
-            <div class="mb-2">
-              <small class="text-muted d-block">Matrícula Profesional</small>
-              <span class="badge bg-primary px-2 py-1 fs-6">{{ datosConsulta.matricula }}</span>
-            </div>
-            <div class="mb-2">
-              <small class="text-muted d-block">Correo Institucional</small>
-              <span class="text-dark small">{{ datosConsulta.correo || 'No registrado' }}</span>
-            </div>
-            <div>
-              <small class="text-muted d-block">Institución de Educación Superior</small>
-              <span class="text-dark small">{{ datosConsulta.universidad || 'Universidad Nacional de Colombia' }}</span>
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
 
-      <!-- Columna 2: Vista previa de la tarjeta (Branding) -->
-      <div class="col-12 col-lg-7 col-xl-8" *ngIf="busquedaRealizada && datosConsulta">
-        <div class="card shadow-sm border-0 mb-4">
-          <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <!-- Columna Derecha: Vista Previa de la Tarjeta -->
+      <div>
+        <section class="card shadow-sm border-0">
+          <div class="card-header bg-white py-3 border-bottom">
             <h5 class="card-title fw-bold mb-0 text-dark">
-              2. Vista previa de la tarjeta
+              Vista previa de la tarjeta
             </h5>
-            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
-              <span class="fa fa-check-circle me-1"></span> Branding activo
-            </span>
           </div>
           <div class="card-body p-4">
+            <!-- Estado Inicial sin consulta realizada -->
+            <div *ngIf="!busquedaRealizada" class="text-center py-5 text-muted">
+              <span class="fa fa-id-card-o fs-1 d-block mb-3 text-secondary opacity-50"></span>
+              <p class="mb-1 fw-semibold text-dark">Sin vista previa cargada</p>
+              <small class="text-muted">Ingrese una identificación a la izquierda y presione <strong>Consultar matrícula</strong>.</small>
+            </div>
 
-            <!-- Card Stack Previsualización de Branding (2 Columnas Frente/Reverso) -->
-            <div
-              class="branding-preview-card mb-4"
-              [style.--branding-card-background]="brandingColorFondo"
-              [style.--branding-card-text]="brandingColorLetra"
-              [style.--branding-card-font]="brandingFuenteLetra"
-              [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
-            >
-              <div class="branding-preview-stack">
-                <!-- TARJETA FRENTE -->
-                <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
-                  <div class="branding-card-head">
-                    <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                      <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
-                    </div>
-                    <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                      <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+            <!-- Previsualización de Branding al consultar -->
+            <div *ngIf="busquedaRealizada && datosConsulta">
+              <div
+                class="branding-preview-card mb-4"
+                [style.--branding-card-background]="brandingColorFondo"
+                [style.--branding-card-text]="brandingColorLetra"
+                [style.--branding-card-font]="brandingFuenteLetra"
+                [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
+              >
+                <div class="branding-preview-stack">
+                  <!-- TARJETA FRENTE -->
+                  <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
+                    <div class="branding-card-head">
+                      <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
+                        <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                      </div>
+                      <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
+                        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+                      </div>
+                      <span class="branding-card-status">Activa</span>
                     </div>
 
-                    <span class="branding-card-status">Activa</span>
-                  </div>
+                    <div class="branding-card-front-body">
+                      <img class="branding-card-photo" [src]="getFotoUrl(datosConsulta.foto)" alt="Fotografía del contador" />
+                      <div class="branding-card-number">
+                        <span class="branding-card-label">Tarjeta profesional</span>
+                        <strong class="branding-card-value">{{ datosConsulta.matricula }}</strong>
+                      </div>
+                    </div>
 
-                  <div class="branding-card-front-body">
-                    <img class="branding-card-photo" [src]="samplePhotoUrl" alt="Fotografía del contador" />
-                    <div class="branding-card-number">
-                      <span class="branding-card-label">Tarjeta profesional</span>
-                      <strong class="branding-card-value">{{ datosConsulta.matricula }}</strong>
+                    <div class="branding-card-front-footer">
+                      <div>
+                        <span class="branding-card-label">Fecha Res. Inscripción</span>
+                        <strong class="branding-card-value">{{ datosConsulta.fecha_resolucion || '15 - Sep - 2026' }}</strong>
+                      </div>
+                      <div>
+                        <span class="branding-card-label">N. Expediente</span>
+                        <strong class="branding-card-value">{{ datosConsulta.expediente || 'Pendiente' }}</strong>
+                      </div>
                     </div>
-                  </div>
+                  </article>
 
-                  <div class="branding-card-front-footer">
-                    <div>
-                      <span class="branding-card-label">Fecha Res. Inscripción</span>
-                      <strong class="branding-card-value">{{ datosConsulta.fecha_resolucion || '15 - Sep - 2026' }}</strong>
+                  <!-- TARJETA REVERSO -->
+                  <article class="branding-id-card" aria-label="Vista previa del reverso de la tarjeta">
+                    <div class="branding-card-head back">
+                      <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
+                        <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                      </div>
+                      <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
+                        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+                      </div>
                     </div>
-                    <div>
-                      <span class="branding-card-label">N. Expediente</span>
-                      <strong class="branding-card-value">{{ datosConsulta.expediente || 'Pendiente' }}</strong>
-                    </div>
-                  </div>
-                </article>
 
-                <!-- TARJETA REVERSO -->
-                <article class="branding-id-card" aria-label="Vista previa del reverso de la tarjeta">
-                  <div class="branding-card-head back">
-                    <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                      <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                    <div class="branding-card-back-details">
+                      <div>
+                        <span class="branding-card-label">Nombre y apellido</span>
+                        <strong class="branding-card-value">{{ datosConsulta.solicitante }}</strong>
+                      </div>
+                      <div>
+                        <span class="branding-card-label">Cédula de ciudadanía</span>
+                        <strong class="branding-card-value">{{ datosConsulta.documento }}</strong>
+                      </div>
+                      <div>
+                        <span class="branding-card-label">Institución de Educación Superior</span>
+                        <strong class="branding-card-value">{{ datosConsulta.universidad || 'Universidad Nacional de Colombia' }}</strong>
+                      </div>
+                      <div>
+                        <span class="branding-card-label">Res. Inscripción</span>
+                        <strong class="branding-card-value">{{ datosConsulta.resolucion || '0001' }}</strong>
+                      </div>
                     </div>
-                    <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                      <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-                    </div>
-                  </div>
+                  </article>
+                </div>
+              </div>
 
-                  <div class="branding-card-back-details">
-                    <div>
-                      <span class="branding-card-label">Nombre y apellido</span>
-                      <strong class="branding-card-value">{{ datosConsulta.solicitante }}</strong>
-                    </div>
-                    <div>
-                      <span class="branding-card-label">Cédula de ciudadanía</span>
-                      <strong class="branding-card-value">{{ datosConsulta.documento }}</strong>
-                    </div>
-                    <div>
-                      <span class="branding-card-label">Institución de Educación Superior</span>
-                      <strong class="branding-card-value">{{ datosConsulta.universidad || 'Universidad Nacional de Colombia' }}</strong>
-                    </div>
-                    <div>
-                      <span class="branding-card-label">Res. Inscripción</span>
-                      <strong class="branding-card-value">{{ datosConsulta.resolucion || '0001' }}</strong>
-                    </div>
-                  </div>
-                </article>
+              <!-- BOTÓN DE CONFIRMACIÓN -->
+              <div *ngIf="!mensajeExito" class="d-flex justify-content-end">
+                <button type="button" id="individualIssueConfirm" class="btn btn-success px-4 py-2.5 fw-bold shadow-sm" (click)="confirmarEmision()" [disabled]="loading">
+                  <span *ngIf="!loading"><span class="fa fa-check me-1"></span> Confirmar emisión</span>
+                  <span *ngIf="loading"><span class="spinner-border spinner-border-sm me-1"></span> Procesando...</span>
+                </button>
+              </div>
+              
+              <div *ngIf="mensajeExito" class="alert alert-success mt-3 mb-0">
+                <span class="fa fa-check-circle me-1"></span> {{ mensajeExito }}
               </div>
             </div>
-
-            <!-- BOTÓN DE CONFIRMACIÓN -->
-            <div *ngIf="!mensajeExito" class="d-flex justify-content-end">
-              <button type="button" id="individualIssueConfirm" class="btn btn-success px-4 py-2.5 fw-bold shadow-sm" (click)="confirmarEmision()" [disabled]="loading">
-                <span *ngIf="!loading"><span class="fa fa-check me-1"></span> Confirmar emisión</span>
-                <span *ngIf="loading"><span class="spinner-border spinner-border-sm me-1"></span> Procesando...</span>
-              </button>
-            </div>
-            
-            <div *ngIf="mensajeExito" class="alert alert-success mt-3 mb-0">
-              <span class="fa fa-check-circle me-1"></span> {{ mensajeExito }}
-            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   </ng-container>
 
   <!-- VISTA EMISION MASIVA -->
   <ng-container *ngIf="vistaActiva === 'emision-masiva'">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <div>
-        <h1 class="h3 fw-bold text-dark mb-1">Emisión masiva de credenciales</h1>
-        <p class="text-muted mb-0">Emita credenciales para varios contadores mediante un archivo CSV.</p>
-      </div>
-      <button type="button" class="btn btn-outline-secondary" (click)="cerrarEmisionMasiva()">
-        <span class="fa fa-arrow-left me-1"></span> Volver
-      </button>
-    </div>
-
     <div class="card shadow-sm border-0 mb-4 col-lg-8 mx-auto">
       <div class="card-header bg-white py-3 border-bottom">
         <h5 class="card-title fw-bold mb-0 text-dark">
@@ -475,167 +445,299 @@
 
   <!-- VISTA HISTORIAL DE TARJETA -->
   <ng-container *ngIf="vistaActiva === 'historial' && selectedTarjeta">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <div>
-        <h1 class="h3 fw-bold text-dark mb-1">Historial de tarjeta</h1>
-        <p class="text-muted mb-0">Estados y verificaciones de la credencial {{ selectedTarjeta.codigo }}.</p>
-      </div>
-      <button type="button" class="btn btn-outline-secondary" (click)="cerrarHistorial()">
-        <span class="fa fa-arrow-left me-1"></span> Volver
-      </button>
-    </div>
-
+    <!-- TARJETA SUPERIOR RESUMEN DEL TITULAR -->
     <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body p-4 d-flex align-items-center gap-4 flex-wrap">
-        <div class="p-3 bg-primary text-white rounded-circle fs-2"><span class="fa fa-user"></span></div>
-        <div class="flex-grow-1">
-          <h4 class="fw-bold text-dark mb-1">{{ selectedTarjeta.solicitante }}</h4>
-          <div class="row g-2 text-muted small mt-2">
-            <div class="col-md-3"><span>DOCUMENTO:</span> <strong>{{ selectedTarjeta.documento }}</strong></div>
-            <div class="col-md-3"><span>T. PROFESIONAL:</span> <strong>{{ selectedTarjeta.matricula }}</strong></div>
-            <div class="col-md-3"><span>EXPEDIENTE:</span> <strong>{{ selectedTarjeta.expediente }}</strong></div>
-            <div class="col-md-3"><span>ESTADO:</span> <span class="badge bg-success">{{ selectedTarjeta.tarjeta }}</span></div>
+      <div class="card-body p-4 d-flex align-items-center gap-3 flex-wrap">
+        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center overflow-hidden flex-shrink-0" style="width: 70px; height: 70px; border: 1px solid #e2e8f0;">
+          <img [src]="getFotoUrl(selectedTarjeta.foto)" alt="Fotografía" class="w-100 h-100 object-fit-cover" />
+        </div>
+
+        <div class="flex-grow-1 min-w-0">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+            <h5 class="fw-bold text-dark mb-0" style="font-size: 16px;">{{ selectedTarjeta.solicitante }}</h5>
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <span class="text-secondary small me-1">Estado:</span>
+              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-1.5 fw-bold" style="font-size: 11px;">
+                {{ selectedTarjeta.tarjeta || 'Activa' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-3 text-secondary small" style="font-size: 12px;">
+            <span>Identificación: <strong class="text-dark">{{ selectedTarjeta.documento }}</strong></span>
+            <span>Matrícula: <strong class="text-dark">{{ selectedTarjeta.matricula }}</strong></span>
+            <span>Expediente: <strong class="text-dark">{{ selectedTarjeta.expediente }}</strong></span>
+            <span *ngIf="selectedTarjeta.correo">Correo: <strong class="text-dark text-break">{{ selectedTarjeta.correo }}</strong></span>
+            <span>Fecha emisión: <strong class="text-dark">{{ getFechaEmision() }}</strong></span>
+            <span *ngIf="selectedTarjeta.universidad">Universidad: <strong class="text-dark">{{ selectedTarjeta.universidad }}</strong></span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row g-4">
+    <!-- DOS COLUMNAS DE HISTORIAL -->
+    <div class="row g-4 mb-4">
+      <!-- Columna 1: Historial de estado -->
       <div class="col-md-6">
         <div class="card shadow-sm border-0 h-100">
-          <div class="card-header bg-white py-3 border-bottom fw-bold">
-            <span class="fa fa-history text-primary me-2"></span> Historial de estados
+          <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="card-title fw-bold mb-0 text-dark">Historial de estado</h5>
           </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush" *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.estados.length > 0">
-              <li class="list-group-item px-0" *ngFor="let estado of selectedTarjetaHistorial.estados">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-dark">{{ estado.estado }}</strong>
-                  <small class="text-muted">{{ estado.fecha }}</small>
+          <div class="card-body p-4">
+            <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.estados && selectedTarjetaHistorial.estados.length > 0" class="d-flex flex-column gap-3">
+              <div *ngFor="let estado of selectedTarjetaHistorial.estados" class="border-bottom pb-2.5 last-border-0">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="text-primary fw-bold" style="font-size: 14px;">• {{ estado.estado }}</span>
                 </div>
-                <p class="text-muted small mb-0">{{ estado.descripcion }} <em class="opacity-75">({{ estado.realizado_por }})</em></p>
-              </li>
-            </ul>
-            <div *ngIf="!selectedTarjetaHistorial" class="text-muted small py-3">Cargando historial...</div>
+                <div class="text-muted small ps-3">
+                  {{ estado.fecha }} - {{ estado.descripcion }} <span *ngIf="estado.realizado_por" class="opacity-75">({{ estado.realizado_por }})</span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!selectedTarjetaHistorial" class="text-muted small py-3 text-center">
+              <span class="spinner-border spinner-border-sm me-1"></span> Cargando historial de estado...
+            </div>
+            <div *ngIf="selectedTarjetaHistorial && (!selectedTarjetaHistorial.estados || selectedTarjetaHistorial.estados.length === 0)" class="text-muted small py-3 text-center">
+              No hay registros de estado disponibles.
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Columna 2: Historial de lecturas del QR -->
       <div class="col-md-6">
         <div class="card shadow-sm border-0 h-100">
-          <div class="card-header bg-white py-3 border-bottom fw-bold">
-            <span class="fa fa-qrcode text-primary me-2"></span> Historial de lecturas QR
+          <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="card-title fw-bold mb-0 text-dark">Historial de lecturas del QR</h5>
           </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush" *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.lecturas.length > 0">
-              <li class="list-group-item px-0" *ngFor="let lectura of selectedTarjetaHistorial.lecturas">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-success"><span class="fa fa-check me-1"></span> Verificación exitosa</strong>
-                  <small class="text-muted">{{ lectura.fecha }}</small>
+          <div class="card-body p-4">
+            <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.lecturas && selectedTarjetaHistorial.lecturas.length > 0" class="d-flex flex-column gap-3">
+              <div *ngFor="let lectura of selectedTarjetaHistorial.lecturas" class="border-bottom pb-2.5 last-border-0">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="text-dark fw-bold" style="font-size: 14px;">• Verificación pública exitosa</span>
                 </div>
-                <p class="text-muted small mb-0">{{ lectura.ip }} ({{ lectura.endpoint }})</p>
-              </li>
-            </ul>
-            <div *ngIf="!selectedTarjetaHistorial" class="text-muted small py-3">Cargando lecturas...</div>
+                <div class="text-muted small ps-3">
+                  {{ lectura.fecha }} - {{ lectura.dispositivo || 'Navegador web' }} <span *ngIf="lectura.ip" class="opacity-75">({{ lectura.ip }})</span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!selectedTarjetaHistorial" class="text-muted small py-3 text-center">
+              <span class="spinner-border spinner-border-sm me-1"></span> Cargando lecturas del QR...
+            </div>
+            <div *ngIf="selectedTarjetaHistorial && (!selectedTarjetaHistorial.lecturas || selectedTarjetaHistorial.lecturas.length === 0)" class="text-muted small py-3 text-center">
+              No hay registros de lecturas del QR.
+            </div>
           </div>
         </div>
       </div>
     </div>
   </ng-container>
 
-<!-- Modal de Detalle (Bootstrap 5.3) -->
-<div class="modal fade show d-block" tabindex="-1" *ngIf="isDetailModalOpen && selectedTarjeta" role="dialog" aria-modal="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content shadow border-0">
-      <div class="modal-header bg-light border-bottom">
+<!-- Modal de Detalle (Conforme al diseño de referencia - Compacto) -->
+<div class="modal-backdrop fade show" *ngIf="isDetailModalOpen"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isDetailModalOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrarDetalle()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow border-0 rounded-3">
+      <!-- Cabecera -->
+      <div class="modal-header bg-white border-bottom py-2.5 px-3">
         <div>
-          <h5 class="modal-title fw-bold text-dark">Detalle de Solicitud</h5>
-          <small class="text-muted">Código: {{ selectedTarjeta.codigo }}</small>
+          <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle</h5>
+          <small class="text-muted" style="font-size: 11px;">Expediente {{ selectedTarjeta.expediente }}</small>
         </div>
         <button type="button" class="btn-close" (click)="cerrarDetalle()" aria-label="Cerrar"></button>
       </div>
-      <div class="modal-body p-4">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Expediente</label>
-            <div class="fw-semibold text-dark">{{ selectedTarjeta.expediente }}</div>
+
+      <!-- Cuerpo del Modal -->
+      <div class="modal-body p-3 bg-white">
+        <!-- Bloque Fotografía -->
+        <div class="p-2 px-3 bg-white rounded border mb-2">
+          <label class="form-label text-muted small fw-bold text-uppercase mb-1.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">FOTOGRAFÍA</label>
+          <div class="d-flex align-items-center">
+            <img 
+              [src]="getFotoUrl(selectedTarjeta.foto)" 
+              alt="Fotografía del contador" 
+              class="rounded border bg-light object-fit-cover shadow-sm"
+              style="width: 75px; height: 75px;"
+            />
           </div>
+        </div>
+
+        <!-- Grid 2 Columnas de Campos Compacto -->
+        <div class="row g-2">
+          <!-- Universidad -->
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Solicitante</label>
-            <div class="fw-bold text-dark fs-6">{{ selectedTarjeta.solicitante }}</div>
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">UNIVERSIDAD</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.universidad || 'Universidad Nacional de Colombia' }}</div>
+            </div>
           </div>
+
+          <!-- Expediente -->
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Documento</label>
-            <div class="fw-semibold text-dark">{{ selectedTarjeta.documento }}</div>
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">EXPEDIENTE</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.expediente }}</div>
+            </div>
           </div>
+
+          <!-- Tipo -->
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Tarjeta Profesional</label>
-            <div class="fw-semibold text-dark">{{ selectedTarjeta.matricula }}</div>
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">TIPO</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.tipo_asociado || 'Primera vez' }}</div>
+            </div>
           </div>
+
+          <!-- Solicitante -->
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Correo Electrónico</label>
-            <div class="fw-semibold text-dark">{{ selectedTarjeta.correo }}</div>
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">SOLICITANTE</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.solicitante }}</div>
+            </div>
           </div>
+
+          <!-- Documento -->
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Estado</label>
-            <div><span class="badge bg-success">{{ selectedTarjeta.tarjeta }}</span></div>
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">DOCUMENTO</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.documento }}</div>
+            </div>
           </div>
+
+          <!-- Tarjeta Profesional -->
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Fecha de Emisión</label>
-            <div class="fw-semibold text-dark">{{ selectedTarjeta.fecha }}</div>
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">TARJETA PROFESIONAL</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.matricula }}</div>
+            </div>
+          </div>
+
+          <!-- Correo -->
+          <div class="col-md-6">
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">CORREO</label>
+              <div class="fw-bold text-dark text-break" style="font-size: 13px;">{{ selectedTarjeta.correo }}</div>
+            </div>
+          </div>
+
+          <!-- Tarjeta -->
+          <div class="col-md-6">
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">TARJETA</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.tarjeta }}</div>
+            </div>
+          </div>
+
+          <!-- Fecha -->
+          <div class="col-md-6">
+            <div class="p-2 px-3 bg-white rounded border h-100">
+              <label class="form-label text-muted small fw-bold text-uppercase mb-0.5 d-block" style="letter-spacing: 0.5px; font-size: 10px;">FECHA</label>
+              <div class="fw-bold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha }}</div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer bg-light border-top">
-        <button class="btn btn-secondary" (click)="cerrarDetalle()">Cerrar</button>
+
+      <!-- Pie del Modal -->
+      <div class="modal-footer bg-light border-top py-2 px-3">
+        <button type="button" class="btn btn-primary btn-sm px-3 fw-semibold" (click)="cerrarDetalle()">Cerrar</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Modal de Tarjeta Profesional Digital (Bootstrap 5.3) -->
-<div class="modal fade show d-block" tabindex="-1" *ngIf="isCardModalOpen && selectedTarjeta" role="dialog" aria-modal="true">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal-backdrop fade show" *ngIf="isCardModalOpen"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isCardModalOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrarTarjeta()">
+  <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-content shadow border-0">
-      <div class="modal-header bg-light border-bottom">
-        <h5 class="modal-title fw-bold text-dark">Visualización de Tarjeta Profesional</h5>
+      <div class="modal-header bg-white border-bottom py-3 px-4">
+        <div>
+          <h5 class="modal-title fw-bold text-dark mb-0">Visualización de Tarjeta Profesional</h5>
+          <small class="text-muted">Diseño activo de branding aplicado</small>
+        </div>
         <button type="button" class="btn-close" (click)="cerrarTarjeta()" aria-label="Cerrar"></button>
       </div>
       
-      <div class="modal-body p-4 d-flex justify-content-center">
-        <!-- Credencial Digital Premium estilizada -->
-        <div class="card border-0 shadow-lg text-white p-4 rounded-4" style="width: 350px; background: linear-gradient(135deg, #174a7e 0%, #0d3158 100%);">
-          <div class="d-flex justify-content-between align-items-center border-bottom border-white border-opacity-25 pb-2 mb-3">
-            <div class="d-flex align-items-center gap-2">
-              <span class="fs-4">🇨🇴</span>
-              <div>
-                <div class="fw-bold small lh-1">JUNTA CENTRAL</div>
-                <div class="small text-white-50" style="font-size: 9px;">DE CONTADORES</div>
+      <div class="modal-body p-4 d-flex justify-content-center bg-light">
+        <div
+          class="branding-preview-card"
+          [style.--branding-card-background]="brandingColorFondo"
+          [style.--branding-card-text]="brandingColorLetra"
+          [style.--branding-card-font]="brandingFuenteLetra"
+          [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
+        >
+          <div class="branding-preview-stack">
+            <!-- TARJETA FRENTE -->
+            <article class="branding-id-card" aria-label="Vista del frente de la tarjeta">
+              <div class="branding-card-head">
+                <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
+                  <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                </div>
+                <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
+                  <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+                </div>
+                <span class="branding-card-status">Activa</span>
               </div>
-            </div>
-            <span class="badge bg-white text-primary" style="font-size: 9px;">CONTADOR PÚBLICO</span>
-          </div>
 
-          <div class="d-flex gap-3 align-items-center mb-3">
-            <div class="p-3 bg-white bg-opacity-10 rounded-3 fs-1 text-center" style="width: 70px; height: 70px;">
-              <span class="fa fa-user"></span>
-            </div>
-            <div>
-              <div class="fw-bold fs-6">{{ selectedTarjeta.solicitante }}</div>
-              <div class="small text-white-50 mt-1">CC: {{ selectedTarjeta.documento }}</div>
-              <div class="small text-warning">TP: {{ selectedTarjeta.matricula }}</div>
-            </div>
-          </div>
+              <div class="branding-card-front-body">
+                <img class="branding-card-photo" [src]="getFotoUrl(selectedTarjeta.foto)" alt="Fotografía del contador" />
+                <div class="branding-card-number">
+                  <span class="branding-card-label">Tarjeta profesional</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.matricula }}</strong>
+                </div>
+              </div>
 
-          <div class="d-flex justify-content-between align-items-center border-top border-white border-opacity-25 pt-2 small text-white-50">
-            <span>República de Colombia</span>
-            <span class="badge bg-success">VIGENTE</span>
+              <div class="branding-card-front-footer">
+                <div>
+                  <span class="branding-card-label">Fecha Res. Inscripción</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.fecha_resolucion || '15 - Sep - 2026' }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">N. Expediente</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.expediente || 'Pendiente' }}</strong>
+                </div>
+              </div>
+            </article>
+
+            <!-- TARJETA REVERSO -->
+            <article class="branding-id-card" aria-label="Vista del reverso de la tarjeta">
+              <div class="branding-card-head back">
+                <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
+                  <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
+                </div>
+                <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
+                  <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
+                </div>
+              </div>
+
+              <div class="branding-card-back-details">
+                <div>
+                  <span class="branding-card-label">Nombre y apellido</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.solicitante }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">Cédula de ciudadanía</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.documento }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">Institución de Educación Superior</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.universidad || 'Universidad Nacional de Colombia' }}</strong>
+                </div>
+                <div>
+                  <span class="branding-card-label">Res. Inscripción</span>
+                  <strong class="branding-card-value">{{ selectedTarjeta.resolucion || '0001' }}</strong>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </div>
       
-      <div class="modal-footer bg-light border-top">
-        <button class="btn btn-secondary" (click)="cerrarTarjeta()">Cerrar</button>
+      <div class="modal-footer bg-light border-top py-2.5 px-4">
+        <button type="button" class="btn btn-outline-secondary btn-sm px-4" (click)="cerrarTarjeta()">Cerrar</button>
       </div>
     </div>
   </div>

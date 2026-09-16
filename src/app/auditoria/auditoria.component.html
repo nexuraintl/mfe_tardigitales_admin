@@ -110,10 +110,10 @@
         <div class="small text-muted">
           <span *ngIf="hasActiveFilters">
             <span class="fa fa-filter text-primary me-1"></span>
-            Filtros aplicados. Registros encontrados: <strong>{{ filteredLogs.length }}</strong>
+            Filtros aplicados. Registros encontrados: <strong>{{ totalRecords }}</strong>
           </span>
           <span *ngIf="!hasActiveFilters">
-            Total registros disponibles: <strong>{{ logs.length }}</strong>
+            Total registros disponibles: <strong>{{ totalRecords }}</strong>
           </span>
         </div>
         <div>
@@ -285,7 +285,7 @@
   <!-- Pie de Tabla Estándar del MFE -->
   <div class="nx-table-footer">
     <div class="nx-table-info">
-      Mostrando {{ recordRangeStart }} a {{ recordRangeEnd }} de {{ filteredLogs.length }} registros
+      Mostrando {{ recordRangeStart }} a {{ recordRangeEnd }} de {{ totalRecords }} registros
       <span *ngIf="hasActiveFilters" class="text-muted">(filtrado de {{ logs.length }} totales)</span>
       <span class="text-muted ms-2 fst-italic">· Credenciales de autorización enmascaradas.</span>
     </div>

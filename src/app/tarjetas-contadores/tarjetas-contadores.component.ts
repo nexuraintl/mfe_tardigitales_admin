@@ -2,9 +2,11 @@ import { Component, OnInit, inject, ChangeDetectorRef, HostListener } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 
 export interface TableColumn {
   key: string;
@@ -33,6 +35,7 @@ interface TarjetaContador {
   fecha_grado?: string;
   seccional?: string;
   fecha: string;
+  foto?: string | null;
 }
 
 @Component({
@@ -46,6 +49,8 @@ export class TarjetasContadoresComponent implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private errorHandler = inject(ErrorHandlerService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   clientId: number = CLIENT_ID;
 
   tarjetas: TarjetaContador[] = [];
@@ -98,6 +103,7 @@ export class TarjetasContadoresComponent implements OnInit {
 
   // Variables para la creación de tarjeta (Emisión individual)
   nuevaIdentificacion: string = '';
+  tipoSolicitud: string = 'primeraVez';
   busquedaRealizada: boolean = false;
   cargandoBusqueda: boolean = false;
   datosConsulta: any = null;
@@ -110,7 +116,26 @@ export class TarjetasContadoresComponent implements OnInit {
   brandingFuenteLetra: string = 'Arial, sans-serif';
   brandingLogoUrl: string | null = null;
   brandingPatronUrl: string | null = null;
-  samplePhotoUrl: string = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAoHBwkHBgoJCAkLCwoMDxkQDw4ODx4WFxIZJCAmJSMgIyIoLTkwKCo2KyIjMkQyNjs9QEBAJjBGS0U+Sjk/QD3/2wBDAQsLCw8NDx0QEB09KSMpPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT3/wAARCACgAKADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKrobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEICAkLSiwUDA0UMh0cHS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t/8AargwFBAEAAxIBAQABEAE/xAAbAAACAgMBAAAAAAAAAAAAAAAABgUHAwQCAf/EADUQAAEDAwMCBQMEAwABBQAAAAECAwQABREGEiETMQcUIkFRYXGBMpGhscFC0fAWFRcj4f/xAAaAQADAQEBAQEAAAAAAAAAAAAAAgMABAUG/8QAKREAAgICAQMSOAMQAD...';
+  samplePhotoUrl: string = PHOTO_CARD_PATH;
+
+  getFotoUrl(url?: string | null): string {
+    return getFotoContadorOrDefault(url);
+  }
+
+  getFechaEmision(): string {
+    if (this.selectedTarjeta?.fecha) {
+      return this.selectedTarjeta.fecha;
+    }
+    if (this.selectedTarjetaHistorial && Array.isArray(this.selectedTarjetaHistorial.estados)) {
+      const state = this.selectedTarjetaHistorial.estados.find((e: any) => 
+        e.estado?.toLowerCase() === 'emitida' || e.estado?.toLowerCase() === 'activa'
+      );
+      if (state && state.fecha) {
+        return state.fecha;
+      }
+    }
+    return 'No especificada';
+  }
 
   // Variables para Emisión Masiva
   bulkFile: File | null = null;
@@ -122,18 +147,47 @@ export class TarjetasContadoresComponent implements OnInit {
   totalRecordsCount: number = 0;
   totalPagesCount: number = 0;
   searchTimeout: any = null;
+  private static brandingCache1: any = null;
 
   ngOnInit(): void {
     this.loadColumnsPreference();
-    this.cargarTarjetas();
     this.cargarBrandingPublicado();
+
+    this.route.paramMap.subscribe(() => {
+      this.evaluarRutaActual();
+    });
+  }
+
+  evaluarRutaActual(): void {
+    const url = this.router.url;
+    const idParam = this.route.snapshot.paramMap.get('id');
+
+    if (idParam || url.includes('/historial/')) {
+      const id = idParam ? Number(idParam) : 0;
+      this.cargarHistorialPorId(id);
+    } else if (url.includes('/nueva') || url.includes('/crear')) {
+      this.vistaActiva = 'emision-individual';
+    } else if (url.includes('/emision-masiva')) {
+      this.vistaActiva = 'emision-masiva';
+    } else {
+      this.vistaActiva = 'listado';
+      this.cargarTarjetas();
+    }
   }
 
   cargarBrandingPublicado(): void {
+    if (TarjetasContadoresComponent.brandingCache1) {
+      this.aplicarDatosBranding(TarjetasContadoresComponent.brandingCache1);
+      return;
+    }
+
     this.http
       .get<any>(`${API_BASE}/tarjetas/branding-credentials/info-published/1?client_id=${this.clientId}`)
       .subscribe({
         next: (res) => {
+          if (res) {
+            TarjetasContadoresComponent.brandingCache1 = res;
+          }
           if (this.aplicarDatosBranding(res)) {
             return;
           }
@@ -307,7 +361,8 @@ export class TarjetasContadoresComponent implements OnInit {
             acta_jcc: item.acta_jcc || '',
             fecha_grado: item.fecha_grado || '',
             seccional: item.seccional || '',
-            fecha: item.fecha || item.fecha_emision || ''
+            fecha: item.fecha || item.fecha_emision || '',
+            foto: item.foto || null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -417,6 +472,7 @@ export class TarjetasContadoresComponent implements OnInit {
     this.selectedTarjeta = t;
     this.qrSeed = Math.random();
     this.isCardModalOpen = true;
+    this.cargarBrandingPublicado();
   }
 
   cerrarTarjeta(): void {
@@ -430,42 +486,42 @@ export class TarjetasContadoresComponent implements OnInit {
 
   volver(): void {
     if (this.vistaActiva !== 'listado') {
-      this.vistaActiva = 'listado';
+      this.router.navigate(['/tarjetas-contadores']);
     } else if (typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     }
   }
 
   abrirNuevaTarjeta(): void {
-    this.vistaActiva = 'emision-individual';
     this.nuevaIdentificacion = '';
     this.busquedaRealizada = false;
     this.datosConsulta = null;
     this.mensajeExito = '';
     this.mensajeError = '';
+    this.router.navigate(['/tarjetas-contadores/nueva']);
   }
 
   cerrarNuevaTarjeta(): void {
-    this.vistaActiva = 'listado';
     this.nuevaIdentificacion = '';
     this.busquedaRealizada = false;
     this.datosConsulta = null;
     this.mensajeExito = '';
     this.mensajeError = '';
+    this.router.navigate(['/tarjetas-contadores']);
   }
 
   abrirEmisionMasiva(): void {
-    this.vistaActiva = 'emision-masiva';
     this.bulkFile = null;
     this.bulkResultText = '';
     this.bulkResultClass = 'bulk-result';
+    this.router.navigate(['/tarjetas-contadores/emision-masiva']);
   }
 
   cerrarEmisionMasiva(): void {
-    this.vistaActiva = 'listado';
     this.bulkFile = null;
     this.bulkResultText = '';
     this.bulkResultClass = 'bulk-result';
+    this.router.navigate(['/tarjetas-contadores']);
   }
 
   seleccionarArchivo(event: any): void {
@@ -534,11 +590,15 @@ export class TarjetasContadoresComponent implements OnInit {
       this.mensajeError = "Ingrese el número de identificación.";
       return;
     }
+    if (!this.tipoSolicitud) {
+      this.mensajeError = "Seleccione el tipo de solicitud.";
+      return;
+    }
     this.mensajeError = '';
     this.mensajeExito = '';
     this.cargandoBusqueda = true;
 
-    this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=contadores&tipo=primeraVez&client_id=${this.clientId}`)
+    this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=contadores&tipo=${encodeURIComponent(this.tipoSolicitud)}&client_id=${this.clientId}`)
       .subscribe({
         next: (res) => {
           this.cargandoBusqueda = false;
@@ -569,11 +629,12 @@ export class TarjetasContadoresComponent implements OnInit {
               estado: item.ESTADO_CONTADOR || "ACTIVO",
               seccional: item.SECCIONAL || "",
               resolucion: item.RESOLUCION || "",
+              foto: item.FOTO || item.pdf || res.pdf || localTarjeta?.foto || null,
               existe: !!localTarjeta
             };
           } else {
             this.datosConsulta = null;
-            this.mensajeError = "No se encontraron registros de matrícula oficial para la identificación ingresada.";
+            this.mensajeError = "No se encontraron registros de matrícula oficial para la identificación e información ingresadas.";
           }
           this.cdr.detectChanges();
         },
@@ -599,15 +660,18 @@ export class TarjetasContadoresComponent implements OnInit {
     const doc = (this.nuevaIdentificacion || (this.datosConsulta.documento ? this.datosConsulta.documento.replace(/\D/g, '') : '')).trim();
     const payload = {
       documento: doc,
-      tipo: "primeraVez"
+      tipo: this.tipoSolicitud || "primeraVez"
     };
 
     this.http.post<any>(`${API_BASE}/tarjetas/contador/create?client_id=${this.clientId}`, payload)
       .subscribe({
         next: (res) => {
-          this.mensajeExito = res?.message || "Emisión confirmada correctamente.";
+          this.mensajeExito = res?.message || "Tarjeta digital de contador emitida exitosamente.";
           this.loading = false;
-          this.cargarTarjetas();
+          this.busquedaRealizada = false;
+          this.datosConsulta = null;
+          this.nuevaIdentificacion = '';
+          this.router.navigate(['/tarjetas-contadores']);
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -627,26 +691,39 @@ export class TarjetasContadoresComponent implements OnInit {
 
   abrirHistorial(t: TarjetaContador): void {
     this.selectedTarjeta = t;
+    this.router.navigate(['/tarjetas-contadores/historial', t.id]);
+  }
+
+  regenerarTarjeta(t: TarjetaContador): void {
+    // HU-JCC-010: Regeneración de credencial digital (sin funcionalidad por ahora)
+  }
+
+  cargarHistorialPorId(id: number): void {
     this.vistaActiva = 'historial';
     this.selectedTarjetaHistorial = null;
-    this.http.get(`${API_BASE}/tarjetas/historial/${t.id}?client_id=${this.clientId}`)
+    if (id <= 0) return;
+
+    this.http.get(`${API_BASE}/tarjetas/historial/${id}?client_id=${this.clientId}`)
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
           this.selectedTarjetaHistorial = res;
+          if (res && res.tarjeta) {
+            this.selectedTarjeta = res.tarjeta;
+          }
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error al cargar historial de la tarjeta:', err);
-          this.currentError = this.errorHandler.parseError(err, 'MS_3832_TARJETAS_HISTORIAL', `${API_BASE}/tarjetas/historial/${t.id}`);
+          this.currentError = this.errorHandler.parseError(err, 'MS_3832_TARJETAS_HISTORIAL', `${API_BASE}/tarjetas/historial/${id}`);
           this.cdr.detectChanges();
         }
       });
   }
 
   cerrarHistorial(): void {
-    this.vistaActiva = 'listado';
     this.selectedTarjeta = null;
     this.selectedTarjetaHistorial = null;
+    this.router.navigate(['/tarjetas-contadores']);
   }
 
   exportarCSV(): void {

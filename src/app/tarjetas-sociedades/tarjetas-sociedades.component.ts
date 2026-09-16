@@ -2,9 +2,11 @@ import { Component, OnInit, inject, ChangeDetectorRef, HostListener } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router, ActivatedRoute } from '@angular/router';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 
 export interface TableColumn {
   key: string;
@@ -32,6 +34,7 @@ interface TarjetaSociedad {
   acta_jcc?: string;
   fecha_inscripcion?: string;
   fecha: string;
+  foto?: string | null;
 }
 
 @Component({
@@ -45,6 +48,8 @@ export class TarjetasSociedadesComponent implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private errorHandler = inject(ErrorHandlerService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   clientId: number = CLIENT_ID;
 
   tarjetas: TarjetaSociedad[] = [];
@@ -97,6 +102,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   // Variables para la creación de tarjeta (Emisión individual)
   nuevaIdentificacion: string = '';
+  tipoSolicitud: string = 'primeraVez';
   busquedaRealizada: boolean = false;
   cargandoBusqueda: boolean = false;
   datosConsulta: any = null;
@@ -110,6 +116,25 @@ export class TarjetasSociedadesComponent implements OnInit {
   brandingLogoUrl: string | null = null;
   brandingPatronUrl: string | null = null;
 
+  getFotoUrl(url?: string | null): string {
+    return getFotoContadorOrDefault(url);
+  }
+
+  getFechaEmision(): string {
+    if (this.selectedTarjeta?.fecha) {
+      return this.selectedTarjeta.fecha;
+    }
+    if (this.selectedTarjetaHistorial && Array.isArray(this.selectedTarjetaHistorial.estados)) {
+      const state = this.selectedTarjetaHistorial.estados.find((e: any) => 
+        e.estado?.toLowerCase() === 'emitida' || e.estado?.toLowerCase() === 'activa'
+      );
+      if (state && state.fecha) {
+        return state.fecha;
+      }
+    }
+    return 'No especificada';
+  }
+
   // Variables para Emisión Masiva
   bulkFile: File | null = null;
   bulkResultText: string = '';
@@ -120,18 +145,47 @@ export class TarjetasSociedadesComponent implements OnInit {
   totalRecordsCount: number = 0;
   totalPagesCount: number = 0;
   searchTimeout: any = null;
+  private static brandingCache2: any = null;
 
   ngOnInit(): void {
     this.loadColumnsPreference();
-    this.cargarTarjetas();
     this.cargarBrandingPublicado();
+
+    this.route.paramMap.subscribe(() => {
+      this.evaluarRutaActual();
+    });
+  }
+
+  evaluarRutaActual(): void {
+    const url = this.router.url;
+    const idParam = this.route.snapshot.paramMap.get('id');
+
+    if (idParam || url.includes('/historial/')) {
+      const id = idParam ? Number(idParam) : 0;
+      this.cargarHistorialPorId(id);
+    } else if (url.includes('/nueva') || url.includes('/crear')) {
+      this.vistaActiva = 'emision-individual';
+    } else if (url.includes('/emision-masiva')) {
+      this.vistaActiva = 'emision-masiva';
+    } else {
+      this.vistaActiva = 'listado';
+      this.cargarTarjetas();
+    }
   }
 
   cargarBrandingPublicado(): void {
+    if (TarjetasSociedadesComponent.brandingCache2) {
+      this.aplicarDatosBranding(TarjetasSociedadesComponent.brandingCache2);
+      return;
+    }
+
     this.http
       .get<any>(`${API_BASE}/tarjetas/branding-credentials/info-published/2?client_id=${this.clientId}`)
       .subscribe({
         next: (res) => {
+          if (res) {
+            TarjetasSociedadesComponent.brandingCache2 = res;
+          }
           if (this.aplicarDatosBranding(res)) {
             return;
           }
@@ -304,7 +358,8 @@ export class TarjetasSociedadesComponent implements OnInit {
             tipo_asociado: item.tipo_asociado || 'primeraVez',
             estado_sociedad: item.estado_sociedad || 'ACTIVO',
             tarjeta: item.tarjeta || item.estado_tarjeta || 'Activa',
-            fecha: item.fecha || item.fecha_emision || ''
+            fecha: item.fecha || item.fecha_emision || '',
+            foto: item.foto || null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -415,6 +470,7 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.selectedTarjeta = t;
     this.qrSeed = Math.random();
     this.isCardModalOpen = true;
+    this.cargarBrandingPublicado();
   }
 
   cerrarTarjeta(): void {
@@ -428,42 +484,42 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   volver(): void {
     if (this.vistaActiva !== 'listado') {
-      this.vistaActiva = 'listado';
+      this.router.navigate(['/sociedades']);
     } else if (typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     }
   }
 
   abrirNuevaTarjeta(): void {
-    this.vistaActiva = 'emision-individual';
     this.nuevaIdentificacion = '';
     this.busquedaRealizada = false;
     this.datosConsulta = null;
     this.mensajeExito = '';
     this.mensajeError = '';
+    this.router.navigate(['/sociedades/nueva']);
   }
 
   cerrarNuevaTarjeta(): void {
-    this.vistaActiva = 'listado';
     this.nuevaIdentificacion = '';
     this.busquedaRealizada = false;
     this.datosConsulta = null;
     this.mensajeExito = '';
     this.mensajeError = '';
+    this.router.navigate(['/sociedades']);
   }
 
   abrirEmisionMasiva(): void {
-    this.vistaActiva = 'emision-masiva';
     this.bulkFile = null;
     this.bulkResultText = '';
     this.bulkResultClass = 'bulk-result';
+    this.router.navigate(['/sociedades/emision-masiva']);
   }
 
   cerrarEmisionMasiva(): void {
-    this.vistaActiva = 'listado';
     this.bulkFile = null;
     this.bulkResultText = '';
     this.bulkResultClass = 'bulk-result';
+    this.router.navigate(['/sociedades']);
   }
 
   seleccionarArchivo(event: any): void {
@@ -532,11 +588,15 @@ export class TarjetasSociedadesComponent implements OnInit {
       this.mensajeError = "Ingrese el NIT de la sociedad.";
       return;
     }
+    if (!this.tipoSolicitud) {
+      this.mensajeError = "Seleccione el tipo de solicitud.";
+      return;
+    }
     this.mensajeError = '';
     this.mensajeExito = '';
     this.cargandoBusqueda = true;
 
-    this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&tipo=primeraVez&client_id=${this.clientId}`)
+    this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&tipo=${encodeURIComponent(this.tipoSolicitud)}&client_id=${this.clientId}`)
       .subscribe({
         next: (res) => {
           this.cargandoBusqueda = false;
@@ -562,11 +622,12 @@ export class TarjetasSociedadesComponent implements OnInit {
               estado: item.ESTADO_SOCIEDAD || item.ESTADO_CONTADOR || "ACTIVO",
               seccional: item.SECCIONAL || "",
               resolucion: item.RESOLUCION || "",
+              foto: item.FOTO || item.pdf || res.pdf || localTarjeta?.foto || null,
               existe: !!localTarjeta
             };
           } else {
             this.datosConsulta = null;
-            this.mensajeError = "No se encontraron registros de sociedad oficial para el NIT ingresado.";
+            this.mensajeError = "No se encontraron registros de sociedad oficial para el NIT e información ingresados.";
           }
           this.cdr.detectChanges();
         },
@@ -592,15 +653,18 @@ export class TarjetasSociedadesComponent implements OnInit {
     const doc = (this.nuevaIdentificacion || (this.datosConsulta.documento ? this.datosConsulta.documento.replace(/[^\d-]/g, '') : '')).trim();
     const payload = {
       documento: doc,
-      tipo: "primeraVez"
+      tipo: this.tipoSolicitud || "primeraVez"
     };
 
     this.http.post<any>(`${API_BASE}/tarjetas/sociedad/create?client_id=${this.clientId}`, payload)
       .subscribe({
         next: (res) => {
-          this.mensajeExito = res?.message || "Emisión de tarjeta para sociedad confirmada correctamente.";
+          this.mensajeExito = res?.message || "Tarjeta digital de sociedad emitida exitosamente.";
           this.loading = false;
-          this.cargarTarjetas();
+          this.busquedaRealizada = false;
+          this.datosConsulta = null;
+          this.nuevaIdentificacion = '';
+          this.router.navigate(['/sociedades']);
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -620,26 +684,39 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   abrirHistorial(t: TarjetaSociedad): void {
     this.selectedTarjeta = t;
+    this.router.navigate(['/sociedades/historial', t.id]);
+  }
+
+  regenerarTarjeta(t: TarjetaSociedad): void {
+    // HU-JCC-010: Regeneración de credencial digital (sin funcionalidad por ahora)
+  }
+
+  cargarHistorialPorId(id: number): void {
     this.vistaActiva = 'historial';
     this.selectedTarjetaHistorial = null;
-    this.http.get(`${API_BASE}/tarjetas/historial/${t.id}?client_id=${this.clientId}`)
+    if (id <= 0) return;
+
+    this.http.get(`${API_BASE}/tarjetas/historial/${id}?client_id=${this.clientId}`)
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
           this.selectedTarjetaHistorial = res;
+          if (res && res.tarjeta) {
+            this.selectedTarjeta = res.tarjeta;
+          }
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error al cargar historial de la tarjeta:', err);
-          this.currentError = this.errorHandler.parseError(err, 'MS_3832_TARJETAS_HISTORIAL', `${API_BASE}/tarjetas/historial/${t.id}`);
+          this.currentError = this.errorHandler.parseError(err, 'MS_3832_TARJETAS_HISTORIAL', `${API_BASE}/tarjetas/historial/${id}`);
           this.cdr.detectChanges();
         }
       });
   }
 
   cerrarHistorial(): void {
-    this.vistaActiva = 'listado';
     this.selectedTarjeta = null;
     this.selectedTarjetaHistorial = null;
+    this.router.navigate(['/sociedades']);
   }
 
   exportarCSV(): void {

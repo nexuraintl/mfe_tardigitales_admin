@@ -33,7 +33,13 @@ export class App implements OnInit {
   sidebarCollapsed = false;
 
   private routeTitles: { [key: string]: string } = {
+    '/tarjetas-contadores/historial': 'Historial de la tarjeta',
+    '/tarjetas-contadores/nueva': 'Emitir Tarjeta de Contador',
+    '/tarjetas-contadores/emision-masiva': 'Emisión Masiva de Credenciales',
     '/tarjetas-contadores': 'Tarjeta Digital para Contadores',
+    '/sociedades/historial': 'Historial de la sociedad',
+    '/sociedades/nueva': 'Emitir Tarjeta de Sociedad',
+    '/sociedades/emision-masiva': 'Emisión Masiva de Sociedades',
     '/sociedades': 'Tarjeta Digital para Sociedades',
     '/historial': 'Historial de Notificaciones',
     '/crear-notificacion': 'Crear Notificación',
@@ -66,7 +72,7 @@ export class App implements OnInit {
       name: 'Tarjetas Digitales', 
       color: 'blue', 
       iconClass: 'fa fa-id-card', 
-      path: '/admin/tardigitales/crud', 
+      path: '/admin/tardigitales/tarjetas-contadores', 
       active: true 
     },
     { 
@@ -100,8 +106,7 @@ export class App implements OnInit {
             { label: 'Crear notificación', icon: 'fa fa-paper-plane', path: '/crear-notificacion' },
             { label: 'Historial de notificaciones', icon: 'fa fa-history', path: '/historial' }
           ]
-        },
-        { label: 'Gestión de Trámites (CRUD)', icon: 'fa fa-tasks', path: '/crud' }
+        }
       ]
     },
     {
@@ -160,6 +165,13 @@ export class App implements OnInit {
 
   private updateViewActions(url: string) {
     const cleanUrl = url.split('?')[0].split('#')[0];
+
+    if (cleanUrl.includes('/historial/') || cleanUrl.includes('/nueva') || cleanUrl.includes('/emision-masiva')) {
+      this.primaryAction = null;
+      this.viewActions = [];
+      return;
+    }
+
     if (cleanUrl.includes('tarjetas-contadores')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
@@ -167,13 +179,6 @@ export class App implements OnInit {
         action: () => this.activeComponent?.abrirNuevaTarjeta?.()
       };
       this.viewActions = [
-        {
-          id: 'exportar-csv',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        },
         {
           id: 'emision-masiva',
           label: 'Emisión masiva',
@@ -289,7 +294,7 @@ export class App implements OnInit {
       return;
     }
     if (path.startsWith('/admin/tardigitales/')) {
-      const internalPath = path.replace('/admin/tardigitales', '') || '/crud';
+      const internalPath = path.replace('/admin/tardigitales', '') || '/tarjetas-contadores';
       this.currentUrl = internalPath;
       this.updatePageTitle(internalPath);
       this.updateViewActions(internalPath);

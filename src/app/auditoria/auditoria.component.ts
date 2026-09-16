@@ -50,10 +50,13 @@ export class AuditoriaComponent implements OnInit {
   sortColumn: string = 'fecha_hora';
   sortDirection: 'asc' | 'desc' = 'desc';
 
-  // Paginación estándar MFE
+  // Paginación servidor MFE
   pageSize: number = 10;
   pageSizeOptions: number[] = [10, 20, 50, 100];
   currentPage: number = 1;
+  totalRecordsCount: number = 0;
+  totalPagesCount: number = 0;
+  filterTimeout: any = null;
 
   // Acordeón de detalle (filas expandidas por ID)
   expandedIds: Set<number> = new Set<number>();
@@ -66,13 +69,49 @@ export class AuditoriaComponent implements OnInit {
     this.loading = true;
     this.currentError = null;
 
+    let url = `${API_BASE}/tarjetas/auditoria-api/list?client_id=${this.clientId}&page=${this.currentPage}&page_size=${this.pageSize}`;
+
+    if (this.filterFrom) {
+      url += `&fecha_desde=${encodeURIComponent(this.filterFrom.replace('T', ' '))}`;
+    }
+    if (this.filterTo) {
+      url += `&fecha_hasta=${encodeURIComponent(this.filterTo.replace('T', ' '))}`;
+    }
+    if (this.filterEndpoint) {
+      url += `&endpoint=${encodeURIComponent(this.filterEndpoint)}`;
+    }
+    if (this.filterType) {
+      url += `&tipo=${encodeURIComponent(this.filterType)}`;
+    }
+    if (this.filterText && this.filterText.trim()) {
+      url += `&texto=${encodeURIComponent(this.filterText.trim())}`;
+    }
+    if (this.filterChangeState !== '') {
+      url += `&cambiar_estado=${encodeURIComponent(this.filterChangeState)}`;
+    }
+
     const ts = new Date().getTime();
-    this.http.get<AuditoriaLog[]>(`${API_BASE}/tarjetas/auditoria-api/list?client_id=${this.clientId}&_t=${ts}`)
+    url += `&_t=${ts}`;
+
+    this.http.get<any>(url)
       .subscribe({
-        next: (data) => {
-          this.logs = (data || []).map((item, index) => ({
-            ...item,
-            id: item.id || (index + 1)
+        next: (res) => {
+          const rawList = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
+          this.totalRecordsCount = Array.isArray(res) ? rawList.length : (res?.total ?? rawList.length);
+          this.totalPagesCount = Array.isArray(res) 
+            ? Math.ceil(this.totalRecordsCount / this.pageSize) 
+            : (res?.total_pages ?? Math.ceil(this.totalRecordsCount / this.pageSize));
+
+          this.logs = rawList.map((item: any, index: number) => ({
+            id: item.id || ((this.currentPage - 1) * this.pageSize + index + 1),
+            fecha_hora: item.fecha_hora || '',
+            endpoint: item.endpoint || '',
+            metodo: item.metodo || 'POST',
+            tipo: item.tipo || 'General',
+            duracion_ms: item.duracion_ms || 0,
+            url: item.url || '',
+            parametros_peticion: item.parametros_peticion || null,
+            cuerpo_respuesta_peticion: item.cuerpo_respuesta_peticion || null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -113,10 +152,17 @@ export class AuditoriaComponent implements OnInit {
       this.filterType = '';
     }
     this.currentPage = 1;
+    this.cargarAuditoria();
   }
 
   onFilterChange(): void {
     this.currentPage = 1;
+    if (this.filterTimeout) {
+      clearTimeout(this.filterTimeout);
+    }
+    this.filterTimeout = setTimeout(() => {
+      this.cargarAuditoria();
+    }, 300);
   }
 
   limpiarFiltros(): void {
@@ -128,6 +174,7 @@ export class AuditoriaComponent implements OnInit {
     this.filterChangeState = '';
     this.searchQuery = '';
     this.currentPage = 1;
+    this.cargarAuditoria();
   }
 
   get hasActiveFilters(): boolean {
@@ -144,44 +191,20 @@ export class AuditoriaComponent implements OnInit {
 
   get filteredLogs(): AuditoriaLog[] {
     let result = this.logs.filter(log => {
-      // 1. Filtro Desde
-      if (this.filterFrom) {
-        const logDate = log.fecha_hora.replace(' ', 'T');
-        if (logDate < this.filterFrom) return false;
-      }
-
-      // 2. Filtro Hasta
-      if (this.filterTo) {
-        const logDate = log.fecha_hora.replace(' ', 'T');
-        if (logDate > this.filterTo) return false;
-      }
-
-      // 3. Filtro Texto avanzado (busca en payload de petición o cuerpo de respuesta)
+      // Filtro Texto avanzado (busca en payload de petición o cuerpo de respuesta)
       if (this.filterText && this.filterText.trim()) {
         const t = this.filterText.trim().toLowerCase();
         const payloadHaystack = `${JSON.stringify(log.parametros_peticion || '')} ${JSON.stringify(log.cuerpo_respuesta_peticion || '')}`.toLowerCase();
         if (!payloadHaystack.includes(t)) return false;
       }
 
-      // 4. Filtro Endpoint
-      if (this.filterEndpoint) {
-        const endLower = log.endpoint.toLowerCase();
-        const selLower = this.filterEndpoint.toLowerCase().replace(/\//g, '');
-        if (!endLower.includes(selLower)) return false;
-      }
-
-      // 5. Filtro Tipo
-      if (this.filterType && log.tipo !== this.filterType) {
-        return false;
-      }
-
-      // 6. Filtro Cambiar Estado
+      // Filtro Cambiar Estado
       if (this.filterChangeState !== '') {
         const cs = this.hasChangeState(log);
         if (String(cs) !== this.filterChangeState) return false;
       }
 
-      // 7. Búsqueda rápida sobre la tabla
+      // Búsqueda rápida sobre la tabla
       if (this.searchQuery && this.searchQuery.trim()) {
         const q = this.searchQuery.trim().toLowerCase();
         const rowText = `${log.id} ${log.fecha_hora} ${log.endpoint} ${log.metodo} ${log.tipo} ${log.url} ${log.duracion_ms}`.toLowerCase();
@@ -212,20 +235,23 @@ export class AuditoriaComponent implements OnInit {
   }
 
   get paginatedLogs(): AuditoriaLog[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredLogs.slice(start, start + this.pageSize);
+    return this.filteredLogs;
   }
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredLogs.length / this.pageSize));
+    return Math.max(1, this.totalPagesCount || 1);
+  }
+
+  get totalRecords(): number {
+    return this.totalRecordsCount;
   }
 
   get recordRangeStart(): number {
-    return this.filteredLogs.length ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+    return this.totalRecordsCount ? (this.currentPage - 1) * this.pageSize + 1 : 0;
   }
 
   get recordRangeEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.filteredLogs.length);
+    return Math.min(this.currentPage * this.pageSize, this.totalRecordsCount);
   }
 
   get pagesArray(): number[] {
@@ -247,11 +273,13 @@ export class AuditoriaComponent implements OnInit {
   cambiarTamanoPagina(nuevoTamano: any): void {
     this.pageSize = Number(nuevoTamano);
     this.currentPage = 1;
+    this.cargarAuditoria();
   }
 
   cambiarPagina(p: number): void {
-    if (p >= 1 && p <= this.totalPages) {
+    if (p >= 1 && p <= this.totalPages && p !== this.currentPage) {
       this.currentPage = p;
+      this.cargarAuditoria();
     }
   }
 

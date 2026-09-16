@@ -1,5 +1,22 @@
 /* Estilos específicos de tarjetas de contadores */
 
+.branding-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(430px, 1.15fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.branding-layout > * {
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .branding-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Selector Dinámico de Columnas */
 .columns-selector-host {
   position: relative;
