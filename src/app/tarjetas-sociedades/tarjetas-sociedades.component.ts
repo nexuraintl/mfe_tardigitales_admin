@@ -8,39 +8,60 @@ import { ErrorHandlerService, AppError } from '../core/services/error-handler.se
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 
+import { TablaSociedadesComponent } from './components/tabla-sociedades/tabla-sociedades.component';
+import { FormEmisionSociedadesComponent } from './components/form-emision-sociedades/form-emision-sociedades.component';
+import { EmisionMasivaSociedadesComponent } from './components/emision-masiva-sociedades/emision-masiva-sociedades.component';
+import { HistorialSociedadesComponent } from './components/historial-sociedades/historial-sociedades.component';
+import { ModalDetalleTarjetaComponent } from '../shared/components/modal-detalle-tarjeta/modal-detalle-tarjeta.component';
+
 export interface TableColumn {
   key: string;
   label: string;
   visible: boolean;
 }
 
-interface TarjetaSociedad {
+export interface TarjetaSociedad {
   id: number;
   client_id?: number;
   tipo_tarjeta: string;
-  codigo: string;
-  expediente: number;
-  solicitante: string; // Razón Social
-  documento: string; // NIT
-  matricula: string; // N.° Registro
+  codigo?: string;
+  expediente?: number;
+  no_expd?: number;
+  solicitante?: string;
+  razon_social?: string;
+  documento?: string;
+  nit?: string;
+  matricula?: string;
+  inscripcion?: string;
   tipo_sociedad?: string;
-  correo: string;
-  representante: string; // Representante Legal
-  tarjeta: string;
+  correo?: string;
+  representante?: string;
+  representante_legal?: string;
+  tarjeta?: string;
+  estado_tarjeta?: string;
   tipo_asociado?: string;
   estado_sociedad?: string;
   resolucion?: string;
   fecha_resolucion?: string;
   acta_jcc?: string;
   fecha_inscripcion?: string;
-  fecha: string;
+  fecha?: string;
+  fecha_emision?: string;
   foto?: string | null;
 }
 
 @Component({
   selector: 'app-tarjetas-sociedades',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    TablaSociedadesComponent,
+    FormEmisionSociedadesComponent,
+    EmisionMasivaSociedadesComponent,
+    HistorialSociedadesComponent,
+    ModalDetalleTarjetaComponent
+  ],
   templateUrl: './tarjetas-sociedades.component.html',
   styleUrl: './tarjetas-sociedades.component.css'
 })
@@ -56,25 +77,8 @@ export class TarjetasSociedadesComponent implements OnInit {
   loading: boolean = false;
   currentError: AppError | null = null;
 
-  // Catálogo ampliado de columnas correspondientes al Microservicio
-  availableColumns: TableColumn[] = [
-    { key: 'id', label: '# (ID)', visible: false },
-    { key: 'expediente', label: 'Expediente', visible: true },
-    { key: 'solicitante', label: 'Razón Social', visible: true },
-    { key: 'documento', label: 'NIT', visible: true },
-    { key: 'matricula', label: 'N.° Registro', visible: true },
-    { key: 'tipo_sociedad', label: 'Tipo Sociedad', visible: false },
-    { key: 'resolucion', label: 'Resolución', visible: true },
-    { key: 'fecha_resolucion', label: 'Fecha resolución', visible: false },
-    { key: 'acta_jcc', label: 'Acta JCC', visible: false },
-    { key: 'fecha_inscripcion', label: 'Fecha inscripción', visible: false },
-    { key: 'tipo_asociado', label: 'Tipo trámite', visible: true },
-    { key: 'estado_sociedad', label: 'Estado sociedad', visible: true },
-    { key: 'representante', label: 'Representante Legal', visible: true },
-    { key: 'correo', label: 'Correo', visible: false },
-    { key: 'tarjeta', label: 'Estado tarjeta', visible: true },
-    { key: 'fecha', label: 'Fecha emisión', visible: true }
-  ];
+  // Catálogo dinámico cargado 100% desde la API (tn_tarjetavirtual_config_columnas_filtro_tarjetas)
+  availableColumns: TableColumn[] = [];
   isColumnsMenuOpen: boolean = false;
   columnMessageWarning: string = '';
 
@@ -242,6 +246,32 @@ export class TarjetasSociedadesComponent implements OnInit {
     return col ? col.visible : false;
   }
 
+  getColumnLabel(key: string): string {
+    const col = this.availableColumns.find(c => c.key === key);
+    return col ? col.label : key;
+  }
+
+  getCellValue(row: any, key: string): any {
+    if (!row || !key) return '-';
+    const val = row[key];
+    if (val === undefined || val === null || val === '') return '-';
+    if (key === 'tipo_asociado') {
+      const mapaTipo: { [k: string]: string } = {
+        primeraVez: 'Primera vez',
+        primera_vez: 'Primera vez',
+        duplicado: 'Duplicado',
+        sustitucion: 'Sustitución',
+        modificacion: 'Modificación'
+      };
+      return mapaTipo[val] || val;
+    }
+    return val;
+  }
+
+  ordenarPorColumna(key: string): void {
+    this.ordenarPor(key as any);
+  }
+
   toggleColumnsMenu(event?: MouseEvent): void {
     if (event) {
       event.stopPropagation();
@@ -261,11 +291,12 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.saveColumnsPreference();
   }
 
+  private dbColumns: TableColumn[] = [];
+
   resetColumns(): void {
-    const defaultVisibleKeys = new Set(['expediente', 'solicitante', 'documento', 'matricula', 'correo', 'tarjeta', 'fecha']);
-    this.availableColumns.forEach(c => {
-      c.visible = defaultVisibleKeys.has(c.key);
-    });
+    if (this.dbColumns && this.dbColumns.length > 0) {
+      this.availableColumns = this.dbColumns.map(c => ({ ...c }));
+    }
     this.columnMessageWarning = '';
     this.saveColumnsPreference();
   }
@@ -280,6 +311,29 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   private loadColumnsPreference(): void {
+    this.http.get<any>(`${API_BASE}/tarjetas/columns-config?tipo_tarjeta=sociedades&client_id=${this.clientId}`)
+      .subscribe({
+        next: (res) => {
+          if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+            this.dbColumns = res.data.map((c: any) => ({
+              key: c.key,
+              label: c.label,
+              visible: !!c.visible_defecto,
+              es_filtrable: !!c.es_filtrable,
+              tipo_dato: c.tipo_dato || 'string'
+            }));
+            this.availableColumns = this.dbColumns.map(c => ({ ...c }));
+          }
+          this.applySavedColumnsPreference();
+        },
+        error: (err) => {
+          console.warn('No se pudo cargar la configuración dinámica de columnas del backend:', err);
+          this.applySavedColumnsPreference();
+        }
+      });
+  }
+
+  private applySavedColumnsPreference(): void {
     try {
       const saved = localStorage.getItem('jcc_cols_sociedades');
       if (saved) {
@@ -297,7 +351,7 @@ export class TarjetasSociedadesComponent implements OnInit {
         }
       }
     } catch (e) {
-      console.warn('No se pudo cargar la preferencia de columnas:', e);
+      console.warn('No se pudo cargar la preferencia guardada de columnas:', e);
     }
   }
 
@@ -318,7 +372,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
     const q = this.searchQuery ? this.searchQuery.trim() : '';
     if (q) {
-      url += `&filtro_nombre=${encodeURIComponent(q)}`;
+      url += `&texto=${encodeURIComponent(q)}`;
     }
 
     if (this.filterColumn && this.filterValue) {
@@ -328,9 +382,11 @@ export class TarjetasSociedadesComponent implements OnInit {
       } else if (this.filterColumn === 'matricula') {
         url += `&filtro_inscripcion=${val}`;
       } else if (this.filterColumn === 'solicitante') {
-        url += `&filtro_nombre=${val}`;
+        url += `&texto=${val}`;
       } else if (this.filterColumn === 'expediente') {
         url += `&filtro_expediente=${val}`;
+      } else if (this.filterColumn === 'correo') {
+        url += `&filtro_correo=${val}`;
       }
     }
 
@@ -349,24 +405,31 @@ export class TarjetasSociedadesComponent implements OnInit {
           this.tarjetas = rawList.map((item: any) => ({
             id: item.id,
             client_id: this.clientId,
-            tipo_tarjeta: item.tipo_tarjeta || 'sociedades',
-            codigo: item.codigo || `SOC-${item.id}`,
+            tipo_tarjeta: item.tipo_tarjeta ?? 'sociedades',
+            codigo: item.codigo ?? `SOC-${item.id}`,
             expediente: item.expediente ?? item.no_expd ?? 0,
-            solicitante: item.solicitante || item.razon_social || '',
-            documento: item.documento ? String(item.documento) : (item.nit ? String(item.nit) : ''),
-            matricula: item.matricula || item.inscripcion || item.resolucion || '',
-            tipo_sociedad: item.tipo_sociedad || '',
-            correo: item.correo || '',
-            representante: item.representante || '',
-            resolucion: item.resolucion || '',
-            fecha_resolucion: item.fecha_resolucion || '',
-            acta_jcc: item.acta_jcc || '',
-            fecha_inscripcion: item.fecha_inscripcion || '',
-            tipo_asociado: item.tipo_asociado || 'primeraVez',
-            estado_sociedad: item.estado_sociedad || 'ACTIVO',
-            tarjeta: item.tarjeta || item.estado_tarjeta || 'Activa',
-            fecha: item.fecha || item.fecha_emision || '',
-            foto: item.foto || null
+            no_expd: item.no_expd ?? item.expediente ?? 0,
+            solicitante: item.razon_social ?? item.solicitante ?? '',
+            razon_social: item.razon_social ?? item.solicitante ?? '',
+            documento: String(item.nit ?? item.documento ?? ''),
+            nit: String(item.nit ?? item.documento ?? ''),
+            matricula: item.inscripcion ?? item.matricula ?? '',
+            inscripcion: item.inscripcion ?? item.matricula ?? '',
+            tipo_sociedad: item.tipo_sociedad ?? '',
+            correo: item.correo ?? '',
+            representante: item.representante_legal ?? item.representante ?? '',
+            representante_legal: item.representante_legal ?? item.representante ?? '',
+            resolucion: item.resolucion ?? '',
+            fecha_resolucion: item.fecha_resolucion ?? '',
+            acta_jcc: item.acta_jcc ?? '',
+            fecha_inscripcion: item.fecha_inscripcion ?? '',
+            tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+            estado_sociedad: item.estado_sociedad ?? 'ACTIVO',
+            tarjeta: item.estado_tarjeta ?? 'Emitida',
+            estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
+            fecha: item.fecha_emision ?? item.fecha ?? '',
+            fecha_emision: item.fecha_emision ?? item.fecha ?? '',
+            foto: item.foto ?? null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -609,27 +672,27 @@ export class TarjetasSociedadesComponent implements OnInit {
           this.cargandoBusqueda = false;
           this.busquedaRealizada = true;
 
-          const item = res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null;
+          const item = res && res.status === 'success' ? res.data : (res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null);
 
           if (item) {
-            const razonSocial = item.RAZON_SOCIAL || item.NOMBRES || "Sociedad de Contadores Públicos";
-            const docNum = item.NO_DOCUMENTO || item.NIT || identification;
+            const razonSocial = item.razon_social ?? item.solicitante ?? "Sociedad de Contadores Públicos";
+            const docNum = item.nit ?? item.documento ?? identification;
 
             const localTarjeta = this.tarjetas.find(t =>
-              t.documento.replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
+              (t.documento || t.nit || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
             );
 
             this.datosConsulta = {
               solicitante: razonSocial,
               documento: `NIT ${docNum}`,
-              matricula: item.NO_TARJETA || `REG-${docNum}`,
-              expediente: item.NO_EXPD || item.EXPEDIENTE || 0,
-              correo: localTarjeta?.correo || `contacto@${razonSocial.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
-              representante: item.REPRESENTANTE_LEGAL || "Representante Legal Autorizado",
-              estado: item.ESTADO_SOCIEDAD || item.ESTADO_CONTADOR || "ACTIVO",
-              seccional: item.SECCIONAL || "",
-              resolucion: item.RESOLUCION || "",
-              foto: item.FOTO || item.pdf || res.pdf || localTarjeta?.foto || null,
+              matricula: item.inscripcion ?? item.no_tarjeta ?? `REG-${docNum}`,
+              expediente: item.no_expd ?? item.expediente ?? 0,
+              correo: localTarjeta?.correo ?? item.correo ?? '',
+              representante: item.representante_legal ?? item.representante ?? "Representante Legal Autorizado",
+              estado: item.estado_sociedad ?? "ACTIVO",
+              seccional: item.seccional ?? "",
+              resolucion: item.resolucion ?? "",
+              foto: item.foto ?? item.pdf ?? localTarjeta?.foto ?? null,
               existe: !!localTarjeta
             };
           } else {

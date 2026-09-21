@@ -15,7 +15,16 @@ export const ASSET_PATHS = {
  * Devuelve la foto proporcionada o la foto por defecto si está vacía/nula.
  */
 export function getFotoContadorOrDefault(fotoUrl?: string | null): string {
-  if (!fotoUrl || fotoUrl.trim() === '' || fotoUrl === '...' || fotoUrl.includes('placeholder')) {
+  if (
+    !fotoUrl ||
+    typeof fotoUrl !== 'string' ||
+    fotoUrl.trim() === '' ||
+    fotoUrl === '...' ||
+    fotoUrl.includes('placeholder') ||
+    fotoUrl.toLowerCase().includes('no existe') ||
+    fotoUrl.toLowerCase().includes('error') ||
+    (!fotoUrl.startsWith('data:') && !fotoUrl.startsWith('http') && !fotoUrl.startsWith('assets/'))
+  ) {
     return DEFAULT_AVATAR_PATH;
   }
   return fotoUrl;
