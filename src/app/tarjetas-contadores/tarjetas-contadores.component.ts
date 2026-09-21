@@ -8,40 +8,62 @@ import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 
+import { TablaContadoresComponent } from './components/tabla-contadores/tabla-contadores.component';
+import { FormEmisionContadoresComponent } from './components/form-emision-contadores/form-emision-contadores.component';
+import { EmisionMasivaContadoresComponent } from './components/emision-masiva-contadores/emision-masiva-contadores.component';
+import { HistorialContadoresComponent } from './components/historial-contadores/historial-contadores.component';
+import { ModalDetalleTarjetaComponent } from '../shared/components/modal-detalle-tarjeta/modal-detalle-tarjeta.component';
+
 export interface TableColumn {
   key: string;
   label: string;
   visible: boolean;
 }
 
-interface TarjetaContador {
+export interface TarjetaContador {
   id: number;
   client_id?: number;
   tipo_tarjeta: string;
-  codigo: string;
-  expediente: number;
-  solicitante: string;
-  documento: string;
-  matricula: string;
-  correo: string;
+  codigo?: string;
+  no_tarjeta?: string;
+  expediente?: number;
+  no_expd?: number;
+  solicitante?: string;
+  nombre_completo?: string;
+  documento?: string;
+  no_documento?: string;
+  tipo_documento?: string;
+  matricula?: string;
+  correo?: string;
   universidad?: string;
   representante?: string;
-  tarjeta: string;
+  tarjeta?: string;
+  estado_tarjeta?: string;
   tipo_asociado?: string;
   estado_contador?: string;
+  estado_registro?: string;
   resolucion?: string;
   fecha_resolucion?: string;
   acta_jcc?: string;
   fecha_grado?: string;
   seccional?: string;
-  fecha: string;
+  fecha?: string;
+  fecha_emision?: string;
   foto?: string | null;
 }
 
 @Component({
   selector: 'app-tarjetas-contadores',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    TablaContadoresComponent,
+    FormEmisionContadoresComponent,
+    EmisionMasivaContadoresComponent,
+    HistorialContadoresComponent,
+    ModalDetalleTarjetaComponent
+  ],
   templateUrl: './tarjetas-contadores.component.html',
   styleUrl: './tarjetas-contadores.component.css'
 })
@@ -57,25 +79,8 @@ export class TarjetasContadoresComponent implements OnInit {
   loading: boolean = false;
   currentError: AppError | null = null;
 
-  // Catálogo ampliado de columnas correspondientes al Microservicio
-  availableColumns: TableColumn[] = [
-    { key: 'id', label: '# (ID)', visible: false },
-    { key: 'expediente', label: 'Expediente', visible: true },
-    { key: 'solicitante', label: 'Contador', visible: true },
-    { key: 'documento', label: 'Documento', visible: true },
-    { key: 'matricula', label: 'Tarjeta profesional', visible: true },
-    { key: 'correo', label: 'Correo', visible: true },
-    { key: 'universidad', label: 'Universidad (IES)', visible: false },
-    { key: 'tipo_asociado', label: 'Tipo trámite', visible: true },
-    { key: 'estado_contador', label: 'Estado contador', visible: true },
-    { key: 'tarjeta', label: 'Estado tarjeta', visible: true },
-    { key: 'resolucion', label: 'Resolución', visible: false },
-    { key: 'fecha_resolucion', label: 'Fecha resolución', visible: false },
-    { key: 'acta_jcc', label: 'Acta JCC', visible: false },
-    { key: 'fecha_grado', label: 'Fecha grado', visible: false },
-    { key: 'seccional', label: 'Seccional', visible: false },
-    { key: 'fecha', label: 'Fecha emisión', visible: true }
-  ];
+  // Catálogo dinámico cargado 100% desde la API (tn_tarjetavirtual_config_columnas_filtro_tarjetas)
+  availableColumns: TableColumn[] = [];
   isColumnsMenuOpen: boolean = false;
   columnMessageWarning: string = '';
 
@@ -244,6 +249,32 @@ export class TarjetasContadoresComponent implements OnInit {
     return col ? col.visible : false;
   }
 
+  getColumnLabel(key: string): string {
+    const col = this.availableColumns.find(c => c.key === key);
+    return col ? col.label : key;
+  }
+
+  getCellValue(row: any, key: string): any {
+    if (!row || !key) return '-';
+    const val = row[key];
+    if (val === undefined || val === null || val === '') return '-';
+    if (key === 'tipo_asociado') {
+      const mapaTipo: { [k: string]: string } = {
+        primeraVez: 'Primera vez',
+        primera_vez: 'Primera vez',
+        duplicado: 'Duplicado',
+        sustitucion: 'Sustitución',
+        modificacion: 'Modificación'
+      };
+      return mapaTipo[val] || val;
+    }
+    return val;
+  }
+
+  ordenarPorColumna(key: string): void {
+    this.ordenarPor(key as any);
+  }
+
   toggleColumnsMenu(event?: MouseEvent): void {
     if (event) {
       event.stopPropagation();
@@ -263,11 +294,12 @@ export class TarjetasContadoresComponent implements OnInit {
     this.saveColumnsPreference();
   }
 
+  private dbColumns: TableColumn[] = [];
+
   resetColumns(): void {
-    const defaultVisibleKeys = new Set(['expediente', 'solicitante', 'documento', 'matricula', 'correo', 'tarjeta', 'fecha']);
-    this.availableColumns.forEach(c => {
-      c.visible = defaultVisibleKeys.has(c.key);
-    });
+    if (this.dbColumns && this.dbColumns.length > 0) {
+      this.availableColumns = this.dbColumns.map(c => ({ ...c }));
+    }
     this.columnMessageWarning = '';
     this.saveColumnsPreference();
   }
@@ -282,6 +314,29 @@ export class TarjetasContadoresComponent implements OnInit {
   }
 
   private loadColumnsPreference(): void {
+    this.http.get<any>(`${API_BASE}/tarjetas/columns-config?tipo_tarjeta=contadores&client_id=${this.clientId}`)
+      .subscribe({
+        next: (res) => {
+          if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+            this.dbColumns = res.data.map((c: any) => ({
+              key: c.key,
+              label: c.label,
+              visible: !!c.visible_defecto,
+              es_filtrable: !!c.es_filtrable,
+              tipo_dato: c.tipo_dato || 'string'
+            }));
+            this.availableColumns = this.dbColumns.map(c => ({ ...c }));
+          }
+          this.applySavedColumnsPreference();
+        },
+        error: (err) => {
+          console.warn('No se pudo cargar la configuración dinámica de columnas del backend:', err);
+          this.applySavedColumnsPreference();
+        }
+      });
+  }
+
+  private applySavedColumnsPreference(): void {
     try {
       const saved = localStorage.getItem('jcc_cols_contadores');
       if (saved) {
@@ -299,7 +354,7 @@ export class TarjetasContadoresComponent implements OnInit {
         }
       }
     } catch (e) {
-      console.warn('No se pudo cargar la preferencia de columnas:', e);
+      console.warn('No se pudo cargar la preferencia guardada de columnas:', e);
     }
   }
 
@@ -320,7 +375,7 @@ export class TarjetasContadoresComponent implements OnInit {
 
     const q = this.searchQuery ? this.searchQuery.trim() : '';
     if (q) {
-      url += `&filtro_nombre=${encodeURIComponent(q)}`;
+      url += `&texto=${encodeURIComponent(q)}`;
     }
 
     if (this.filterColumn && this.filterValue) {
@@ -330,9 +385,11 @@ export class TarjetasContadoresComponent implements OnInit {
       } else if (this.filterColumn === 'matricula') {
         url += `&filtro_no_tarjeta=${val}`;
       } else if (this.filterColumn === 'solicitante') {
-        url += `&filtro_nombre=${val}`;
+        url += `&texto=${val}`;
       } else if (this.filterColumn === 'expediente') {
         url += `&filtro_expediente=${val}`;
+      } else if (this.filterColumn === 'correo') {
+        url += `&filtro_correo=${val}`;
       }
     }
 
@@ -351,25 +408,33 @@ export class TarjetasContadoresComponent implements OnInit {
           this.tarjetas = rawList.map((item: any) => ({
             id: item.id,
             client_id: this.clientId,
-            tipo_tarjeta: item.tipo_tarjeta || 'contadores',
-            codigo: item.codigo || item.no_tarjeta || `TJM-${item.id}`,
+            tipo_tarjeta: item.tipo_tarjeta ?? 'contadores',
+            codigo: item.no_tarjeta ?? item.codigo ?? `TJM-${item.id}`,
+            no_tarjeta: item.no_tarjeta ?? item.codigo ?? '',
             expediente: item.expediente ?? item.no_expd ?? 0,
-            solicitante: item.solicitante || item.nombre_completo || item.nombres || '',
-            documento: item.documento ? String(item.documento) : '',
-            matricula: item.matricula || item.no_tarjeta || '',
-            correo: item.correo || '',
-            universidad: item.universidad || '',
-            representante: item.representante || '',
-            tarjeta: item.tarjeta || item.estado_tarjeta || 'Activa',
-            tipo_asociado: item.tipo_asociado || 'primeraVez',
-            estado_contador: item.estado_contador || item.estado_registro || 'ACTIVO',
-            resolucion: item.resolucion || '',
-            fecha_resolucion: item.fecha_resolucion || '',
-            acta_jcc: item.acta_jcc || '',
-            fecha_grado: item.fecha_grado || '',
-            seccional: item.seccional || '',
-            fecha: item.fecha || item.fecha_emision || '',
-            foto: item.foto || null
+            no_expd: item.no_expd ?? item.expediente ?? 0,
+            solicitante: item.nombre_completo ?? item.solicitante ?? '',
+            nombre_completo: item.nombre_completo ?? item.solicitante ?? '',
+            documento: String(item.documento ?? ''),
+            no_documento: String(item.no_documento ?? ''),
+            tipo_documento: item.tipo_documento ?? 'CC',
+            matricula: item.no_tarjeta ?? item.matricula ?? '',
+            correo: item.correo ?? '',
+            universidad: item.universidad ?? '',
+            representante: item.representante ?? '',
+            tarjeta: item.estado_tarjeta ?? 'Emitida',
+            estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
+            tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+            estado_contador: item.estado_registro ?? item.estado_contador ?? 'ACTIVO',
+            estado_registro: item.estado_registro ?? item.estado_contador ?? 'ACTIVO',
+            resolucion: item.resolucion ?? '',
+            fecha_resolucion: item.fecha_resolucion ?? '',
+            acta_jcc: item.acta_jcc ?? '',
+            fecha_grado: item.fecha_grado ?? '',
+            seccional: item.seccional ?? '',
+            fecha: item.fecha_emision ?? item.fecha ?? '',
+            fecha_emision: item.fecha_emision ?? item.fecha ?? '',
+            foto: item.foto ?? null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -611,32 +676,28 @@ export class TarjetasContadoresComponent implements OnInit {
           this.cargandoBusqueda = false;
           this.busquedaRealizada = true;
 
-          const item = res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null;
+          const item = res && res.status === 'success' ? res.data : (res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null);
 
           if (item) {
-            const nombres = [item.NOMBRES, item.PRIMER_APELLIDO, item.SEGUNDO_APELLIDO]
-              .filter(Boolean)
-              .join(' ')
-              .trim();
-
-            const docTipo = item.TIPO_DOCUMENTO || 'CC';
-            const docNum = item.NO_DOCUMENTO || identification;
+            const nombres = item.nombre_completo ?? [item.nombres, item.primer_apellido, item.segundo_apellido].filter(Boolean).join(' ').trim();
+            const docTipo = item.tipo_documento ?? 'CC';
+            const docNum = item.no_documento ?? identification;
 
             const localTarjeta = this.tarjetas.find(t =>
-              t.documento.replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
+              (t.documento || t.no_documento || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
             );
 
             this.datosConsulta = {
               solicitante: nombres || "Contador Público",
               documento: `${docTipo} ${docNum}`,
-              matricula: item.NO_TARJETA || `TP-${docNum}`,
-              expediente: item.NO_EXPD || item.EXPEDIENTE || 0,
-              correo: localTarjeta?.correo || `contador.${String(docNum).slice(-4)}@example.com`,
-              universidad: item.UNIVERSIDAD || "Universidad Nacional de Colombia",
-              estado: item.ESTADO_CONTADOR || "ACTIVO",
-              seccional: item.SECCIONAL || "",
-              resolucion: item.RESOLUCION || "",
-              foto: item.FOTO || item.pdf || res.pdf || localTarjeta?.foto || null,
+              matricula: item.no_tarjeta ?? `TP-${docNum}`,
+              expediente: item.no_expd ?? 0,
+              correo: localTarjeta?.correo ?? item.correo ?? '',
+              universidad: item.universidad ?? '',
+              estado: item.estado_contador ?? item.estado_registro ?? "ACTIVO",
+              seccional: item.seccional ?? "",
+              resolucion: item.resolucion ?? "",
+              foto: item.foto ?? item.pdf ?? localTarjeta?.foto ?? null,
               existe: !!localTarjeta
             };
           } else {
