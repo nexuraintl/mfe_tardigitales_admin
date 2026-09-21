@@ -198,13 +198,6 @@ export class App implements OnInit {
       };
       this.viewActions = [
         {
-          id: 'exportar-csv',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        },
-        {
           id: 'emision-masiva',
           label: 'Emisión masiva',
           icon: 'fa fa-file-excel-o',
