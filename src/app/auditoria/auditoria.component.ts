@@ -313,12 +313,22 @@ export class AuditoriaComponent implements OnInit {
   }
 
   getTipoLabel(tipo: string): string {
-    switch (tipo) {
-      case 'primeraVez': return 'Primera vez';
-      case 'duplicado': return 'Duplicado';
-      case 'sustitucion': return 'Sustitución';
-      case 'modificacion': return 'Modificación';
-      default: return tipo ? (tipo.charAt(0).toUpperCase() + tipo.slice(1)) : 'General';
+    const t = String(tipo || '').trim().toLowerCase();
+    switch (t) {
+      case '1':
+      case 'primeravez':
+      case 'primera_vez':
+        return 'Primera vez';
+      case '2':
+      case 'duplicado':
+        return 'Duplicado';
+      case '3':
+      case 'sustitucion':
+        return 'Sustitución';
+      case 'modificacion':
+        return 'Modificación';
+      default:
+        return tipo ? (tipo.charAt(0).toUpperCase() + tipo.slice(1)) : 'General';
     }
   }
 
@@ -332,16 +342,46 @@ export class AuditoriaComponent implements OnInit {
     return { code: 200, isError: false };
   }
 
+  formatEndpoint(rawUrl: string): string {
+    if (!rawUrl) return '—';
+    try {
+      if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+        const parsed = new URL(rawUrl);
+        return parsed.pathname || rawUrl;
+      }
+    } catch {
+      // fallback
+    }
+    return rawUrl;
+  }
+
   formatJson(obj: any): string {
     if (!obj) return 'Sin datos';
+    let dataObj = obj;
     if (typeof obj === 'string') {
       try {
-        const parsed = JSON.parse(obj);
-        return JSON.stringify(parsed, null, 2);
+        dataObj = JSON.parse(obj);
       } catch {
         return obj;
       }
     }
-    return JSON.stringify(obj, null, 2);
+    const masked = this.maskSensitiveKeys(JSON.parse(JSON.stringify(dataObj)));
+    return JSON.stringify(masked, null, 2);
+  }
+
+  private maskSensitiveKeys(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    if (Array.isArray(data)) {
+      return data.map(item => this.maskSensitiveKeys(item));
+    }
+    const sensitiveRegex = /^(authorization|token|access_token|secret|password|bearer)$/i;
+    for (const key of Object.keys(data)) {
+      if (sensitiveRegex.test(key)) {
+        data[key] = '********************';
+      } else if (typeof data[key] === 'object') {
+        data[key] = this.maskSensitiveKeys(data[key]);
+      }
+    }
+    return data;
   }
 }

@@ -113,7 +113,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of paginatedTarjetas; trackBy: trackByFn">
+            <tr *ngFor="let row of paginatedTarjetas; let i = index; trackBy: trackByFn">
               <ng-container *ngFor="let col of availableColumns">
                 <td *ngIf="col.visible">
                   <ng-container [ngSwitch]="col.key">
@@ -168,7 +168,11 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
                   <ul 
                     class="dropdown-menu dropdown-menu-end shadow-sm border" 
                     [class.show]="activeDropdownId === row.id"
-                    style="position: absolute; right: 0; top: 100%; z-index: 1050; min-width: 175px;"
+                    [style.top]="isDropup(i, paginatedTarjetas.length) ? 'auto' : '100%'"
+                    [style.bottom]="isDropup(i, paginatedTarjetas.length) ? '100%' : 'auto'"
+                    [style.margin-bottom]="isDropup(i, paginatedTarjetas.length) ? '4px' : '0'"
+                    [style.margin-top]="isDropup(i, paginatedTarjetas.length) ? '0' : '4px'"
+                    style="position: absolute; right: 0; z-index: 1050; min-width: 175px;"
                   >
                     <li>
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="abrirTarjeta.emit(row); activeDropdownId = null">
@@ -284,6 +288,10 @@ export class TablaSociedadesComponent {
 
   isColumnsMenuOpen: boolean = false;
   activeDropdownId: any = null;
+
+  isDropup(index: number, total: number): boolean {
+    return total > 2 && index >= total - 3;
+  }
 
   toggleRowDropdown(event: MouseEvent, id: any): void {
     event.stopPropagation();

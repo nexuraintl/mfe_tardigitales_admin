@@ -1,0 +1,21 @@
+/* Estilos específicos para Procesos y Colas */
+.nav-pills .nav-link {
+  color: #64748b;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.nav-pills .nav-link.active {
+  background-color: #174a7e;
+  color: #ffffff;
+}
+
+.form-check-input:checked {
+  background-color: #174a7e;
+  border-color: #174a7e;
+}
