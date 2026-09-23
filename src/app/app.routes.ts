@@ -9,6 +9,7 @@ import { ValidadorQrComponent } from './validador-qr/validador-qr.component';
 import { CertificadosComponent } from './certificados/certificados.component';
 import { AuditoriaComponent } from './auditoria/auditoria.component';
 import { BrandingComponent } from './branding/branding.component';
+import { ProcesosLotesComponent } from './procesos-lotes/procesos-lotes.component';
 
 export const routes: Routes = [
   {
@@ -91,6 +92,10 @@ export const routes: Routes = [
   {
     path: 'auditoria',
     component: AuditoriaComponent
+  },
+  {
+    path: 'procesos-lotes',
+    component: ProcesosLotesComponent
   },
   {
     path: 'usuarios',

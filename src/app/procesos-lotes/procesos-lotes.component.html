@@ -1,0 +1,767 @@
+<!-- Notificaciones de éxito o error -->
+<div *ngIf="mensajeExito" class="alert alert-success d-flex align-items-center justify-content-between py-2 px-3 mb-3 border-0 shadow-sm" role="alert">
+  <div class="d-flex align-items-center">
+    <span class="fa fa-check-circle me-2 fs-5"></span>
+    <span class="small fw-semibold">{{ mensajeExito }}</span>
+  </div>
+  <button type="button" class="btn-close btn-close-white" (click)="mensajeExito = ''"></button>
+</div>
+
+<div *ngIf="mensajeError" class="alert alert-danger d-flex align-items-center justify-content-between py-2 px-3 mb-3 border-0 shadow-sm" role="alert">
+  <div class="d-flex align-items-center">
+    <span class="fa fa-exclamation-triangle me-2 fs-5"></span>
+    <span class="small fw-semibold">{{ mensajeError }}</span>
+  </div>
+  <button type="button" class="btn-close" (click)="mensajeError = ''"></button>
+</div>
+
+<!-- Barra de Pestañas Superiores -->
+<div class="d-flex justify-content-between align-items-center border-bottom mb-4 pb-2 flex-wrap gap-2">
+  <ul class="nav nav-pills gap-2">
+    <li class="nav-item">
+      <button 
+        type="button" 
+        class="nav-link px-3 py-2 fw-semibold" 
+        [class.active]="activeTab === 'cola'"
+        (click)="setTab('cola')">
+        Estado de la Cola
+      </button>
+    </li>
+    <li class="nav-item">
+      <button 
+        type="button" 
+        class="nav-link px-3 py-2 fw-semibold" 
+        [class.active]="activeTab === 'sincronizacion'"
+        (click)="setTab('sincronizacion')">
+        Sincronización Automática JCC
+      </button>
+    </li>
+    <li class="nav-item">
+      <button 
+        type="button" 
+        class="nav-link px-3 py-2 fw-semibold" 
+        [class.active]="activeTab === 'configuracion'"
+        (click)="setTab('configuracion')">
+        Parametrización
+      </button>
+    </li>
+  </ul>
+
+  <!-- Controles Rápidos -->
+  <div *ngIf="activeTab === 'cola' || activeTab === 'sincronizacion'" class="d-flex align-items-center gap-2">
+    <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+      <input 
+        class="form-check-input" 
+        type="checkbox" 
+        id="switchAutoRefresh" 
+        [checked]="autoRefresh" 
+        (change)="toggleAutoRefresh()">
+      <label class="form-check-label small text-muted user-select-none" for="switchAutoRefresh">
+        Auto-refrescar (10s)
+      </label>
+    </div>
+
+    <button 
+      type="button" 
+      class="btn btn-sm btn-outline-secondary" 
+      [disabled]="loadingMetricas || loadingLotes || loadingHistorialSincronizacion" 
+      (click)="cargarMetricas(); cargarLotes(); cargarHistorialSincronizacion();" 
+      title="Refrescar datos ahora">
+      <span class="fa fa-refresh" [class.fa-spin]="loadingMetricas || loadingLotes || loadingHistorialSincronizacion"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PESTAÑA 1: ESTADO DE LA COLA Y PROCESAMIENTO                             -->
+<!-- ========================================================================= -->
+<div *ngIf="activeTab === 'cola'" class="d-flex flex-column gap-4">
+
+  <!-- Tarjetas de Métricas Resumen -->
+  <div class="row g-3">
+    <!-- Total Lotes -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="card shadow-sm h-100 p-3">
+        <div class="field-label text-uppercase mb-2">Total Lotes</div>
+        <div class="field-value fs-4 fw-bold text-dark">
+          {{ metricas?.metricas_lotes?.total_lotes ?? 0 }}
+        </div>
+        <div class="text-muted small mt-1">
+          {{ metricas?.metricas_lotes?.completados ?? 0 }} completados
+        </div>
+      </div>
+    </div>
+
+    <!-- Registros Exitosos -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="card shadow-sm h-100 p-3">
+        <div class="field-label text-uppercase mb-2">Registros Exitosos</div>
+        <div class="field-value fs-4 fw-bold text-success">
+          {{ metricas?.metricas_items?.exitosos ?? 0 }}
+        </div>
+        <div class="text-muted small mt-1">
+          Credenciales emitidas
+        </div>
+      </div>
+    </div>
+
+    <!-- Fallidos -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="card shadow-sm h-100 p-3">
+        <div class="field-label text-uppercase mb-2">Registros Fallidos</div>
+        <div class="field-value fs-4 fw-bold text-danger">
+          {{ metricas?.metricas_items?.fallidos ?? 0 }}
+        </div>
+        <div class="text-muted small mt-1">
+          Errores o no encontrados
+        </div>
+      </div>
+    </div>
+
+    <!-- Pendientes en Cola -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="card shadow-sm h-100 p-3">
+        <div class="field-label text-uppercase mb-2">En Cola (Pendientes)</div>
+        <div class="field-value fs-4 fw-bold text-dark">
+          {{ metricas?.metricas_items?.pendientes ?? 0 }}
+        </div>
+        <div class="text-muted small mt-1">
+          {{ metricas?.metricas_items?.procesando ?? 0 }} procesando ahora
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROCESADOR DE COLAS (WORKER) -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+      <div>
+        <h5 class="card-title mb-0">Procesador de Colas (Worker)</h5>
+        <small class="text-muted">Extrae los registros pendientes de la cola (tanto de la sincronización JCC como de archivos CSV) y emite las credenciales en segundo plano.</small>
+      </div>
+
+      <div>
+        <span class="badge" [class.bg-success-subtle]="metricas?.worker_activo" [class.text-success]="metricas?.worker_activo" [class.border-success-subtle]="metricas?.worker_activo" [class.bg-secondary-subtle]="!metricas?.worker_activo" [class.text-secondary]="!metricas?.worker_activo">
+          <i class="fa fa-circle me-1 small"></i>
+          {{ metricas?.worker_activo ? 'WORKER ACTIVO' : 'DETENIDO' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Worker Status y Cola -->
+        <div class="col-md-6">
+          <div class="info-block-box h-100">
+            <div class="field-label mb-1">Estado del Hilo de Procesamiento</div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge" [class.bg-primary-subtle]="metricas?.worker_estado === 'PROCESANDO'" [class.text-primary]="metricas?.worker_estado === 'PROCESANDO'" [class.bg-secondary-subtle]="metricas?.worker_estado !== 'PROCESANDO'" [class.text-secondary]="metricas?.worker_estado !== 'PROCESANDO'">
+                {{ metricas?.worker_estado || 'EN_ESPERA' }}
+              </span>
+              <span class="small text-muted">
+                {{ metricas?.metricas_items?.pendientes ?? 0 }} en cola
+              </span>
+            </div>
+            <div class="small text-muted mt-2">
+              {{ metricas?.worker_estado === 'PROCESANDO' ? 'Emitiendo y firmando credenciales activamente en este momento.' : 'En reposo (0% CPU). Despierta instantáneamente cuando entran registros a la cola.' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Tolerancia a Fallos -->
+        <div class="col-md-6">
+          <div class="info-block-box h-100">
+            <div class="field-label mb-1">Tolerancia a Fallos de Red</div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success">
+                {{ metricas?.circuit_breaker?.estado || 'CERRADO (NORMAL)' }}
+              </span>
+              <span class="small text-muted">
+                {{ metricas?.circuit_breaker?.fallos_consecutivos ?? 0 }} / {{ metricas?.circuit_breaker?.max_fallos ?? 3 }} fallos
+              </span>
+            </div>
+            <div class="small text-muted mt-2">
+              Pausa el procesamiento automáticamente si la VPN o el servicio JCC sufre caídas de red.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Lotes Registrados -->
+  <div class="nx-table-card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="card-title mb-0">Historial de Lotes de Emisión</h5>
+        <small class="text-muted">Lotes procesados por emisión masiva o tarea periódica.</small>
+      </div>
+
+      <div class="small text-muted">
+        Total: <strong>{{ totalLotes }}</strong> lotes registrados
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3" style="width: 70px;"># Lote</th>
+            <th>Archivo / Origen</th>
+            <th>Tipo</th>
+            <th class="text-center">Total</th>
+            <th class="text-center">Procesados</th>
+            <th class="text-center">Éxitos</th>
+            <th class="text-center">Fallos</th>
+            <th class="text-center">Estado</th>
+            <th>Fecha Inicio</th>
+            <th class="text-center">Duración</th>
+            <th class="text-end pe-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loadingLotes">
+            <td colspan="11" class="text-center py-4 text-muted">
+              <span class="fa fa-spinner fa-spin me-2"></span> Cargando historial de lotes...
+            </td>
+          </tr>
+
+          <tr *ngIf="!loadingLotes && lotes.length === 0">
+            <td colspan="11" class="text-center py-4 text-muted">
+              No hay lotes de emisión registrados todavía.
+            </td>
+          </tr>
+
+          <tr *ngFor="let l of lotes">
+            <td class="ps-3 fw-bold text-dark">#{{ l.id }}</td>
+            <td>
+              <div class="fw-semibold text-truncate" style="max-width: 260px;" [title]="l.archivo_nombre || l.nombre_archivo">
+                <i class="fa fa-file-excel-o text-success me-1" *ngIf="(l.archivo_nombre || l.nombre_archivo)?.endsWith('.csv')"></i>
+                <i class="fa fa-refresh text-primary me-1" *ngIf="!(l.archivo_nombre || l.nombre_archivo)?.endsWith('.csv')"></i>
+                {{ l.archivo_nombre || l.nombre_archivo || 'Sincronización Automática JCC' }}
+              </div>
+              <small class="text-muted" style="font-size: 11px;">
+                Trámite: <strong class="text-dark">{{ l.tipo_tramite || 'primeraVez' }}</strong>
+              </small>
+            </td>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fw-normal">
+                {{ getTipoTarjetaLabel(l.tipo_tarjeta || l.tipo_lote) }}
+              </span>
+            </td>
+            <td class="text-center fw-bold">{{ l.total_registros }}</td>
+            <td class="text-center">{{ l.procesados }}</td>
+            <td class="text-center text-success fw-bold">{{ l.exitosos }}</td>
+            <td class="text-center text-danger fw-bold">{{ l.fallidos }}</td>
+            <td class="text-center">
+              <span [class]="getEstadoLoteBadge(l.estado)">
+                {{ l.estado }}
+              </span>
+            </td>
+            <td>
+              <div class="small text-dark">{{ (l.fecha_creacion || l.creado_en) | date:'yyyy-MM-dd' }}</div>
+              <div class="small text-muted">{{ (l.fecha_creacion || l.creado_en) | date:'HH:mm:ss' }}</div>
+            </td>
+            <td class="text-center small text-muted">
+              {{ l.tiempo_proceso_segundos != null ? l.tiempo_proceso_segundos + 's' : '-' }}
+            </td>
+            <td class="text-end pe-3">
+              <button 
+                type="button" 
+                class="btn btn-sm btn-outline-primary"
+                (click)="verDetalleLote(l)"
+                title="Ver detalle de registros">
+                <i class="fa fa-list me-1"></i> Detalle
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pie de Tabla: Contador de Registros y Paginación Estándar Nexura -->
+    <div class="nx-table-footer">
+      <div class="nx-table-info">
+        Mostrando {{ startRecord }} a {{ endRecord }} de {{ totalLotes }} registros
+      </div>
+
+      <ul class="nx-table-pagination" *ngIf="totalPaginas > 1">
+        <li class="page-item" [class.disabled]="page === 1">
+          <button type="button" class="page-link" (click)="cambiarPagina(1)" [disabled]="page === 1" data-nx-tooltip="Primera página" data-nx-tooltip-pos="top" aria-label="Primera página">
+            ««
+          </button>
+        </li>
+        <li class="page-item" [class.disabled]="page === 1">
+          <button type="button" class="page-link" (click)="cambiarPagina(page - 1)" [disabled]="page === 1" data-nx-tooltip="Página anterior" data-nx-tooltip-pos="top" aria-label="Página anterior">
+            «
+          </button>
+        </li>
+
+        <li 
+          class="page-item" 
+          *ngFor="let p of pagesArray" 
+          [class.active]="p === page"
+        >
+          <button type="button" class="page-link" (click)="cambiarPagina(p)">
+            {{ p }}
+          </button>
+        </li>
+
+        <li class="page-item" [class.disabled]="page === totalPaginas">
+          <button type="button" class="page-link" (click)="cambiarPagina(page + 1)" [disabled]="page === totalPaginas" data-nx-tooltip="Página siguiente" data-nx-tooltip-pos="top" aria-label="Página siguiente">
+            »
+          </button>
+        </li>
+        <li class="page-item" [class.disabled]="page === totalPaginas">
+          <button type="button" class="page-link" (click)="cambiarPagina(totalPaginas)" [disabled]="page === totalPaginas" data-nx-tooltip="Última página" data-nx-tooltip-pos="top" aria-label="Última página">
+            »»
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PESTAÑA 2: SINCRONIZACIÓN AUTOMÁTICA CON JCC (ENCOLADOR)                  -->
+<!-- ========================================================================= -->
+<div *ngIf="activeTab === 'sincronizacion'" class="d-flex flex-column gap-4">
+
+  <!-- Card Principal de Sincronización Automática -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2 py-3">
+      <div>
+        <h5 class="card-title mb-0">Sincronización Automática con JCC (Encolador)</h5>
+        <small class="text-muted">Consulta a los servicios externos de la JCC en busca de nuevos trámites aprobados y los encola en la base de datos para su emisión.</small>
+      </div>
+
+      <div>
+        <button 
+          type="button" 
+          class="btn btn-primary fw-semibold d-flex align-items-center gap-2"
+          [disabled]="runningTask || metricas?.scheduler?.ejecutando_ahora"
+          (click)="ejecutarTareaManual()">
+          <span class="fa" [class.fa-refresh]="!runningTask && !metricas?.scheduler?.ejecutando_ahora" [class.fa-spinner]="runningTask || metricas?.scheduler?.ejecutando_ahora" [class.fa-spin]="runningTask || metricas?.scheduler?.ejecutando_ahora"></span>
+          <span>{{ (runningTask || metricas?.scheduler?.ejecutando_ahora) ? 'Sincronizando...' : 'Sincronizar Aprobados Ahora' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Frecuencia Automática -->
+        <div class="col-md-6">
+          <div class="info-block-box h-100">
+            <div class="field-label mb-1">Frecuencia Automática Programada</div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary-subtle text-primary">
+                Cada {{ (metricas?.scheduler?.intervalo_minutos || configuracion.scheduler_intervalo_minutos || 60) }} min
+              </span>
+              <span class="badge" [class.bg-success-subtle]="metricas?.scheduler?.habilitado" [class.text-success]="metricas?.scheduler?.habilitado" [class.bg-secondary-subtle]="!metricas?.scheduler?.habilitado" [class.text-secondary]="!metricas?.scheduler?.habilitado">
+                {{ metricas?.scheduler?.habilitado ? 'ACTIVO' : 'PAUSADO' }}
+              </span>
+            </div>
+            <div class="small text-muted mt-2" *ngIf="metricas?.scheduler?.proxima_ejecucion">
+              Próxima ejecución estimada: <strong class="text-dark">{{ metricas?.scheduler?.proxima_ejecucion | date:'HH:mm:ss' }}</strong>
+            </div>
+            <div class="small text-muted mt-2" *ngIf="!metricas?.scheduler?.proxima_ejecucion">
+              Próxima ejecución: <strong class="text-dark">En espera de ciclo</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Última Sincronización Realizada -->
+        <div class="col-md-6">
+          <div class="info-block-box h-100">
+            <div class="field-label mb-1">Última Sincronización Realizada</div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success fw-semibold" *ngIf="ultimaSincronizacion?.estado === 'EXITOSO'">
+                {{ ultimaSincronizacion?.fecha_inicio | date:'dd/MM/yyyy HH:mm:ss' }}
+              </span>
+              <span class="badge bg-warning-subtle text-warning fw-semibold" *ngIf="ultimaSincronizacion?.estado === 'PARCIAL'">
+                {{ ultimaSincronizacion?.fecha_inicio | date:'dd/MM/yyyy HH:mm:ss' }} (Parcial)
+              </span>
+              <span class="badge bg-danger-subtle text-danger fw-semibold" *ngIf="ultimaSincronizacion && ultimaSincronizacion?.estado !== 'EXITOSO' && ultimaSincronizacion?.estado !== 'PARCIAL'">
+                {{ ultimaSincronizacion?.fecha_inicio | date:'dd/MM/yyyy HH:mm:ss' }} (Con errores)
+              </span>
+              <span class="badge bg-secondary-subtle text-secondary fw-semibold" *ngIf="!ultimaSincronizacion && !metricas?.scheduler?.ultima_ejecucion">
+                Sin ejecuciones recientes
+              </span>
+              <span class="small text-dark fw-bold" *ngIf="ultimaSincronizacion?.total_encolados != null">
+                +{{ ultimaSincronizacion?.total_encolados }} encolados
+              </span>
+            </div>
+            <div class="small text-muted mt-2" *ngIf="ultimaSincronizacion">
+              Contadores: {{ ultimaSincronizacion?.contadores_encolados ?? 0 }} | Sociedades: {{ ultimaSincronizacion?.sociedades_encoladas ?? 0 }}
+            </div>
+            <div class="small text-muted mt-2" *ngIf="!ultimaSincronizacion">
+              Registros aprobados descargados de JCC y listos en la cola.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de Disparos de Sincronización (Persistido en BD) -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h5 class="card-title mb-0">Historial de Ejecuciones de Sincronización</h5>
+      <small class="text-muted">Registro auditable en base de datos de cada ciclo disparado contra la API de la JCC.</small>
+    </div>
+
+    <div class="card-body p-0">
+      <div *ngIf="loadingHistorialSincronizacion && historialSincronizacion.length === 0" class="text-center py-5">
+        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+        <div class="small text-muted mt-2">Cargando historial de sincronizaciones...</div>
+      </div>
+
+      <div *ngIf="!loadingHistorialSincronizacion && historialSincronizacion.length === 0" class="text-center py-5 text-muted">
+        <span class="fa fa-history fa-2x mb-2 d-block text-secondary"></span>
+        No se han registrado ejecuciones de sincronización aún.
+      </div>
+
+      <div *ngIf="historialSincronizacion.length > 0" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">Fecha / Hora Trigger</th>
+              <th>Disparador</th>
+              <th>Duración</th>
+              <th>Estado</th>
+              <th>Encolados</th>
+              <th class="pe-4">Diagnóstico / Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of historialSincronizacion">
+              <td class="ps-4">
+                <div class="fw-semibold text-dark">{{ item.fecha_inicio | date:'yyyy-MM-dd' }}</div>
+                <small class="text-muted">{{ item.fecha_inicio | date:'HH:mm:ss' }}</small>
+              </td>
+              <td>
+                <span class="badge" [class.bg-primary-subtle]="item.origen === 'MANUAL'" [class.text-primary]="item.origen === 'MANUAL'" [class.bg-secondary-subtle]="item.origen !== 'MANUAL'" [class.text-secondary]="item.origen !== 'MANUAL'">
+                  {{ item.origen === 'MANUAL' ? 'MANUAL' : 'PROGRAMADO' }}
+                </span>
+              </td>
+              <td>
+                <span class="small text-muted">{{ item.duracion_ms ? (item.duracion_ms / 1000 | number:'1.1-2') + 's' : '-' }}</span>
+              </td>
+              <td>
+                <span class="badge"
+                  [class.bg-success-subtle]="item.estado === 'EXITOSO'"
+                  [class.text-success]="item.estado === 'EXITOSO'"
+                  [class.bg-danger-subtle]="item.estado === 'FALLIDO'"
+                  [class.text-danger]="item.estado === 'FALLIDO'"
+                  [class.bg-warning-subtle]="item.estado === 'PARCIAL'"
+                  [class.text-warning]="item.estado === 'PARCIAL'"
+                  [class.bg-secondary-subtle]="item.estado === 'SIN_NOVEDAD'"
+                  [class.text-secondary]="item.estado === 'SIN_NOVEDAD'">
+                  {{ item.estado }}
+                </span>
+              </td>
+              <td>
+                <span class="fw-bold" [class.text-success]="item.total_encolados > 0" [class.text-muted]="item.total_encolados === 0">
+                  +{{ item.total_encolados }}
+                </span>
+                <small class="text-muted d-block" *ngIf="item.total_encolados > 0">
+                  {{ item.contadores_encolados }} C / {{ item.sociedades_encoladas }} S
+                </small>
+              </td>
+              <td class="pe-4">
+                <span class="small text-truncate d-inline-block" style="max-width: 480px;" [title]="item.detalle || ''" [class.text-danger]="item.estado === 'FALLIDO'">
+                  {{ item.detalle || 'Ciclo ejecutado normalmente.' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================================================================= -->
+<!-- PESTAÑA 3: PARAMETRIZACIÓN Y CONTROL DINÁMICO                           -->
+<!-- ========================================================================= -->
+<div *ngIf="activeTab === 'configuracion'" class="row g-4">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Parámetros de Ejecución del Worker y Colas</h5>
+        <small class="text-muted">Ajuste la concurrencia, pausas y umbrales de seguridad en base de datos.</small>
+      </div>
+
+      <div class="card-body">
+        <form (ngSubmit)="guardarConfiguracion()">
+
+          <!-- Sección: Estado General del Worker -->
+          <div class="mb-4 pb-3 border-bottom">
+            <h6 class="fw-bold text-dark mb-3">1. Estado General del Procesamiento</h6>
+            
+            <div class="form-check form-switch d-flex align-items-center gap-3">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                role="switch" 
+                id="cfgHabilitado"
+                style="width: 2.5em; height: 1.3em;"
+                [(ngModel)]="configuracion.habilitado" 
+                name="habilitado">
+              <div>
+                <label class="form-check-label fw-semibold text-dark mb-0" for="cfgHabilitado">
+                  Habilitar Worker de Procesamiento
+                </label>
+                <div class="small text-muted">
+                  Si se desactiva, los lotes quedarán en espera y no se consumirán ítems hasta ser reactivado.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Rendimiento y Colas -->
+          <div class="mb-4 pb-3 border-bottom">
+            <h6 class="fw-bold text-dark mb-3">2. Tamaño de Lotes y Tiempos de Espera</h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label" for="tamanoLote">Tamaño de lote (registros)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="tamanoLote" 
+                  min="1" 
+                  max="100" 
+                  [(ngModel)]="configuracion.tamano_lote" 
+                  name="tamano_lote" 
+                  required>
+                <small class="text-muted d-block mt-1">Registros tomados por ciclo (1 - 100).</small>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="intervaloSondeo">Intervalo de sondeo (segundos)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="intervaloSondeo" 
+                  min="1" 
+                  max="60" 
+                  [(ngModel)]="configuracion.intervalo_sondeo_segundos" 
+                  name="intervalo_sondeo_segundos" 
+                  required>
+                <small class="text-muted d-block mt-1">Frecuencia de lectura de la BD cuando no hay ítems.</small>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="delayItem">Pausa entre ítems (segundos)</label>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  class="form-control" 
+                  id="delayItem" 
+                  min="0" 
+                  max="10" 
+                  [(ngModel)]="configuracion.delay_por_item_segundos" 
+                  name="delay_por_item_segundos" 
+                  required>
+                <small class="text-muted d-block mt-1">Delay deliberado para no sobrecargar el API JCC.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Circuit Breaker y Seguridad -->
+          <div class="mb-4 pb-3 border-bottom">
+            <h6 class="fw-bold text-dark mb-3">3. Resiliencia y Circuit Breaker</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="maxFallos">Umbral de fallos consecutivos</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="maxFallos" 
+                  min="1" 
+                  max="50" 
+                  [(ngModel)]="configuracion.circuit_breaker_max_fallos" 
+                  name="circuit_breaker_max_fallos" 
+                  required>
+                <small class="text-muted d-block mt-1">Si se alcanza este número de errores consecutivos, se abre el circuito.</small>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="cooldown">Tiempo de espera / Cooldown (segundos)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="cooldown" 
+                  min="5" 
+                  max="600" 
+                  [(ngModel)]="configuracion.circuit_breaker_cooldown_segundos" 
+                  name="circuit_breaker_cooldown_segundos" 
+                  required>
+                <small class="text-muted d-block mt-1">Tiempo de reposo antes de intentar reanudar el consumo.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección: Scheduler / Programador -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-3">4. Programador Periódico Automático</h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="intervaloScheduler">Frecuencia del Scheduler (minutos)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="intervaloScheduler" 
+                  min="1" 
+                  max="1440" 
+                  [(ngModel)]="configuracion.scheduler_intervalo_minutos" 
+                  name="scheduler_intervalo_minutos" 
+                  required>
+                <small class="text-muted d-block mt-1">Frecuencia en minutos con la que se buscan registros pendientes en JCC.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary px-3" 
+              [disabled]="savingConfig"
+              (click)="cargarConfiguracion()">
+              Restablecer
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary px-4 fw-semibold d-flex align-items-center gap-2" 
+              [disabled]="savingConfig">
+              <span class="fa" [class.fa-save]="!savingConfig" [class.fa-spinner]="savingConfig" [class.fa-spin]="savingConfig"></span>
+              <span>{{ savingConfig ? 'Guardando...' : 'Guardar Parámetros' }}</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL DE DETALLE DE ÍTEMS DEL LOTE                                        -->
+<!-- ========================================================================= -->
+<div 
+  *ngIf="mostrarModalDetalle" 
+  class="modal fade show d-block" 
+  tabindex="-1" 
+  role="dialog"
+  aria-modal="true"
+  style="background-color: rgba(15, 23, 42, 0.65); z-index: 99999; display: block !important;"
+  (click)="cerrarModalDetalle()">
+  <div 
+    class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" 
+    style="position: relative; z-index: 100000;"
+    (click)="$event.stopPropagation()">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-bottom py-3">
+        <div>
+          <h5 class="modal-title fw-bold text-dark mb-0">
+            Detalle del Lote #{{ selectedLote?.id }}
+          </h5>
+          <small class="text-muted">
+            <strong class="text-dark">{{ selectedLote?.archivo_nombre || selectedLote?.nombre_archivo || 'Sincronización Automática JCC' }}</strong>
+            &bull;
+            <span class="badge bg-light text-dark border">{{ (selectedLote?.tipo_tarjeta || selectedLote?.tipo_lote || '') | uppercase }}</span>
+            &bull;
+            <span>Trámite: <strong>{{ selectedLote?.tipo_tramite || 'primeraVez' }}</strong></span>
+          </small>
+        </div>
+        <button type="button" class="btn-close" (click)="cerrarModalDetalle()"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <!-- Resumen Rápido -->
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <div class="p-2 border rounded text-center bg-light">
+              <small class="text-muted d-block">Total Registros</small>
+              <strong class="text-dark fs-5">{{ selectedLote?.total_registros }}</strong>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 border rounded text-center bg-light">
+              <small class="text-muted d-block">Éxitos</small>
+              <strong class="text-success fs-5">{{ selectedLote?.exitosos }}</strong>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 border rounded text-center bg-light">
+              <small class="text-muted d-block">Fallos</small>
+              <strong class="text-danger fs-5">{{ selectedLote?.fallidos }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Ítems -->
+        <div *ngIf="loadingDetalle" class="text-center py-4 text-muted">
+          <span class="fa fa-spinner fa-spin me-2"></span> Cargando registros del lote...
+        </div>
+
+        <div *ngIf="!loadingDetalle && selectedLoteItems.length === 0" class="text-center py-4 text-muted">
+          No se encontraron registros detallados para este lote.
+        </div>
+
+        <div *ngIf="!loadingDetalle && selectedLoteItems.length > 0" class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Documento / NIT</th>
+                <th>Tipo Trámite</th>
+                <th class="text-center">Resultado</th>
+                <th>Fecha Proceso</th>
+                <th>Mensaje / Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedLoteItems; let i = index">
+                <td class="text-muted small">{{ i + 1 }}</td>
+                <td class="fw-semibold text-dark font-monospace">
+                  {{ item.documento_o_nit || item.numero_documento }}
+                </td>
+                <td>
+                  <span class="small text-secondary">{{ selectedLote?.tipo_tramite || 'primeraVez' }}</span>
+                </td>
+                <td class="text-center">
+                  <span [class]="getEstadoItemBadge(item.resultado || item.estado)">
+                    {{ getResultadoItemTexto(item.resultado || item.estado) }}
+                  </span>
+                </td>
+                <td class="small text-muted">
+                  {{ item.fecha_proceso ? (item.fecha_proceso | date:'yyyy-MM-dd HH:mm:ss') : '-' }}
+                </td>
+                <td class="small">
+                  <span *ngIf="item.mensaje_detalle" [class.text-danger]="(item.resultado || item.estado) !== 'emitido_exitosamente'" [class.text-success]="(item.resultado || item.estado) === 'emitido_exitosamente'" [title]="item.mensaje_detalle">
+                    {{ item.mensaje_detalle }}
+                  </span>
+                  <span *ngIf="!item.mensaje_detalle && (item.resultado || item.estado) === 'emitido_exitosamente'" class="text-success">
+                    <i class="fa fa-check-circle me-1"></i> Credencial emitida
+                  </span>
+                  <span *ngIf="!item.mensaje_detalle && (item.resultado || item.estado) === 'PENDIENTE'" class="text-muted">
+                    En espera de turno
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top py-2">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="cerrarModalDetalle()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
