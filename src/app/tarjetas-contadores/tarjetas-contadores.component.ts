@@ -146,6 +146,7 @@ export class TarjetasContadoresComponent implements OnInit {
   bulkFile: File | null = null;
   bulkResultText: string = '';
   bulkResultClass: string = 'bulk-result';
+  bulkTipoTramite: string = 'primeraVez';
 
   // Menú de acciones
   activeMenuId: number | null = null;
@@ -600,9 +601,12 @@ export class TarjetasContadoresComponent implements OnInit {
     const files = event.target.files;
     if (files && files.length > 0) {
       this.bulkFile = files[0];
+      this.bulkResultText = '';
+      this.bulkResultClass = 'bulk-result';
     } else {
       this.bulkFile = null;
     }
+    this.cdr.detectChanges();
   }
 
   descargarPlantillaCSV(): void {
@@ -632,21 +636,71 @@ export class TarjetasContadoresComponent implements OnInit {
       return;
     }
 
+    this.bulkResultText = "Leyendo archivo y extrayendo identificaciones...";
+    this.bulkResultClass = "bulk-result visible";
+
     const reader = new FileReader();
     reader.onload = () => {
       const fileContent = reader.result as string;
-      const rows = fileContent.split(/\r?\n/).filter(row => row.trim());
-      const records = Math.max(0, rows.length - 1);
+      const lines = fileContent.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
 
-      if (!records) {
-        this.bulkResultText = "La plantilla no contiene registros para procesar.";
+      const identificaciones: string[] = [];
+      for (const line of lines) {
+        const val = line.split(/[,;\t]/)[0].replace(/["']/g, '').trim();
+        if (val && !val.toLowerCase().includes('numero_identificacion') && !val.toLowerCase().includes('documento') && !val.toLowerCase().includes('identificacion')) {
+          identificaciones.push(val);
+        }
+      }
+
+      if (identificaciones.length === 0) {
+        this.bulkResultText = "La plantilla no contiene registros o números de identificación válidos para procesar.";
         this.bulkResultClass = "bulk-result visible error";
+        this.cdr.detectChanges();
         return;
       }
 
-      this.bulkResultText = `Archivo validado: ${records} contadores listos para emisión. La integración con el backend procesará duplicados, errores y notificaciones.`;
-      this.bulkResultClass = "bulk-result visible";
+      this.bulkResultText = `Procesando lote de ${identificaciones.length} contadores en el servidor...`;
       this.cdr.detectChanges();
+
+      const payload = {
+        tipo_tarjeta: "contadores",
+        tipo_tramite: this.bulkTipoTramite || "primeraVez",
+        identificaciones: identificaciones,
+        archivo_nombre: this.bulkFile?.name || "emision_contadores.csv",
+        asincrono: identificaciones.length > 30,
+        creado_por: "Administrador"
+      };
+
+      this.http.post<any>(`${API_BASE}/tarjetas/emision-masiva?client_id=${this.clientId}`, payload)
+        .subscribe({
+          next: (res) => {
+            if (res.asincrono) {
+              this.bulkResultText = res.mensaje || `Lote #${res.lote_id} encolado para procesamiento en segundo plano (${res.total} registros).`;
+              this.bulkResultClass = "bulk-result visible";
+            } else {
+              const r = res.resumen || {};
+              let msg = `Lote #${res.lote_id} procesado: ${r.creados || 0} emitidos con éxito, ${r.omitidos_duplicados || 0} omitidos por duplicado, ${r.no_aptos || 0} no encontrados en JCC`;
+              if (r.errores_conexion > 0) {
+                msg += `, ${r.errores_conexion} fallas de conexión con JCC (verifique VPN)`;
+              }
+              if (r.errores > 0) {
+                msg += `, ${r.errores} errores`;
+              }
+              if (r.abortado_por_conexion) {
+                msg += `. [ATENCIÓN: Proceso detenido automáticamente tras detectar corte de conexión con JCC / VPN].`;
+              }
+              this.bulkResultText = msg;
+              this.bulkResultClass = (r.creados > 0 && !r.abortado_por_conexion) ? "bulk-result visible" : "bulk-result visible error";
+            }
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            const errorMsg = err.error?.detail || err.message || "Error al procesar el lote en el servidor.";
+            this.bulkResultText = `Error de procesamiento: ${errorMsg}`;
+            this.bulkResultClass = "bulk-result visible error";
+            this.cdr.detectChanges();
+          }
+        });
     };
     reader.onerror = () => {
       this.bulkResultText = "No fue posible leer el archivo seleccionado.";

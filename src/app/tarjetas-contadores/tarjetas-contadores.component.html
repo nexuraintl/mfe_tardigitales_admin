@@ -52,6 +52,9 @@
 <app-emision-masiva-contadores
   *ngIf="vistaActiva === 'emision-masiva'"
   [bulkResultText]="bulkResultText"
+  [bulkResultClass]="bulkResultClass"
+  [archivoSeleccionado]="bulkFile"
+  [(tipoTramite)]="bulkTipoTramite"
   (descargarPlantillaCSV)="descargarPlantillaCSV()"
   (seleccionarArchivo)="seleccionarArchivo($event)"
   (procesarEmisionMasiva)="procesarEmisionMasiva()"

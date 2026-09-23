@@ -71,13 +71,13 @@
           (ngModelChange)="onEndpointChange()"
         >
           <option value="">Todos</option>
-          <option value="contadores">/contadores/</option>
-          <option value="sociedades">/sociedades/</option>
+          <option value="contadores">Contadores (JCC)</option>
+          <option value="sociedades">Sociedades (JCC)</option>
         </select>
       </div>
 
       <!-- Tipo -->
-      <div class="col-sm-6 col-lg-2">
+      <div class="col-sm-6 col-lg-3">
         <label for="auditType" class="form-label small fw-semibold text-dark mb-1">Tipo</label>
         <select 
           class="form-select form-select-sm" 
@@ -87,21 +87,6 @@
         >
           <option value="">Todos</option>
           <option *ngFor="let t of availableTypes" [value]="t.value">{{ t.label }}</option>
-        </select>
-      </div>
-
-      <!-- Cambiar Estado -->
-      <div class="col-sm-6 col-lg-1">
-        <label for="auditChangeState" class="form-label small fw-semibold text-dark mb-1">Cambiar est.</label>
-        <select 
-          class="form-select form-select-sm" 
-          id="auditChangeState" 
-          [(ngModel)]="filterChangeState" 
-          (ngModelChange)="onFilterChange()"
-        >
-          <option value="">Todos</option>
-          <option value="true">True</option>
-          <option value="false">False</option>
         </select>
       </div>
 
@@ -170,8 +155,7 @@
             }"></span>
           </th>
           <th scope="col">Tipo</th>
-          <th scope="col">Cambiar estado</th>
-          <th scope="col">HTTP</th>
+          <th scope="col">Http</th>
           <th scope="col" class="nx-sortable" (click)="ordenarPor('duracion_ms')">
             Duración
             <span class="fa nx-sort-icon" [ngClass]="{
@@ -186,7 +170,7 @@
       <tbody>
         <!-- Cargando -->
         <tr *ngIf="loading && logs.length === 0">
-          <td colspan="9" class="text-center py-5 text-muted">
+          <td colspan="8" class="text-center py-5 text-muted">
             <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
             Cargando registros de auditoría...
           </td>
@@ -194,7 +178,7 @@
 
         <!-- Sin registros -->
         <tr *ngIf="!loading && filteredLogs.length === 0">
-          <td colspan="9" class="text-center py-4 text-muted">
+          <td colspan="8" class="text-center py-4 text-muted">
             <span class="fa fa-info-circle me-1"></span> No se encontraron registros de auditoría con los filtros aplicados.
           </td>
         </tr>
@@ -209,8 +193,13 @@
               <span class="fa fa-clock-o text-muted me-1 small"></span>
               <span class="fw-medium text-dark">{{ log.fecha_hora }}</span>
             </td>
-            <td>
-              <code class="px-2 py-1 bg-light text-primary rounded border small">/{{ log.endpoint.toLowerCase() }}/</code>
+            <td class="text-break">
+              <code 
+                class="px-2 py-1 bg-light text-primary rounded border small text-break d-inline-block" 
+                [title]="log.url || log.endpoint"
+              >
+                {{ log.url || log.endpoint }}
+              </code>
             </td>
             <td>
               <span 
@@ -225,14 +214,6 @@
             </td>
             <td>
               <span class="badge bg-light text-dark border">{{ getTipoLabel(log.tipo) }}</span>
-            </td>
-            <td>
-              <span 
-                class="badge" 
-                [ngClass]="hasChangeState(log) ? 'bg-warning text-dark' : 'bg-light text-muted border'"
-              >
-                {{ hasChangeState(log) ? 'True' : 'False' }}
-              </span>
             </td>
             <td>
               <span 
@@ -260,7 +241,7 @@
 
           <!-- Detalle Acordeón JSON (Diseño exacto y limpio de index.html) -->
           <tr *ngIf="isExpanded(log.id)" class="audit-detail-row">
-            <td colspan="9" class="audit-detail-cell">
+            <td colspan="8" class="audit-detail-cell">
               <div class="audit-detail-grid">
                 <div class="audit-request-panel">
                   <strong>URL</strong>

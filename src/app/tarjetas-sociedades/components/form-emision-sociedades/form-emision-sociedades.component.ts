@@ -34,7 +34,7 @@ import { FormsModule } from '@angular/forms';
               <label for="societyIssueNit" class="form-label fw-semibold text-secondary small mb-1">
                 NIT de la sociedad
               </label>
-              <input type="text" id="societyIssueNit" inputmode="numeric" maxlength="20" class="form-control" placeholder="Ej. 900123456-1" [ngModel]="nuevaIdentificacion" (ngModelChange)="nuevaIdentificacionChange.emit($event)" (keyup.enter)="consultarSociedad.emit()">
+              <input type="text" id="societyIssueNit" inputmode="numeric" maxlength="20" class="form-control" placeholder="Ej. 900123456" [ngModel]="nuevaIdentificacion" (ngModelChange)="nuevaIdentificacionChange.emit($event)" (keyup.enter)="consultarSociedad.emit()">
             </div>
             <button type="button" class="btn btn-primary w-100 fw-semibold" id="societyIssueSearch" (click)="consultarSociedad.emit()" [disabled]="cargandoBusqueda">
               <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar NIT</span>
