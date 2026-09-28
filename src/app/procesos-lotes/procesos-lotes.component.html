@@ -155,7 +155,15 @@
           <div class="info-block-box h-100">
             <div class="field-label mb-1">Estado del Hilo de Procesamiento</div>
             <div class="d-flex align-items-center gap-2">
-              <span class="badge" [class.bg-primary-subtle]="metricas?.worker_estado === 'PROCESANDO'" [class.text-primary]="metricas?.worker_estado === 'PROCESANDO'" [class.bg-secondary-subtle]="metricas?.worker_estado !== 'PROCESANDO'" [class.text-secondary]="metricas?.worker_estado !== 'PROCESANDO'">
+              <span class="badge" 
+                [class.bg-success-subtle]="metricas?.worker_estado === 'EN_ESPERA'" 
+                [class.text-success]="metricas?.worker_estado === 'EN_ESPERA'" 
+                [class.bg-primary-subtle]="metricas?.worker_estado === 'PROCESANDO'" 
+                [class.text-primary]="metricas?.worker_estado === 'PROCESANDO'" 
+                [class.bg-danger-subtle]="metricas?.worker_estado === 'ERROR'" 
+                [class.text-danger]="metricas?.worker_estado === 'ERROR'"
+                [class.bg-secondary-subtle]="metricas?.worker_estado !== 'PROCESANDO' && metricas?.worker_estado !== 'EN_ESPERA' && metricas?.worker_estado !== 'ERROR'"
+                [class.text-secondary]="metricas?.worker_estado !== 'PROCESANDO' && metricas?.worker_estado !== 'EN_ESPERA' && metricas?.worker_estado !== 'ERROR'">
                 {{ metricas?.worker_estado || 'EN_ESPERA' }}
               </span>
               <span class="small text-muted">
@@ -163,7 +171,12 @@
               </span>
             </div>
             <div class="small text-muted mt-2">
-              {{ metricas?.worker_estado === 'PROCESANDO' ? 'Emitiendo y firmando credenciales activamente en este momento.' : 'En reposo (0% CPU). Despierta instantáneamente cuando entran registros a la cola.' }}
+              <ng-container [ngSwitch]="metricas?.worker_estado">
+                <span *ngSwitchCase="'PROCESANDO'">Emitiendo y firmando credenciales activamente en este momento.</span>
+                <span *ngSwitchCase="'ERROR'" class="text-danger">Fallo temporal en el ciclo de procesamiento. Reintentando reconexión automáticamente.</span>
+                <span *ngSwitchCase="'PAUSADO'">El worker se encuentra pausado por parametrización.</span>
+                <span *ngSwitchDefault>En reposo (0% CPU). Despierta instantáneamente cuando entran registros a la cola.</span>
+              </ng-container>
             </div>
           </div>
         </div>
