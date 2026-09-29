@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/constants/tarjetas.constants';
 import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../tarjeta-credencial/tarjeta-credencial.component';
+import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
 
 @Component({
   selector: 'app-modal-detalle-tarjeta',
@@ -187,8 +188,18 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
             </div>
           </div>
           
-          <div class="modal-footer bg-light border-top py-2.5 px-4">
-            <button type="button" class="btn btn-outline-secondary btn-sm px-4" (click)="cerrarTarjeta.emit()">Cerrar</button>
+          <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-between align-items-center">
+            <button type="button" class="btn btn-outline-secondary btn-sm px-4 fw-semibold" (click)="cerrarTarjeta.emit()">Cerrar</button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm px-4 fw-semibold d-flex align-items-center gap-2"
+              (click)="exportarTarjetaPdf()"
+              [disabled]="exportandoPdf"
+            >
+              <span *ngIf="exportandoPdf" class="spinner-border spinner-border-sm"></span>
+              <span *ngIf="!exportandoPdf" class="fa fa-file-pdf-o"></span>
+              <span>{{ exportandoPdf ? 'Generando PDF...' : 'Exportar tarjeta' }}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -209,6 +220,34 @@ export class ModalDetalleTarjetaComponent {
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() cerrarTarjeta = new EventEmitter<void>();
+
+  private pdfService = inject(TarjetaPdfService);
+  exportandoPdf: boolean = false;
+
+  async exportarTarjetaPdf(): Promise<void> {
+    if (!this.selectedTarjeta || this.exportandoPdf) return;
+
+    this.exportandoPdf = true;
+    try {
+      await this.pdfService.generarPdfTarjeta({
+        tipo: this.isSociedades ? 'sociedad' : 'contador',
+        matricula: this.isSociedades ? this.numeroInscripcionVal : this.tarjetaProfesionalVal,
+        fecha_resolucion: this.selectedTarjeta.fecha_resolucion || '06 - Feb - 2026',
+        resolucion: this.selectedTarjeta.resolucion || '289',
+        expediente: this.expedienteVal,
+        solicitante: this.isSociedades ? this.razonSocialVal : this.nombreCompletoVal,
+        documento: this.isSociedades ? this.nitVal : this.documentoContadorVal,
+        universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle'),
+        foto: this.getFoto(this.selectedTarjeta.foto),
+        hash_sha256: this.selectedTarjeta.hash_sha256,
+        logo_url: this.brandingLogoUrl || 'assets/images/logo-jcc.png'
+      });
+    } catch (err) {
+      console.error('Error al exportar PDF de tarjeta:', err);
+    } finally {
+      this.exportandoPdf = false;
+    }
+  }
 
   getFoto(url?: string | null): string {
     if (typeof this.getFotoUrlFn === 'function') {
