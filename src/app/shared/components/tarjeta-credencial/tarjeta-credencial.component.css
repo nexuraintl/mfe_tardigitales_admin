@@ -1,0 +1,289 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.credencial-container {
+  width: 100%;
+}
+
+.credencial-card-wrapper {
+  container-type: inline-size;
+  container-name: credencial-card-box;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Disposiciones */
+.credencial-container.layout-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.credencial-container.layout-side,
+.credencial-container.layout-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ========================================================
+   ESTILOS DE LA TARJETA (EXPANSIÓN VERTICAL OPTIMIZADA)
+   ======================================================== */
+/* ========================================================
+   ESTILOS DE LA TARJETA (PROPORCIÓN EXACTA SEGÚN DISEÑO ORIGINAL)
+   ======================================================== */
+/* ========================================================
+   ESTILOS DE LA TARJETA (PROPORCIÓN Y DISTRIBUCIÓN EXACTA ORIGINAL)
+   ======================================================== */
+/* ========================================================
+   ESTILOS DE LA TARJETA (PROPORCIÓN Y ESCALADO FLUIDO 100% DINÁMICO)
+   ======================================================== */
+.credencial-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  /* Proporción exacta oficial estándar tarjeta (358 / 223) */
+  aspect-ratio: 358 / 223;
+  overflow: hidden;
+  padding: 4.5cqw 5cqw;
+  border-radius: 6.2cqw;
+  background: var(--credencial-bg, #14275f);
+  box-shadow: 0 2.8cqw 6.5cqw rgba(15, 23, 42, 0.2);
+  box-sizing: border-box;
+  color: var(--credencial-text, #ffffff);
+  font-family: var(--credencial-font, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
+  user-select: none;
+}
+
+.credencial-card::before {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background-image: var(--credencial-pattern);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  content: "";
+  opacity: 0.45;
+  border-radius: 6.5cqw;
+  pointer-events: none;
+}
+
+/* Cabecera y Logo JCC dinámico */
+.credencial-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2.8cqw;
+  margin-top: 0.5cqw;
+  margin-bottom: 2cqw;
+}
+
+.credencial-head.back {
+  justify-content: flex-end;
+}
+
+.credencial-logo-wrapper {
+  display: inline-flex;
+  align-items: center;
+  height: 9cqw;
+}
+
+.credencial-logo {
+  height: 100%;
+  width: auto;
+  max-width: 38cqw;
+  object-fit: contain;
+  object-position: left top;
+}
+
+.credencial-head.back .credencial-logo {
+  object-position: right top;
+}
+
+.credencial-logo-placeholder {
+  background: rgba(255, 255, 255, 0.95);
+  color: #174a7e;
+  padding: 1cqw 2.8cqw;
+  border-radius: 1.8cqw;
+  font-weight: 700;
+  font-size: 2.7cqw;
+  display: inline-flex;
+  align-items: center;
+}
+
+.credencial-badge-status {
+  padding: 0.9cqw 3cqw;
+  border-radius: 999px;
+  background: #58e681;
+  color: #176233;
+  font-size: 2.5cqw;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Cuerpo frontal: Foto y Bloque Tarjeta Profesional dinámicos */
+.credencial-front-body {
+  display: grid;
+  grid-template-columns: 28% 1fr;
+  gap: 6%;
+  align-items: center;
+  flex: 1;
+  padding: 0.5cqw 0;
+}
+
+.credencial-photo-frame {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.credencial-photo {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  border: clamp(2px, 0.8cqw, 3.8px) solid rgba(255, 255, 255, 0.96);
+  border-radius: 22%;
+  object-fit: cover;
+  background: #ffffff;
+  box-shadow: 0 1.4cqw 4cqw rgba(0, 0, 0, 0.22);
+}
+
+.credencial-reg-block {
+  text-align: right;
+}
+
+.credencial-reg-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.8cqw;
+}
+
+.credencial-reg-value {
+  display: block;
+  font-size: 5.8cqw;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+}
+
+.credencial-copy-btn {
+  background: transparent;
+  border: 0;
+  padding: 0.6cqw;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.9;
+  border-radius: 1.2cqw;
+  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
+}
+
+.credencial-copy-btn:hover {
+  opacity: 1;
+  transform: scale(1.12);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.credencial-copy-btn.copied {
+  opacity: 1;
+}
+
+.credencial-copy-svg {
+  width: 4.4cqw;
+  height: 4.4cqw;
+  min-width: 14px;
+  max-width: 22px;
+}
+
+/* Etiquetas y valores generales dinámicos */
+.credencial-label {
+  display: block;
+  margin-bottom: 1.1cqw;
+  font-size: 2.6cqw;
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0.9;
+  letter-spacing: 0.01em;
+}
+
+.credencial-value {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 3.8cqw;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.credencial-field-col {
+  min-width: 0;
+}
+
+.credencial-field-col.align-end {
+  text-align: right;
+}
+
+/* Pie frontal dinámico */
+.credencial-front-footer {
+  display: grid;
+  grid-template-columns: 1fr 30%;
+  gap: 8%;
+  align-items: end;
+  padding-bottom: 0.8cqw;
+}
+
+.credencial-date-value {
+  font-size: 4cqw;
+  font-weight: 500;
+}
+
+.credencial-res-value {
+  font-size: 4.7cqw;
+  font-weight: 500;
+}
+
+/* Reverso de la tarjeta dinámico */
+.credencial-back-details {
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: 5.2cqw 4.2cqw;
+  align-items: end;
+  margin-top: auto;
+  padding-bottom: 0.8cqw;
+}
+
+.credencial-name-value,
+.credencial-extra-value {
+  font-size: 3.8cqw;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.credencial-doc-value {
+  font-size: 4.1cqw;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.credencial-exp-value {
+  font-size: 4.3cqw;
+  font-weight: 500;
+  line-height: 1.25;
+}

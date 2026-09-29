@@ -38,7 +38,7 @@ import { FormsModule } from '@angular/forms';
                 <div class="d-flex align-items-start gap-3">
                   <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 fw-bold">3</span>
                   <div class="small text-secondary">
-                    Guarde el archivo con codificación UTF-8 (extensión <code>.csv</code> o <code>.txt</code>) y súbalo en la sección de procesamiento.
+                    Guarde el archivo (extensión <code>.csv</code> o <code>.txt</code>) y súbalo en la sección de procesamiento.
                   </div>
                 </div>
               </div>
@@ -51,7 +51,6 @@ import { FormsModule } from '@angular/forms';
                 <ul class="text-muted small mb-0 ps-3">
                   <li>Encabezado obligatorio: <code>numero_documento</code></li>
                   <li>Formato admitido: Archivo plano delimitado por comas</li>
-                  <li>Codificación requerida: UTF-8</li>
                 </ul>
               </div>
             </div>
