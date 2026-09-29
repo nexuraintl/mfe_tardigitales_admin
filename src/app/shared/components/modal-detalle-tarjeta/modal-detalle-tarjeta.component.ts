@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/constants/tarjetas.constants';
+import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../tarjeta-credencial/tarjeta-credencial.component';
 
 @Component({
   selector: 'app-modal-detalle-tarjeta',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TarjetaCredencialComponent],
   template: `
     <!-- Modal de Detalle (Estructura Ejecutiva Limpia) -->
     <div class="modal-backdrop fade show" *ngIf="isOpen"></div>
@@ -164,7 +165,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
     <!-- Modal de Tarjeta Profesional Digital -->
     <div class="modal-backdrop fade show" *ngIf="isCardModalOpen"></div>
     <div class="modal fade show d-block" tabindex="-1" *ngIf="isCardModalOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrarTarjeta.emit()">
-      <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-dialog modal-dialog-centered modal-xl" (click)="$event.stopPropagation()">
         <div class="modal-content shadow border-0">
           <div class="modal-header bg-white border-bottom py-3 px-4">
             <div>
@@ -175,77 +176,14 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
           </div>
           
           <div class="modal-body p-4 d-flex justify-content-center bg-light">
-            <div
-              class="branding-preview-card"
-              [style.--branding-card-background]="brandingColorFondo"
-              [style.--branding-card-text]="brandingColorLetra"
-              [style.--branding-card-font]="brandingFuenteLetra"
-              [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
-            >
-              <div class="branding-preview-stack">
-                <!-- TARJETA FRENTE -->
-                <article class="branding-id-card" aria-label="Vista del frente de la tarjeta">
-                  <div class="branding-card-head">
-                    <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                      <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
-                    </div>
-                    <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                      <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-                    </div>
-                    <span class="branding-card-status">Activa</span>
-                  </div>
-
-                  <div class="branding-card-front-body">
-                    <img class="branding-card-photo" [src]="getFoto(selectedTarjeta.foto)" alt="Fotografía" />
-                    <div class="branding-card-number">
-                      <span class="branding-card-label">Tarjeta profesional</span>
-                      <strong class="branding-card-value">{{ matriculaVal }}</strong>
-                    </div>
-                  </div>
-
-                  <div class="branding-card-front-footer">
-                    <div>
-                      <span class="branding-card-label">Fecha Res. Inscripción</span>
-                      <strong class="branding-card-value">{{ selectedTarjeta.fecha_resolucion || '15 - Sep - 2026' }}</strong>
-                    </div>
-                    <div>
-                      <span class="branding-card-label">N. Expediente</span>
-                      <strong class="branding-card-value">{{ expedienteVal || 'Pendiente' }}</strong>
-                    </div>
-                  </div>
-                </article>
-
-                <!-- TARJETA REVERSO -->
-                <article class="branding-id-card" aria-label="Vista del reverso de la tarjeta">
-                  <div class="branding-card-head back">
-                    <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                      <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
-                    </div>
-                    <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                      <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-                    </div>
-                  </div>
-
-                  <div class="branding-card-back-details">
-                    <div>
-                      <span class="branding-card-label">Nombre / Razón Social</span>
-                      <strong class="branding-card-value">{{ solicitanteVal }}</strong>
-                    </div>
-                    <div>
-                      <span class="branding-card-label">Identificación / NIT</span>
-                      <strong class="branding-card-value">{{ documentoVal }}</strong>
-                    </div>
-                    <div *ngIf="selectedTarjeta.universidad">
-                      <span class="branding-card-label">Institución de Educación Superior</span>
-                      <strong class="branding-card-value">{{ selectedTarjeta.universidad }}</strong>
-                    </div>
-                    <div>
-                      <span class="branding-card-label">Res. Inscripción</span>
-                      <strong class="branding-card-value">{{ selectedTarjeta.resolucion || '0001' }}</strong>
-                    </div>
-                  </div>
-                </article>
-              </div>
+            <div class="branding-preview-card w-100" style="max-width: 900px;">
+              <app-tarjeta-credencial
+                [tipo]="isSociedades ? 'sociedad' : 'contador'"
+                vista="ambas"
+                layout="auto"
+                [datos]="credencialDatos"
+                [branding]="credencialBranding"
+              ></app-tarjeta-credencial>
             </div>
           </div>
           
@@ -364,5 +302,30 @@ export class ModalDetalleTarjetaComponent {
   get estadoVal(): string {
     if (!this.selectedTarjeta) return 'Emitida';
     return this.selectedTarjeta.estado_tarjeta || this.selectedTarjeta.tarjeta || 'Emitida';
+  }
+
+  get credencialDatos(): CredencialDatos {
+    if (!this.selectedTarjeta) return {};
+    return {
+      matricula: String(this.matriculaVal),
+      fecha_resolucion: this.selectedTarjeta.fecha_resolucion || '15 - Sep - 2026',
+      resolucion: this.selectedTarjeta.resolucion || '0001',
+      expediente: this.expedienteVal,
+      solicitante: this.solicitanteVal,
+      documento: this.documentoVal,
+      universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle'),
+      foto: this.getFoto(this.selectedTarjeta.foto),
+      estado: this.estadoVal
+    };
+  }
+
+  get credencialBranding(): CredencialBranding {
+    return {
+      color_fondo: this.brandingColorFondo,
+      color_letra: this.brandingColorLetra,
+      fuente_letra: this.brandingFuenteLetra,
+      logo_url: this.brandingLogoUrl,
+      patron_url: this.brandingPatronUrl
+    };
   }
 }

@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../../../shared/components/tarjeta-credencial/tarjeta-credencial.component';
 
 @Component({
   selector: 'app-form-emision-sociedades',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TarjetaCredencialComponent],
   template: `
     <div class="branding-layout">
       <!-- Columna Izquierda: Consulta de NIT -->
@@ -63,46 +64,14 @@ import { FormsModule } from '@angular/forms';
 
             <!-- Previsualización al consultar -->
             <div *ngIf="busquedaRealizada && datosConsulta">
-              <div
-                class="branding-preview-card mb-4"
-                [style.--branding-card-background]="brandingColorFondo"
-                [style.--branding-card-text]="brandingColorLetra"
-                [style.--branding-card-font]="brandingFuenteLetra"
-                [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
-              >
-                <div class="branding-preview-stack">
-                  <!-- TARJETA FRENTE -->
-                  <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
-                    <div class="branding-card-head">
-                      <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                        <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo" />
-                      </div>
-                      <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-                      </div>
-                      <span class="branding-card-status">Emitida</span>
-                    </div>
-
-                    <div class="branding-card-front-body">
-                      <img class="branding-card-photo" [src]="getFotoUrlFn(datosConsulta.foto)" alt="Foto" />
-                      <div class="branding-card-number">
-                        <span class="branding-card-label">No. Inscripción</span>
-                        <strong class="branding-card-value">{{ datosConsulta.inscripcion || 'Pendiente' }}</strong>
-                      </div>
-                    </div>
-
-                    <div class="branding-card-front-footer">
-                      <div>
-                        <span class="branding-card-label">Razón Social</span>
-                        <strong class="branding-card-value text-truncate d-block" style="max-width: 180px;">{{ datosConsulta.razon_social }}</strong>
-                      </div>
-                      <div>
-                        <span class="branding-card-label">NIT</span>
-                        <strong class="branding-card-value">{{ datosConsulta.nit }}</strong>
-                      </div>
-                    </div>
-                  </article>
-                </div>
+              <div class="branding-preview-card mb-4">
+                <app-tarjeta-credencial
+                  tipo="sociedad"
+                  vista="ambas"
+                  layout="stack"
+                  [datos]="credencialDatos"
+                  [branding]="credencialBranding"
+                ></app-tarjeta-credencial>
               </div>
 
               <!-- BOTÓN DE CONFIRMACIÓN -->
@@ -146,4 +115,29 @@ export class FormEmisionSociedadesComponent {
 
   @Output() consultarSociedad = new EventEmitter<void>();
   @Output() confirmarEmision = new EventEmitter<void>();
+
+  get credencialDatos(): CredencialDatos {
+    if (!this.datosConsulta) return {};
+    return {
+      matricula: this.datosConsulta.inscripcion || 'Pendiente',
+      fecha_resolucion: this.datosConsulta.fecha_resolucion || '15 - Sep - 2026',
+      resolucion: this.datosConsulta.resolucion || '1042',
+      expediente: this.datosConsulta.expediente || '884120',
+      solicitante: this.datosConsulta.razon_social,
+      documento: this.datosConsulta.nit,
+      universidad: this.datosConsulta.tipo_sociedad || 'Sociedad de Contadores Públicos',
+      foto: this.getFotoUrlFn ? this.getFotoUrlFn(this.datosConsulta.foto) : this.datosConsulta.foto,
+      estado: 'Emitida'
+    };
+  }
+
+  get credencialBranding(): CredencialBranding {
+    return {
+      color_fondo: this.brandingColorFondo,
+      color_letra: this.brandingColorLetra,
+      fuente_letra: this.brandingFuenteLetra,
+      logo_url: this.brandingLogoUrl,
+      patron_url: this.brandingPatronUrl
+    };
+  }
 }

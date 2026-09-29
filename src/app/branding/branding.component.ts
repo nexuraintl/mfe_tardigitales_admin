@@ -8,6 +8,7 @@ import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
+import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../shared/components/tarjeta-credencial/tarjeta-credencial.component';
 
 export interface BrandingHistoryItem {
   id?: number;
@@ -25,7 +26,7 @@ export interface BrandingHistoryItem {
 @Component({
   selector: 'app-branding',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent],
+  imports: [CommonModule, FormsModule, NxAlertComponent, TarjetaCredencialComponent],
   templateUrl: './branding.component.html',
   styleUrls: ['./branding.component.css']
 })
@@ -91,17 +92,40 @@ export class BrandingComponent implements OnInit, OnDestroy {
   samplePhotoUrl: string = PHOTO_CARD_PATH;
 
   registrationLabel: string = 'Tarjeta profesional';
-  registrationValue: string = '356042-T';
+  registrationValue: string = '492031-T';
   dateLabel: string = 'Fecha Res. Inscripción';
   dateValue: string = '06 - Feb - 2026';
-  expedientValue: string = '426826';
+  expedientValue: string = '621948';
   holderLabel: string = 'Nombre y apellido';
-  holderValue: string = 'Sergio Andres Niño Ibañez';
+  holderValue: string = 'Andrés Felipe Torres Cárdenas';
   documentLabel: string = 'Cédula de ciudadanía';
-  documentValue: string = '1.022.413.295';
+  documentValue: string = '1.053.892.146';
   extraLabel: string = 'Institución de Educación Superior';
-  extraValue: string = 'Politécnico Grancolombiano';
-  resolutionValue: string = '378';
+  extraValue: string = 'Universidad de La Salle';
+  resolutionValue: string = '289';
+
+  get previewDatos(): CredencialDatos {
+    return {
+      matricula: this.registrationValue,
+      fecha_resolucion: this.dateValue,
+      resolucion: this.resolutionValue,
+      expediente: this.expedientValue,
+      solicitante: this.holderValue,
+      documento: this.documentValue,
+      universidad: this.extraValue,
+      foto: this.samplePhotoUrl
+    };
+  }
+
+  get previewBranding(): CredencialBranding {
+    return {
+      color_fondo: this.colorFondo,
+      color_letra: this.colorLetra,
+      fuente_letra: this.fuenteLetra,
+      logo_url: this.logoPreviewUrl,
+      patron_url: this.patronPreviewUrl
+    };
+  }
 
   historyVersions: BrandingHistoryItem[] = [];
 
@@ -157,14 +181,15 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
       // Custom card fields for Contadores
       this.registrationLabel = 'Tarjeta profesional';
-      this.registrationValue = '356042-T';
+      this.registrationValue = '492031-T';
       this.holderLabel = 'Nombre y apellido';
-      this.holderValue = 'Sergio Andres Niño Ibañez';
+      this.holderValue = 'Andrés Felipe Torres Cárdenas';
       this.documentLabel = 'Cédula de ciudadanía';
-      this.documentValue = '1.022.413.295';
+      this.documentValue = '1.053.892.146';
       this.extraLabel = 'Institución de Educación Superior';
-      this.extraValue = 'Politécnico Grancolombiano';
-      this.resolutionValue = '378';
+      this.extraValue = 'Universidad de La Salle';
+      this.resolutionValue = '289';
+      this.expedientValue = '621948';
       this.colorFondo = '#14275f';
       this.colorLetra = '#ffffff';
     }
