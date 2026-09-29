@@ -125,7 +125,6 @@ export class App implements OnInit {
         },
         { label: 'Validador QR', icon: 'fa fa-qrcode', path: '/validador-qr' },
         { label: 'Auditoría API', icon: 'fa fa-shield', path: '/auditoria' },
-        { label: 'Colas y Procesos', icon: 'fa fa-cogs', path: '/procesos-lotes' },
         { label: 'Usuarios', icon: 'fa fa-users', path: '/usuarios' }
       ]
     }
