@@ -13,6 +13,7 @@ export interface AuditoriaLog {
   metodo: string;
   tipo: string;
   duracion_ms: number;
+  codigo_http?: number;
   url: string;
   parametros_peticion: any;
   cuerpo_respuesta_peticion: any;
@@ -109,6 +110,7 @@ export class AuditoriaComponent implements OnInit {
             metodo: item.metodo || 'POST',
             tipo: item.tipo || 'General',
             duracion_ms: item.duracion_ms || 0,
+            codigo_http: item.codigo_http !== undefined && item.codigo_http !== null ? Number(item.codigo_http) : undefined,
             url: item.url || '',
             parametros_peticion: item.parametros_peticion || null,
             cuerpo_respuesta_peticion: item.cuerpo_respuesta_peticion || null
@@ -332,15 +334,22 @@ export class AuditoriaComponent implements OnInit {
     }
   }
 
-  getHttpStatus(log: AuditoriaLog): { code: number; isError: boolean } {
-    if (log.cuerpo_respuesta_peticion && log.cuerpo_respuesta_peticion.error) {
-      return { code: 400, isError: true };
+  getHttpStatus(log: AuditoriaLog): { label: string; isError: boolean; isUnknown: boolean } {
+    if (log.codigo_http !== undefined && log.codigo_http !== null && log.codigo_http > 0) {
+      const code = Number(log.codigo_http);
+      return { label: code.toString(), isError: code >= 400, isUnknown: false };
     }
-    if (log.cuerpo_respuesta_peticion && log.cuerpo_respuesta_peticion.encontrado === false) {
-      return { code: 404, isError: true };
+    if (log.cuerpo_respuesta_peticion?.http_status) {
+      const code = Number(log.cuerpo_respuesta_peticion.http_status);
+      return { label: code.toString(), isError: code >= 400, isUnknown: false };
     }
-    return { code: 200, isError: false };
+    if (log.cuerpo_respuesta_peticion?.error_conexion) {
+      return { label: '502', isError: true, isUnknown: false };
+    }
+    return { label: '—', isError: false, isUnknown: true };
   }
+
+
 
   formatEndpoint(rawUrl: string): string {
     if (!rawUrl) return '—';

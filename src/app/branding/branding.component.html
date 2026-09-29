@@ -239,81 +239,14 @@
           <div class="skeleton-card skeleton-box"></div>
         </div>
 
-        <div
-          *ngIf="!loading"
-          class="branding-preview-card"
-          [style.--branding-card-background]="colorFondo"
-          [style.--branding-card-text]="colorLetra"
-          [style.--branding-card-font]="fuenteLetra"
-          [style.--branding-card-pattern]="patronPreviewUrl ? 'url(' + patronPreviewUrl + ')' : null"
-        >
-          <div class="branding-preview-stack">
-            <!-- TARJETA FRENTE -->
-            <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
-              <div class="branding-card-head">
-                <img
-                  *ngIf="logoPreviewUrl"
-                  [src]="logoPreviewUrl"
-                  class="branding-preview-logo branding-card-logo"
-                  alt="Logo de la credencial"
-                />
-              </div>
-
-              <div class="branding-card-front-body">
-                <img
-                  class="branding-card-photo"
-                  [src]="samplePhotoUrl"
-                  alt="Fotografía o avatar de la credencial"
-                />
-                <div class="branding-card-number">
-                  <span class="branding-card-label">{{ registrationLabel }}</span>
-                  <strong class="branding-card-value">{{ registrationValue }}</strong>
-                </div>
-              </div>
-
-              <div class="branding-card-front-footer">
-                <div>
-                  <span class="branding-card-label">{{ dateLabel }}</span>
-                  <strong class="branding-card-value">{{ dateValue }}</strong>
-                </div>
-                <div>
-                  <span class="branding-card-label">N. Expediente</span>
-                  <strong class="branding-card-value">{{ expedientValue }}</strong>
-                </div>
-              </div>
-            </article>
-
-            <!-- TARJETA REVERSO -->
-            <article class="branding-id-card" aria-label="Vista previa del reverso de la tarjeta">
-              <div class="branding-card-head back">
-                <img
-                  *ngIf="logoPreviewUrl"
-                  [src]="logoPreviewUrl"
-                  class="branding-preview-logo branding-card-logo"
-                  alt="Logo de la credencial"
-                />
-              </div>
-
-              <div class="branding-card-back-details">
-                <div>
-                  <span class="branding-card-label">{{ holderLabel }}</span>
-                  <strong class="branding-card-value">{{ holderValue }}</strong>
-                </div>
-                <div>
-                  <span class="branding-card-label">{{ documentLabel }}</span>
-                  <strong class="branding-card-value">{{ documentValue }}</strong>
-                </div>
-                <div>
-                  <span class="branding-card-label">{{ extraLabel }}</span>
-                  <strong class="branding-card-value">{{ extraValue }}</strong>
-                </div>
-                <div>
-                  <span class="branding-card-label">Res. Inscripción</span>
-                  <strong class="branding-card-value">{{ resolutionValue }}</strong>
-                </div>
-              </div>
-            </article>
-          </div>
+        <div *ngIf="!loading" class="branding-preview-card">
+          <app-tarjeta-credencial
+            [tipo]="moduleName === 'sociedades' ? 'sociedad' : 'contador'"
+            vista="ambas"
+            layout="stack"
+            [datos]="previewDatos"
+            [branding]="previewBranding"
+          ></app-tarjeta-credencial>
 
           <p class="branding-preview-note mt-3 mb-0">
             Vista previa oficial de la credencial digital para {{ label.toLowerCase() }}.

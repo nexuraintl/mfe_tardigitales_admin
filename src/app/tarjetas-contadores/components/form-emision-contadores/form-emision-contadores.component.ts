@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../../../shared/components/tarjeta-credencial/tarjeta-credencial.component';
 
 @Component({
   selector: 'app-form-emision-contadores',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TarjetaCredencialComponent],
   template: `
     <div class="branding-layout">
       <!-- Columna Izquierda: Consulta de Matrícula -->
@@ -62,77 +63,14 @@ import { FormsModule } from '@angular/forms';
 
             <!-- Previsualización de Branding al consultar -->
             <div *ngIf="busquedaRealizada && datosConsulta">
-              <div
-                class="branding-preview-card mb-4"
-                [style.--branding-card-background]="brandingColorFondo"
-                [style.--branding-card-text]="brandingColorLetra"
-                [style.--branding-card-font]="brandingFuenteLetra"
-                [style.--branding-card-pattern]="brandingPatronUrl ? 'url(' + brandingPatronUrl + ')' : null"
-              >
-                <div class="branding-preview-stack">
-                  <!-- TARJETA FRENTE -->
-                  <article class="branding-id-card" aria-label="Vista previa del frente de la tarjeta">
-                    <div class="branding-card-head">
-                      <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                        <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
-                      </div>
-                      <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-                      </div>
-                      <span class="branding-card-status">Emitida</span>
-                    </div>
-
-                    <div class="branding-card-front-body">
-                      <img class="branding-card-photo" [src]="getFotoUrlFn(datosConsulta.foto)" alt="Fotografía del contador" />
-                      <div class="branding-card-number">
-                        <span class="branding-card-label">Tarjeta profesional</span>
-                        <strong class="branding-card-value">{{ datosConsulta.matricula }}</strong>
-                      </div>
-                    </div>
-
-                    <div class="branding-card-front-footer">
-                      <div>
-                        <span class="branding-card-label">Fecha Res. Inscripción</span>
-                        <strong class="branding-card-value">{{ datosConsulta.fecha_resolucion || '15 - Sep - 2026' }}</strong>
-                      </div>
-                      <div>
-                        <span class="branding-card-label">N. Expediente</span>
-                        <strong class="branding-card-value">{{ datosConsulta.expediente || 'Pendiente' }}</strong>
-                      </div>
-                    </div>
-                  </article>
-
-                  <!-- TARJETA REVERSO -->
-                  <article class="branding-id-card" aria-label="Vista previa del reverso de la tarjeta">
-                    <div class="branding-card-head back">
-                      <div class="branding-logo-badge" *ngIf="brandingLogoUrl">
-                        <img [src]="brandingLogoUrl" class="branding-preview-logo branding-card-logo" alt="Logo de la credencial" />
-                      </div>
-                      <div class="branding-logo-placeholder" *ngIf="!brandingLogoUrl">
-                        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-                      </div>
-                    </div>
-
-                    <div class="branding-card-back-details">
-                      <div>
-                        <span class="branding-card-label">Nombre y apellido</span>
-                        <strong class="branding-card-value">{{ datosConsulta.solicitante }}</strong>
-                      </div>
-                      <div>
-                        <span class="branding-card-label">Cédula de ciudadanía</span>
-                        <strong class="branding-card-value">{{ datosConsulta.documento }}</strong>
-                      </div>
-                      <div>
-                        <span class="branding-card-label">Institución de Educación Superior</span>
-                        <strong class="branding-card-value">{{ datosConsulta.universidad || 'Universidad Nacional de Colombia' }}</strong>
-                      </div>
-                      <div>
-                        <span class="branding-card-label">Res. Inscripción</span>
-                        <strong class="branding-card-value">{{ datosConsulta.resolucion || '0001' }}</strong>
-                      </div>
-                    </div>
-                  </article>
-                </div>
+              <div class="branding-preview-card mb-4">
+                <app-tarjeta-credencial
+                  tipo="contador"
+                  vista="ambas"
+                  layout="stack"
+                  [datos]="credencialDatos"
+                  [branding]="credencialBranding"
+                ></app-tarjeta-credencial>
               </div>
 
               <!-- BOTÓN DE CONFIRMACIÓN -->
@@ -176,4 +114,29 @@ export class FormEmisionContadoresComponent {
 
   @Output() consultarMatricula = new EventEmitter<void>();
   @Output() confirmarEmision = new EventEmitter<void>();
+
+  get credencialDatos(): CredencialDatos {
+    if (!this.datosConsulta) return {};
+    return {
+      matricula: this.datosConsulta.matricula,
+      fecha_resolucion: this.datosConsulta.fecha_resolucion || '15 - Sep - 2026',
+      resolucion: this.datosConsulta.resolucion || '0001',
+      expediente: this.datosConsulta.expediente || 'Pendiente',
+      solicitante: this.datosConsulta.solicitante,
+      documento: this.datosConsulta.documento,
+      universidad: this.datosConsulta.universidad || 'Universidad Nacional de Colombia',
+      foto: this.getFotoUrlFn ? this.getFotoUrlFn(this.datosConsulta.foto) : this.datosConsulta.foto,
+      estado: 'Emitida'
+    };
+  }
+
+  get credencialBranding(): CredencialBranding {
+    return {
+      color_fondo: this.brandingColorFondo,
+      color_letra: this.brandingColorLetra,
+      fuente_letra: this.brandingFuenteLetra,
+      logo_url: this.brandingLogoUrl,
+      patron_url: this.brandingPatronUrl
+    };
+  }
 }
