@@ -218,11 +218,16 @@
             <td>
               <span 
                 class="badge" 
-                [ngClass]="getHttpStatus(log).isError ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle'"
+                [ngClass]="{
+                  'bg-danger-subtle text-danger border border-danger-subtle': getHttpStatus(log).isError,
+                  'bg-success-subtle text-success border border-success-subtle': !getHttpStatus(log).isError && !getHttpStatus(log).isUnknown,
+                  'bg-secondary-subtle text-muted border border-secondary-subtle': getHttpStatus(log).isUnknown
+                }"
               >
-                {{ getHttpStatus(log).code }}
+                {{ getHttpStatus(log).label }}
               </span>
             </td>
+
             <td class="text-muted small">
               {{ log.duracion_ms ? (log.duracion_ms + ' ms') : '—' }}
             </td>
