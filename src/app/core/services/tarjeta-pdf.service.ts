@@ -195,7 +195,7 @@ export class TarjetaPdfService {
 
           <div>
             <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">${labelDocumento}</div>
-            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${datos.documento}</div>
+            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${String(datos.documento || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim()}</div>
           </div>
 
           <div>

@@ -285,15 +285,12 @@ export class ModalDetalleTarjetaComponent {
 
   get documentoContadorVal(): string {
     if (!this.selectedTarjeta) return '-';
-    if (this.selectedTarjeta.tipo_documento && this.selectedTarjeta.no_documento) {
-      return `${this.selectedTarjeta.tipo_documento} ${this.selectedTarjeta.no_documento}`;
-    }
-    return this.selectedTarjeta.no_documento || this.selectedTarjeta.documento || '-';
+    return String(this.selectedTarjeta.no_documento || this.selectedTarjeta.documento || '-');
   }
 
   get nitVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.nit || this.selectedTarjeta.documento || '-';
+    return String(this.selectedTarjeta.nit || this.selectedTarjeta.documento || '-');
   }
 
   get tarjetaProfesionalVal(): string {
@@ -318,9 +315,10 @@ export class ModalDetalleTarjetaComponent {
 
   get documentoVal(): string {
     if (!this.selectedTarjeta) return '-';
-    if (this.selectedTarjeta.nit) return `NIT ${this.selectedTarjeta.nit}`;
-    if (this.selectedTarjeta.no_documento) return `${this.selectedTarjeta.tipo_documento || 'CC'} ${this.selectedTarjeta.no_documento}`;
-    return this.selectedTarjeta.documento || '-';
+    if (this.selectedTarjeta.nit) return String(this.selectedTarjeta.nit);
+    if (this.selectedTarjeta.no_documento) return String(this.selectedTarjeta.no_documento);
+    const raw = this.selectedTarjeta.documento || '-';
+    return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
   }
 
   get matriculaVal(): string {
