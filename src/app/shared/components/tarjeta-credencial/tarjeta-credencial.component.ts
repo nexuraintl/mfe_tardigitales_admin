@@ -152,7 +152,9 @@ export class TarjetaCredencialComponent {
   }
 
   get valorDocumento(): string {
-    return this.datos.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
+    const raw = this.datos.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
+    if (!raw) return '';
+    return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
   }
 
   // ===== PIE INFERIOR (Fila 2 Izq: Institución / Tipo de Registro) =====
