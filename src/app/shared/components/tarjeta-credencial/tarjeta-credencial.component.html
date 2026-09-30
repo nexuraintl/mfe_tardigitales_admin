@@ -3,109 +3,152 @@
   [class.layout-stack]="layout === 'stack'"
   [class.layout-side]="layout === 'side-by-side'"
   [class.layout-auto]="layout === 'auto'"
-  [style.--credencial-bg]="fondoTarjeta"
-  [style.--credencial-text]="colorLetra"
-  [style.--credencial-font]="fuenteTarjeta"
-  [style.--credencial-pattern]="patronFondo"
+  [style.--branding-card-background]="fondoTarjeta"
+  [style.--branding-card-background-dark]="fondoTarjetaOscuro"
+  [style.--branding-card-background-deep]="fondoTarjetaProfundo"
+  [style.--branding-card-text]="colorLetra"
+  [style.--branding-card-font]="fuenteTarjeta"
+  [style.--branding-card-pattern]="patronFondo"
 >
-  <!-- ================= CARA FRONTAL (ANVERSO) ================= -->
-  <div class="credencial-card-wrapper" *ngIf="vista === 'ambas' || vista === 'frente'">
+  <div
+    class="branding-preview-stack"
+    [class.accountant-card-stack]="tipo === 'contador'"
+    [class.company-card-stack]="tipo === 'sociedad'"
+  >
+    <!-- ================= TARJETA PROFESIONAL DEL CONTADOR ================= -->
     <article
-      class="credencial-card credencial-front"
-      aria-label="Cara frontal de la credencial digital"
+      *ngIf="tipo === 'contador'"
+      class="branding-id-card accountant-branding-card"
+      aria-label="Vista previa de la tarjeta profesional del contador"
     >
-    <!-- Cabecera: Logo institucional -->
-    <div class="credencial-head">
-      <div class="credencial-logo-wrapper" *ngIf="branding.logo_url">
-        <img [src]="branding.logo_url" class="credencial-logo" alt="Logo de la credencial" />
+      <div class="accountant-card-logo-row">
+        <img
+          [src]="logoUrl"
+          id="brandingPreviewLogo"
+          class="accountant-card-logo branding-card-logo"
+          alt="Logo de la Junta Central de Contadores"
+          (error)="onLogoError($event)"
+        />
       </div>
-      <div class="credencial-logo-placeholder" *ngIf="!branding.logo_url">
-        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-      </div>
-      <span class="credencial-badge-status" *ngIf="datos.estado">{{ datos.estado }}</span>
-    </div>
-
-    <!-- Cuerpo frontal: Foto del titular + Número de registro con botón de copia -->
-    <div class="credencial-front-body">
-      <div class="credencial-photo-frame">
-        <img class="credencial-photo" [src]="fotoUrl" alt="Fotografía del titular" />
-      </div>
-
-      <div class="credencial-reg-block">
-        <span class="credencial-label">{{ labelRegistro }}</span>
-        <div class="credencial-reg-row">
-          <strong class="credencial-reg-value">{{ valorRegistro }}</strong>
-          <button
-            type="button"
-            class="credencial-copy-btn"
-            [class.copied]="copiadoExitoso"
-            (click)="copiarMatricula($event)"
-            [title]="copiadoExitoso ? '¡Copiado!' : 'Copiar al portapapeles'"
-            aria-label="Copiar número"
-          >
-            <!-- Icono SVG oficial de copia minimalista -->
-            <svg *ngIf="!copiadoExitoso" class="credencial-copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="8" y="7" width="12" height="14" rx="2.5" ry="2.5"></rect>
-              <path d="M5 16V5a2 2 0 0 1 2-2h10"></path>
-            </svg>
-            <span *ngIf="copiadoExitoso" class="fa fa-check text-success" style="font-size: 13px;"></span>
-          </button>
+      <div class="accountant-card-main">
+        <img class="branding-card-photo" [src]="fotoUrl" alt="Fotografía del contador" />
+        <div class="accountant-card-side">
+          <div class="accountant-card-info">
+            <span class="accountant-card-label">{{ labelRegistro }}</span>
+            <div class="accountant-card-registration">
+              <strong class="accountant-card-value">{{ valorRegistro }}</strong>
+              <span
+                class="accountant-card-copy"
+                (click)="copiarMatricula($event)"
+                role="button"
+                tabindex="0"
+                [title]="copiadoExitoso ? '¡Copiado!' : 'Copiar número'"
+                aria-label="Copiar número"
+              >
+                <svg *ngIf="!copiadoExitoso" class="credencial-copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2.5" ry="2.5"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span *ngIf="copiadoExitoso" class="fa fa-check text-success" style="font-size: 13px;"></span>
+              </span>
+            </div>
+          </div>
+          <div class="accountant-card-info">
+            <span class="accountant-card-label">{{ labelFecha }}</span>
+            <strong class="accountant-card-value">{{ valorFecha }}</strong>
+          </div>
+          <div class="accountant-card-info">
+            <span class="accountant-card-label">{{ labelMedio3 }}</span>
+            <strong class="accountant-card-value">{{ valorMedio3 }}</strong>
+          </div>
         </div>
       </div>
-    </div>
+      <div class="accountant-card-details">
+        <div class="accountant-card-info">
+          <span class="accountant-card-label">{{ labelTitular }}</span>
+          <strong class="accountant-card-value">{{ valorTitular }}</strong>
+        </div>
+        <div class="accountant-card-info">
+          <span class="accountant-card-label">{{ labelDocumento }}</span>
+          <strong class="accountant-card-value">{{ valorDocumento }}</strong>
+        </div>
+        <div class="accountant-card-info">
+          <span class="accountant-card-label">{{ labelExtra }}</span>
+          <strong class="accountant-card-value">{{ valorExtra }}</strong>
+        </div>
+        <div class="accountant-card-info">
+          <span class="accountant-card-label">{{ labelPie2Der }}</span>
+          <strong class="accountant-card-value">{{ valorPie2Der }}</strong>
+        </div>
+      </div>
+    </article>
 
-    <!-- Pie frontal: Fecha Res. Inscripción (izq) y Res. Inscripción (der) -->
-    <div class="credencial-front-footer">
-      <div class="credencial-field-col">
-        <span class="credencial-label">{{ labelFecha }}</span>
-        <strong class="credencial-value credencial-date-value">{{ valorFecha }}</strong>
+    <!-- ================= TARJETA PROFESIONAL DE LA SOCIEDAD ================= -->
+    <article
+      *ngIf="tipo === 'sociedad'"
+      class="branding-id-card company-branding-card"
+      aria-label="Vista previa de la tarjeta profesional de la sociedad"
+    >
+      <div class="company-card-logo-row">
+        <img
+          [src]="logoUrl"
+          id="brandingPreviewLogo"
+          class="company-card-header-logo branding-card-logo"
+          alt="Logo de la Junta Central de Contadores"
+          (error)="onLogoError($event)"
+        />
       </div>
-      <div class="credencial-field-col align-end">
-        <span class="credencial-label">{{ labelResolucion }}</span>
-        <strong class="credencial-value credencial-res-value">{{ valorResolucion }}</strong>
+      <div class="company-card-main">
+        <img class="company-card-mark" [src]="fotoUrl" alt="Logo de la sociedad" />
+        <div class="company-card-side">
+          <div class="company-card-info">
+            <span class="company-card-label">{{ labelRegistro }}</span>
+            <div class="company-card-registration">
+              <strong class="company-card-value">{{ valorRegistro }}</strong>
+              <span
+                class="company-card-copy"
+                (click)="copiarMatricula($event)"
+                role="button"
+                tabindex="0"
+                [title]="copiadoExitoso ? '¡Copiado!' : 'Copiar número'"
+                aria-label="Copiar número"
+              >
+                <svg *ngIf="!copiadoExitoso" class="credencial-copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2.5" ry="2.5"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span *ngIf="copiadoExitoso" class="fa fa-check text-success" style="font-size: 13px;"></span>
+              </span>
+            </div>
+          </div>
+          <div class="company-card-info">
+            <span class="company-card-label">{{ labelFecha }}</span>
+            <strong class="company-card-value">{{ valorFecha }}</strong>
+          </div>
+          <div class="company-card-info">
+            <span class="company-card-label">{{ labelMedio3 }}</span>
+            <strong class="company-card-value">{{ valorMedio3 }}</strong>
+          </div>
+        </div>
       </div>
-    </div>
-  </article>
-</div>
-
-<!-- ================= CARA TRASERA (REVERSO) ================= -->
-<div class="credencial-card-wrapper" *ngIf="vista === 'ambas' || vista === 'reverso'">
-  <article
-    class="credencial-card credencial-back"
-    aria-label="Cara trasera de la credencial digital"
-  >
-    <!-- Cabecera trasera: Logo institucional alineado a la derecha -->
-    <div class="credencial-head back">
-      <div class="credencial-logo-wrapper" *ngIf="branding.logo_url">
-        <img [src]="branding.logo_url" class="credencial-logo" alt="Logo de la credencial" />
+      <div class="company-card-details">
+        <div class="company-card-info">
+          <span class="company-card-label">{{ labelTitular }}</span>
+          <strong class="company-card-value">{{ valorTitular }}</strong>
+        </div>
+        <div class="company-card-info">
+          <span class="company-card-label">{{ labelDocumento }}</span>
+          <strong class="company-card-value">{{ valorDocumento }}</strong>
+        </div>
+        <div class="company-card-info">
+          <span class="company-card-label">{{ labelExtra }}</span>
+          <strong class="company-card-value">{{ valorExtra }}</strong>
+        </div>
+        <div class="company-card-info">
+          <span class="company-card-label">{{ labelPie2Der }}</span>
+          <strong class="company-card-value">{{ valorPie2Der }}</strong>
+        </div>
       </div>
-      <div class="credencial-logo-placeholder" *ngIf="!branding.logo_url">
-        <span class="fa fa-shield me-1"></span> JUNTA CENTRAL DE CONTADORES
-      </div>
-    </div>
-
-    <!-- Detalles del reverso: Datos personales e institución -->
-    <div class="credencial-back-details">
-      <!-- Fila 1: Titular (izq) y Cédula/NIT (der) -->
-      <div class="credencial-field-col">
-        <span class="credencial-label">{{ labelTitular }}</span>
-        <strong class="credencial-value credencial-name-value">{{ valorTitular }}</strong>
-      </div>
-      <div class="credencial-field-col align-end">
-        <span class="credencial-label">{{ labelDocumento }}</span>
-        <strong class="credencial-value credencial-doc-value">{{ valorDocumento }}</strong>
-      </div>
-
-      <!-- Fila 2: Institución/Tipo (izq) y N. Expediente (der) -->
-      <div class="credencial-field-col">
-        <span class="credencial-label">{{ labelExtra }}</span>
-        <strong class="credencial-value credencial-extra-value">{{ valorExtra }}</strong>
-      </div>
-      <div class="credencial-field-col align-end">
-        <span class="credencial-label">{{ labelExpediente }}</span>
-        <strong class="credencial-value credencial-exp-value">{{ valorExpediente }}</strong>
-      </div>
-    </div>
-  </article>
-</div>
+    </article>
+  </div>
 </div>
