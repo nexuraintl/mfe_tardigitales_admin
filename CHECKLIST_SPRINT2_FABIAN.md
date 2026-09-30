@@ -7,9 +7,9 @@ Este documento contiene la lista de chequeo y el estado de avance de las Histori
 ## 🚀 Resumen de Avance
 
 - **Total Historias de Usuario:** 6
-- **Completadas:** 4 / 6
-- **En Progreso:** 1 / 6
-- **Pendientes:** 1 / 6
+- **Completadas:** 6 / 6 (100%)
+- **En Progreso:** 0 / 6
+- **Pendientes:** 0 / 6
 
 ---
 
@@ -54,26 +54,26 @@ Este documento contiene la lista de chequeo y el estado de avance de las Histori
 
 ---
 
-### 4. [ ] HU-JCC-019: Configuración de datos visibles en validación QR
+### 4. [x] HU-JCC-019: Configuración de datos visibles en validación QR
 - **Prioridad:** Alta | **Módulo:** Validador QR
 - **Requisitos:** `REQ-FUNC-022`
-- **Tareas Pendientes:**
-  - [ ] **MFE Admin:** Vista "Campos del validador (verificación pública)".
-  - [ ] **MFE Admin:** Checkboxes de campos visibles (`Fotografía`, `Nombres`, `Matrícula`, `Identificación`, `Código de tarjeta`, `Estado`).
-  - [ ] **MFE Admin:** Validar que requiera al menos 1 campo seleccionado antes de guardar.
-  - [ ] **MS Python:** Endpoint para consultar y guardar configuración de visibilidad de campos.
+- **Tareas Completadas:**
+  - [x] **MFE Admin:** Vista "Campos del validador (verificación pública)".
+  - [x] **MFE Admin:** Checkboxes de campos visibles (`Fotografía`, `Nombres`, `Matrícula`, `Identificación`, `Código de tarjeta`, `Estado`).
+  - [x] **MFE Admin:** Validar que requiera al menos 1 campo seleccionado antes de guardar (Frontend y Backend).
+  - [x] **MS Python:** Endpoint para consultar y guardar configuración de visibilidad de campos.
 
 ---
 
-### 5. [ ] HU-JCC-020: Configuración y envío de notificaciones personalizadas (Sin Firebase)
+### 5. [x] HU-JCC-020: Configuración y envío de notificaciones personalizadas (Sin Firebase)
 - **Prioridad:** Baja | **Módulo:** Notificaciones
 - **Requisitos:** `REQ-FUNC-023`
-- **Tareas Pendientes:**
-  - [ ] **MFE Admin:** Vista "Configuración de Notificaciones" / "Crear notificación".
-  - [ ] **MFE Admin:** Campos de rango horario, canal (Push/Alerta/Interna), título, mensaje, tipo y audiencia.
-  - [ ] **MFE Admin:** Opción de envío inmediato o programado (fecha, hora, recurrencia).
-  - [ ] **MFE Admin:** Tabla de "Historial de notificaciones enviadas".
-  - [ ] **MS Python:** Endpoints para guardar/programar notificaciones e historial.
+- **Tareas Completadas:**
+  - [x] **MFE Admin:** Vista "Configuración de Notificaciones" / "Crear notificación".
+  - [x] **MFE Admin:** Campos de rango horario, canal (Push/Alerta/Interna), título, mensaje, tipo y audiencia.
+  - [x] **MFE Admin:** Opción de envío inmediato o programado (fecha, hora, recurrencia).
+  - [x] **MFE Admin:** Tabla de "Historial de notificaciones enviadas".
+  - [x] **MS Python:** Endpoints `/notificaciones/list` y `/notificaciones/create` para persistencia e historial en MySQL (`tn_tarjetavirtual_notificaciones`).
 
 ---
 

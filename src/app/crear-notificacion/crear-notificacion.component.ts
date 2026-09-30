@@ -139,7 +139,13 @@ export class CrearNotificacionComponent {
         fecha: fechaEnvio,
         estado: estadoEnvio,
         creadoPor: 'Administrador',
-        mensaje: this.notificationMessage
+        mensaje: this.notificationMessage,
+        tipo: this.notificationType,
+        hora_inicio: this.startTime,
+        hora_fin: this.endTime,
+        max_diario: this.maxDaily,
+        recurrencia: this.recurrence,
+        respetar_rango: this.respectRange
       };
 
       return this.http.post(`${API_BASE}/notificaciones/create?client_id=${this.clientId}`, payload);

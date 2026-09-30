@@ -71,8 +71,8 @@ export class NotificationsHistoryComponent implements OnInit {
     const ts = new Date().getTime();
     this.http.get<NotificationItem[]>(`${API_BASE}/notificaciones/list?client_id=${this.clientId}&_t=${ts}`)
       .subscribe({
-        next: (data) => {
-          this.notificaciones = data || [];
+        next: (data: any) => {
+          this.notificaciones = Array.isArray(data) ? data : (data?.data || []);
           this.loading = false;
           this.cdr.detectChanges();
         },
