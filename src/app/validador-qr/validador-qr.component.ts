@@ -22,6 +22,7 @@ export class ValidadorQrComponent implements OnInit {
   clientId: number = CLIENT_ID;
   loading: boolean = false;
   mensajeExito: string = '';
+  mensajeAdvertencia: string = '';
   currentError: AppError | null = null;
 
   // Configuración de campos
@@ -34,6 +35,17 @@ export class ValidadorQrComponent implements OnInit {
     val_estado: true
   };
 
+  get hasSelectedFields(): boolean {
+    return Boolean(
+      this.config.val_foto ||
+      this.config.val_nombres ||
+      this.config.val_matricula ||
+      this.config.val_numero_identificacion ||
+      this.config.val_codigo_tarjeta ||
+      this.config.val_estado
+    );
+  }
+
   ngOnInit(): void {
     this.cargarConfiguracion();
   }
@@ -42,6 +54,7 @@ export class ValidadorQrComponent implements OnInit {
     this.loading = true;
     this.currentError = null;
     this.mensajeExito = '';
+    this.mensajeAdvertencia = '';
 
     this.http.get<any>(`${API_BASE}/tarjetas/validador-qr/get-config?client_id=${this.clientId}`)
       .subscribe({
@@ -62,9 +75,16 @@ export class ValidadorQrComponent implements OnInit {
   }
 
   guardarConfiguracion(): void {
-    this.loading = true;
-    this.currentError = null;
     this.mensajeExito = '';
+    this.mensajeAdvertencia = '';
+    this.currentError = null;
+
+    if (!this.hasSelectedFields) {
+      this.mensajeAdvertencia = 'Debe seleccionar al menos un campo visible para guardar la configuración del validador público.';
+      return;
+    }
+
+    this.loading = true;
 
     const payload = {
       client_id: this.clientId,
