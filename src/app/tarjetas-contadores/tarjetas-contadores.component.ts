@@ -745,7 +745,7 @@ export class TarjetasContadoresComponent implements OnInit {
 
             this.datosConsulta = {
               solicitante: nombres || "Contador Público",
-              documento: `${docTipo} ${docNum}`,
+              documento: String(docNum),
               matricula: item.no_tarjeta ?? `TP-${docNum}`,
               expediente: item.no_expd ?? 0,
               correo: localTarjeta?.correo ?? item.correo ?? '',

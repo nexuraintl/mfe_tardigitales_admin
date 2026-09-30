@@ -740,7 +740,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
             this.datosConsulta = {
               solicitante: razonSocial,
-              documento: `NIT ${docNum}`,
+              documento: String(docNum),
               matricula: item.inscripcion ?? item.no_tarjeta ?? `REG-${docNum}`,
               expediente: item.no_expd ?? item.expediente ?? 0,
               correo: localTarjeta?.correo ?? item.correo ?? '',
