@@ -671,7 +671,9 @@ export class TarjetasSociedadesComponent implements OnInit {
         .subscribe({
           next: (res) => {
             if (res.asincrono) {
-              this.bulkResultText = res.mensaje || `Lote #${res.lote_id} encolado para procesamiento en segundo plano (${res.total} registros).`;
+              const count = res.total || identificaciones.length;
+              const regText = count === 1 ? '1 registro' : `${count} registros`;
+              this.bulkResultText = res.mensaje || `Archivo con ${regText} recibido correctamente. La información será procesada en segundo plano.`;
               this.bulkResultClass = "bulk-result visible";
             } else {
               const r = res.resumen || {};

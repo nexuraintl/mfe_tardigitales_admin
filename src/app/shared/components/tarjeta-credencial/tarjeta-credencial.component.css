@@ -5,285 +5,353 @@
 
 .credencial-container {
   width: 100%;
-}
-
-.credencial-card-wrapper {
-  container-type: inline-size;
-  container-name: credencial-card-box;
-  width: 100%;
   display: flex;
   justify-content: center;
 }
 
-/* Disposiciones */
-.credencial-container.layout-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  max-width: 440px;
-  margin: 0 auto;
-}
-
-.credencial-container.layout-side,
-.credencial-container.layout-auto {
+.branding-preview-stack {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
   width: 100%;
-  max-width: 900px;
+  max-width: 380px;
+  min-width: 0;
+  gap: 14px;
   margin: 0 auto;
 }
 
-/* ========================================================
-   ESTILOS DE LA TARJETA (EXPANSIÓN VERTICAL OPTIMIZADA)
-   ======================================================== */
-/* ========================================================
-   ESTILOS DE LA TARJETA (PROPORCIÓN EXACTA SEGÚN DISEÑO ORIGINAL)
-   ======================================================== */
-/* ========================================================
-   ESTILOS DE LA TARJETA (PROPORCIÓN Y DISTRIBUCIÓN EXACTA ORIGINAL)
-   ======================================================== */
-/* ========================================================
-   ESTILOS DE LA TARJETA (PROPORCIÓN Y ESCALADO FLUIDO 100% DINÁMICO)
-   ======================================================== */
-.credencial-card {
+.branding-id-card {
   position: relative;
   isolation: isolate;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  /* Proporción exacta oficial estándar tarjeta (358 / 223) */
-  aspect-ratio: 358 / 223;
+  flex-direction: column;
   overflow: hidden;
-  padding: 4.5cqw 5cqw;
-  border-radius: 6.2cqw;
-  background: var(--credencial-bg, #14275f);
-  box-shadow: 0 2.8cqw 6.5cqw rgba(15, 23, 42, 0.2);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
   box-sizing: border-box;
-  color: var(--credencial-text, #ffffff);
-  font-family: var(--credencial-font, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
+  color: var(--branding-card-text, #ffffff);
+  font-family: var(--branding-card-font, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
   user-select: none;
 }
 
-.credencial-card::before {
+/* ========================================================
+   CONTADOR BRANDING CARD (Exacto a JCC/index.html)
+   ======================================================== */
+.branding-preview-stack.accountant-card-stack {
+  max-width: 380px;
+}
+
+.accountant-branding-card {
+  aspect-ratio: 366 / 430;
+  padding: 5.45%;
+  border-radius: 6.6%;
+  background: radial-gradient(
+    circle at 72% 28%,
+    var(--branding-card-background) 0%,
+    var(--branding-card-background-dark) 62%,
+    var(--branding-card-background-deep) 100%
+  );
+}
+
+.accountant-branding-card::before {
   position: absolute;
   z-index: -2;
   inset: 0;
-  background-image: var(--credencial-pattern);
-  background-size: cover;
-  background-position: center;
+  background-image: var(--branding-card-pattern);
   background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  transform: none;
   content: "";
-  opacity: 0.45;
-  border-radius: 6.5cqw;
+  border-radius: inherit;
   pointer-events: none;
 }
 
-/* Cabecera y Logo JCC dinámico */
-.credencial-head {
+.accountant-branding-card::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0 55%, rgba(0, 0, 0, 0.22) 100%);
+  content: "";
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.accountant-card-logo-row {
   display: flex;
-  justify-content: space-between;
+  height: 10%;
   align-items: flex-start;
-  gap: 2.8cqw;
-  margin-top: 0.5cqw;
-  margin-bottom: 2cqw;
+  margin-bottom: 4.5%;
 }
 
-.credencial-head.back {
-  justify-content: flex-end;
-}
-
-.credencial-logo-wrapper {
-  display: inline-flex;
-  align-items: center;
-  height: 9cqw;
-}
-
-.credencial-logo {
+.accountant-card-logo {
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: 38cqw;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   object-fit: contain;
   object-position: left top;
 }
 
-.credencial-head.back .credencial-logo {
-  object-position: right top;
-}
-
-.credencial-logo-placeholder {
-  background: rgba(255, 255, 255, 0.95);
-  color: #174a7e;
-  padding: 1cqw 2.8cqw;
-  border-radius: 1.8cqw;
-  font-weight: 700;
-  font-size: 2.7cqw;
-  display: inline-flex;
-  align-items: center;
-}
-
-.credencial-badge-status {
-  padding: 0.9cqw 3cqw;
-  border-radius: 999px;
-  background: #58e681;
-  color: #176233;
-  font-size: 2.5cqw;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-/* Cuerpo frontal: Foto y Bloque Tarjeta Profesional dinámicos */
-.credencial-front-body {
+.accountant-card-main {
   display: grid;
-  grid-template-columns: 28% 1fr;
+  grid-template-columns: 55% 1fr;
   gap: 6%;
-  align-items: center;
-  flex: 1;
-  padding: 0.5cqw 0;
+  align-items: end;
+  min-height: 43%;
 }
 
-.credencial-photo-frame {
+.accountant-branding-card .branding-card-photo {
   width: 100%;
-  aspect-ratio: 1 / 1;
-}
-
-.credencial-photo {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 1 / 1;
-  border: clamp(2px, 0.8cqw, 3.8px) solid rgba(255, 255, 255, 0.96);
-  border-radius: 22%;
+  aspect-ratio: 179 / 174;
+  border: 0;
+  border-radius: 13.5%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.22);
   object-fit: cover;
-  background: #ffffff;
-  box-shadow: 0 1.4cqw 4cqw rgba(0, 0, 0, 0.22);
+  object-position: center 28%;
 }
 
-.credencial-reg-block {
+.accountant-card-side {
+  display: grid;
+  gap: 13px;
+  align-content: center;
   text-align: right;
 }
 
-.credencial-reg-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1.8cqw;
+.accountant-card-info {
+  min-width: 0;
 }
 
-.credencial-reg-value {
+.accountant-card-label {
   display: block;
-  font-size: 5.8cqw;
+  margin-bottom: 5px;
+  font-size: clamp(9px, 1.5vw, 13px);
   font-weight: 400;
-  letter-spacing: 0.03em;
-  line-height: 1.1;
+  line-height: 1.2;
+  opacity: 0.85;
 }
 
-.credencial-copy-btn {
-  background: transparent;
-  border: 0;
-  padding: 0.6cqw;
+.accountant-card-side .accountant-card-value {
+  display: block;
+  font-size: clamp(13px, 2.7vw, 23px);
+  font-weight: 700;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.accountant-card-side .accountant-card-info:nth-child(n+2) .accountant-card-value {
+  font-size: clamp(11px, 2.05vw, 18px);
+}
+
+.accountant-card-registration {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.accountant-card-copy {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: inherit;
   opacity: 0.9;
-  border-radius: 1.2cqw;
-  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
+  line-height: 1;
+  transition: transform 0.15s, opacity 0.15s;
 }
 
-.credencial-copy-btn:hover {
-  opacity: 1;
-  transform: scale(1.12);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.credencial-copy-btn.copied {
+.accountant-card-copy:hover {
+  transform: scale(1.15);
   opacity: 1;
 }
 
-.credencial-copy-svg {
-  width: 4.4cqw;
-  height: 4.4cqw;
-  min-width: 14px;
-  max-width: 22px;
+.accountant-card-details {
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: 8% 7%;
+  align-content: end;
+  flex: 1;
+  padding-top: 7%;
 }
 
-/* Etiquetas y valores generales dinámicos */
-.credencial-label {
-  display: block;
-  margin-bottom: 1.1cqw;
-  font-size: 2.6cqw;
-  font-weight: 400;
-  line-height: 1.2;
-  opacity: 0.9;
-  letter-spacing: 0.01em;
-}
-
-.credencial-value {
-  display: block;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 3.8cqw;
-  font-weight: 400;
-  line-height: 1.25;
-}
-
-.credencial-field-col {
-  min-width: 0;
-}
-
-.credencial-field-col.align-end {
+.accountant-card-details .accountant-card-info:nth-child(even) {
   text-align: right;
 }
 
-/* Pie frontal dinámico */
-.credencial-front-footer {
+.accountant-card-details .accountant-card-value {
+  display: block;
+  font-size: clamp(11px, 2.05vw, 17px);
+  font-weight: 700;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.accountant-card-details .accountant-card-label {
+  font-size: clamp(8px, 1.45vw, 12px);
+}
+
+.accountant-card-details .accountant-card-info:nth-child(3) .accountant-card-value {
+  font-size: clamp(10px, 1.8vw, 16px);
+}
+
+/* ========================================================
+   SOCIEDAD BRANDING CARD (Exacto a JCC/index.html)
+   ======================================================== */
+.branding-preview-stack.company-card-stack {
+  max-width: 380px;
+}
+
+.company-branding-card {
+  aspect-ratio: 366 / 430;
+  padding: 5.45%;
+  border-radius: 6.6%;
+  background: radial-gradient(
+    circle at 68% 32%,
+    var(--branding-card-background) 0%,
+    var(--branding-card-background-dark) 62%,
+    var(--branding-card-background-deep) 100%
+  );
+}
+
+.company-branding-card::before {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background-image: var(--branding-card-pattern);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto 100%;
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  transform: none;
+  content: "";
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.company-branding-card::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0 55%, rgba(0, 0, 0, 0.22) 100%);
+  content: "";
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.company-card-logo-row {
+  display: flex;
+  height: 10%;
+  align-items: flex-start;
+  margin-bottom: 4.5%;
+}
+
+.company-card-header-logo {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
+  object-position: left top;
+}
+
+.company-card-main {
   display: grid;
-  grid-template-columns: 1fr 30%;
-  gap: 8%;
+  grid-template-columns: 55% 1fr;
+  gap: 6%;
   align-items: end;
-  padding-bottom: 0.8cqw;
+  min-height: 43%;
 }
 
-.credencial-date-value {
-  font-size: 4cqw;
-  font-weight: 500;
+.company-card-mark {
+  width: 100%;
+  aspect-ratio: 179 / 174;
+  border: 0;
+  border-radius: 13.5%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.22);
+  object-fit: cover;
+  object-position: center 28%;
 }
 
-.credencial-res-value {
-  font-size: 4.7cqw;
-  font-weight: 500;
-}
-
-/* Reverso de la tarjeta dinámico */
-.credencial-back-details {
+.company-card-side {
   display: grid;
-  grid-template-columns: 58% 1fr;
-  gap: 5.2cqw 4.2cqw;
-  align-items: end;
-  margin-top: auto;
-  padding-bottom: 0.8cqw;
+  gap: 13px;
+  align-content: center;
+  text-align: right;
 }
 
-.credencial-name-value,
-.credencial-extra-value {
-  font-size: 3.8cqw;
+.company-card-info {
+  min-width: 0;
+}
+
+.company-card-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: clamp(8px, 1.42vw, 12px);
   font-weight: 400;
-  line-height: 1.25;
+  line-height: 1.2;
+  opacity: 0.85;
 }
 
-.credencial-doc-value {
-  font-size: 4.1cqw;
-  font-weight: 400;
-  line-height: 1.25;
-}
-
-.credencial-exp-value {
-  font-size: 4.3cqw;
+.company-card-value {
+  display: block;
+  font-size: clamp(10px, 1.9vw, 16px);
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.company-card-side .company-card-info:first-child .company-card-value {
+  font-size: clamp(13px, 2.7vw, 23px);
+  font-weight: 700;
+}
+
+.company-card-registration {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.company-card-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.9;
+  line-height: 1;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.company-card-copy:hover {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+.company-card-details {
+  display: grid;
+  grid-template-columns: 61% 1fr;
+  gap: 8% 6%;
+  align-content: end;
+  flex: 1;
+  padding-top: 7%;
+}
+
+.company-card-details .company-card-info:nth-child(even) {
+  text-align: right;
+}
+
+.company-card-details .company-card-value {
+  font-size: clamp(9px, 1.65vw, 14px);
+}
+
+.credencial-copy-svg {
+  width: 14px;
+  height: 14px;
 }
