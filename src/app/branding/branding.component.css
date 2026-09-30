@@ -258,8 +258,10 @@
 
 .skeleton-card {
   width: 100%;
-  aspect-ratio: 1.598 / 1;
-  border-radius: 16px;
+  max-width: 366px;
+  margin: 0 auto;
+  aspect-ratio: 366 / 426;
+  border-radius: 26px;
   background-color: #e2e8f0;
 }
 
