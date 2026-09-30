@@ -164,7 +164,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
       // Custom card fields for Sociedades
       this.registrationLabel = 'NIT / Registro Sociedad';
-      this.registrationValue = '900.123.456-7';
+      this.registrationValue = '5892';
       this.holderLabel = 'Razón social';
       this.holderValue = 'AUDITORES Y ASESORES S.A.S.';
       this.documentLabel = 'NIT';

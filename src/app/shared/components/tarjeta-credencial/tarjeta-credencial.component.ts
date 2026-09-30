@@ -49,9 +49,38 @@ export class TarjetaCredencialComponent {
   defaultPhoto: string = PHOTO_CARD_PATH;
 
   copiadoExitoso: boolean = false;
+  logoError: boolean = false;
 
   get fondoTarjeta(): string {
-    return this.branding.color_fondo || (this.tipo === 'sociedad' ? '#134567' : '#14275f');
+    return this.branding.color_fondo || (this.tipo === 'sociedad' ? '#170e00' : '#14275f');
+  }
+
+  get fondoTarjetaOscuro(): string {
+    return this.oscurecerColor(this.fondoTarjeta, 14);
+  }
+
+  get fondoTarjetaProfundo(): string {
+    return this.oscurecerColor(this.fondoTarjeta, 25);
+  }
+
+  private oscurecerColor(color: string, porcentaje: number): string {
+    if (!color) return '#000000';
+    let hex = color.trim();
+    if (!hex.startsWith('#')) return '#000000';
+    hex = hex.replace('#', '');
+    if (hex.length === 3) {
+      hex = hex.split('').map(c => c + c).join('');
+    }
+    if (hex.length !== 6) return '#000000';
+    const num = parseInt(hex, 16);
+    if (isNaN(num)) return '#000000';
+
+    const factor = Math.max(0, Math.min(1, (100 - porcentaje) / 100));
+    const r = Math.round((num >> 16) * factor);
+    const g = Math.round(((num >> 8) & 0x00ff) * factor);
+    const b = Math.round((num & 0x0000ff) * factor);
+
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   }
 
   get colorLetra(): string {
@@ -66,57 +95,93 @@ export class TarjetaCredencialComponent {
     return this.branding.patron_url ? `url(${this.branding.patron_url})` : null;
   }
 
+  get logoUrl(): string | null {
+    if (this.logoError) return null;
+    return this.branding.logo_url || null;
+  }
+
+  onLogoError(event: Event): void {
+    this.logoError = true;
+  }
+
   get fotoUrl(): string {
     return this.datos.foto || this.defaultPhoto;
   }
 
-  // Labels dinámicos según tipo
+  // ===== BLOQUE MEDIO DERECHA (Item 1: Registro / Tarjeta) =====
   get labelRegistro(): string {
-    return this.tipo === 'sociedad' ? 'NIT / Registro Sociedad' : 'Tarjeta profesional';
+    return this.tipo === 'sociedad' ? 'Número de Registro' : 'Tarjeta profesional';
   }
 
   get valorRegistro(): string {
-    return this.datos.matricula || (this.tipo === 'sociedad' ? '900.123.456-7' : '492031-T');
+    return this.datos.matricula || (this.tipo === 'sociedad' ? '5892' : '492031-T');
   }
 
+  // ===== BLOQUE MEDIO DERECHA (Item 2: Fecha de Inscripción) =====
   get labelFecha(): string {
-    return 'Fecha Res. Inscripción';
+    return this.tipo === 'sociedad' ? 'Fecha Res. Inscripción' : 'Fecha Resolución Ins.';
   }
 
   get valorFecha(): string {
-    return this.datos.fecha_resolucion || '06 - Feb - 2026';
+    return this.datos.fecha_resolucion || (this.tipo === 'sociedad' ? '12 - Mar - 2025' : '06 - Feb - 2026');
   }
 
-  get labelResolucion(): string {
-    return 'Res. Inscripción';
+  // ===== BLOQUE MEDIO DERECHA (Item 3: Resolución en Contador / Expediente en Sociedad) =====
+  get labelMedio3(): string {
+    return this.tipo === 'sociedad' ? 'Número de Expediente' : 'Resolucion Inscripción';
   }
 
-  get valorResolucion(): string {
-    return this.datos.resolucion || (this.tipo === 'sociedad' ? '1042' : '289');
+  get valorMedio3(): string | number {
+    return this.tipo === 'sociedad'
+      ? (this.datos.expediente || '621948')
+      : (this.datos.resolucion || '289');
   }
 
+  // ===== PIE INFERIOR (Fila 1 Izq: Nombre / Razón Social) =====
   get labelTitular(): string {
-    return this.tipo === 'sociedad' ? 'Razón social' : 'Nombre y apellido';
+    return this.tipo === 'sociedad' ? 'Razón social' : 'Nombre';
   }
 
   get valorTitular(): string {
-    return this.datos.solicitante || (this.tipo === 'sociedad' ? 'AUDITORES Y ASESORES S.A.S.' : 'Andrés Felipe Torres Cárdenas');
+    return this.datos.solicitante || (this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas');
   }
 
+  // ===== PIE INFERIOR (Fila 1 Der: Documento / NIT) =====
   get labelDocumento(): string {
     return this.tipo === 'sociedad' ? 'NIT' : 'Cédula de ciudadanía';
   }
 
   get valorDocumento(): string {
-    return this.datos.documento || (this.tipo === 'sociedad' ? '900.123.456-7' : '1.053.892.146');
+    return this.datos.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
   }
 
+  // ===== PIE INFERIOR (Fila 2 Izq: Institución / Tipo de Registro) =====
   get labelExtra(): string {
-    return this.tipo === 'sociedad' ? 'Tipo de Sociedad' : 'Institución de Educación Superior';
+    return this.tipo === 'sociedad' ? 'Tipo de registro' : 'Institución de Educación Superior';
   }
 
   get valorExtra(): string {
-    return this.datos.universidad || (this.tipo === 'sociedad' ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle');
+    return this.datos.universidad || (this.tipo === 'sociedad' ? 'Sociedad de contadores' : 'Universidad de La Salle');
+  }
+
+  // ===== PIE INFERIOR (Fila 2 Der: Expediente en Contador / Res. Inscripción en Sociedad) =====
+  get labelPie2Der(): string {
+    return this.tipo === 'sociedad' ? 'Res. Inscripción' : 'N. Expediente';
+  }
+
+  get valorPie2Der(): string | number {
+    return this.tipo === 'sociedad'
+      ? (this.datos.resolucion || '0142')
+      : (this.datos.expediente || '621948');
+  }
+
+  // Getters auxiliares para retrocompatibilidad
+  get labelResolucion(): string {
+    return 'Res. Inscripción';
+  }
+
+  get valorResolucion(): string {
+    return this.datos.resolucion || (this.tipo === 'sociedad' ? '0142' : '289');
   }
 
   get labelExpediente(): string {
@@ -124,7 +189,7 @@ export class TarjetaCredencialComponent {
   }
 
   get valorExpediente(): string | number {
-    return this.datos.expediente || (this.tipo === 'sociedad' ? '884120' : '621948');
+    return this.datos.expediente || (this.tipo === 'sociedad' ? '621948' : '621948');
   }
 
   copiarMatricula(event: MouseEvent): void {
