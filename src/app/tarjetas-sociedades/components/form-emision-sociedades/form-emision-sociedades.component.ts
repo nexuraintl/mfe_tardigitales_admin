@@ -108,7 +108,6 @@ export class FormEmisionSociedadesComponent {
 
   @Input() brandingColorFondo: string = '#134567';
   @Input() brandingColorLetra: string = '#ffffff';
-  @Input() brandingFuenteLetra: string = 'Arial, sans-serif';
   @Input() brandingLogoUrl: string | null = null;
   @Input() brandingPatronUrl: string | null = null;
   @Input() getFotoUrlFn!: (url?: string | null) => string;
@@ -135,7 +134,6 @@ export class FormEmisionSociedadesComponent {
     return {
       color_fondo: this.brandingColorFondo,
       color_letra: this.brandingColorLetra,
-      fuente_letra: this.brandingFuenteLetra,
       logo_url: this.brandingLogoUrl,
       patron_url: this.brandingPatronUrl
     };
