@@ -10,6 +10,18 @@
  * de manera autónoma a través de layout.js.
  */
 
+/* ============================================================================
+ * TIPOGRAFÍA OFICIAL EXCLUSIVA DE TARJETAS: SATOSHI VARIABLE (LOCAL)
+ * ============================================================================ */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('assets/fonts/Satoshi-Variable.woff2') format('woff2-variations'),
+       url('assets/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Escribe tus reglas CSS personalizadas para este módulo aquí abajo */
 
 /* Centrado garantizado de modales Bootstrap en todas las resoluciones */

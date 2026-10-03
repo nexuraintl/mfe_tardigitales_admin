@@ -116,7 +116,6 @@ export class TarjetasSociedadesComponent implements OnInit {
   // Branding de Credencial para Vista Previa (Sociedades - tipoId 2)
   brandingColorFondo: string = '#134567';
   brandingColorLetra: string = '#ffffff';
-  brandingFuenteLetra: string = 'Arial, sans-serif';
   brandingLogoUrl: string | null = null;
   brandingPatronUrl: string | null = null;
 
@@ -229,7 +228,6 @@ export class TarjetasSociedadesComponent implements OnInit {
       let aplicado = false;
       if (data.color_fondo) { this.brandingColorFondo = data.color_fondo; aplicado = true; }
       if (data.color_letra) { this.brandingColorLetra = data.color_letra; aplicado = true; }
-      if (data.fuente_letra) { this.brandingFuenteLetra = data.fuente_letra; aplicado = true; }
       if (data.logo) { this.brandingLogoUrl = data.logo; aplicado = true; }
       if (data.patron) { this.brandingPatronUrl = data.patron; aplicado = true; }
       this.cdr.detectChanges();

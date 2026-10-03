@@ -213,7 +213,6 @@ export class ModalDetalleTarjetaComponent {
   @Input() tipoTarjeta: 'contadores' | 'sociedades' = 'contadores';
   @Input() brandingColorFondo: string = '#14275f';
   @Input() brandingColorLetra: string = '#ffffff';
-  @Input() brandingFuenteLetra: string = 'Arial, sans-serif';
   @Input() brandingLogoUrl: string | null = null;
   @Input() brandingPatronUrl: string | null = null;
   @Input() getFotoUrlFn?: (url?: string | null) => string;
@@ -240,7 +239,8 @@ export class ModalDetalleTarjetaComponent {
         universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle'),
         foto: this.getFoto(this.selectedTarjeta.foto),
         hash_sha256: this.selectedTarjeta.hash_sha256,
-        logo_url: this.brandingLogoUrl || 'assets/images/logo-jcc.png'
+        logo_url: this.brandingLogoUrl || 'assets/images/logo-jcc.png',
+        patron_url: this.brandingPatronUrl
       });
     } catch (err) {
       console.error('Error al exportar PDF de tarjeta:', err);
@@ -360,7 +360,6 @@ export class ModalDetalleTarjetaComponent {
     return {
       color_fondo: this.brandingColorFondo,
       color_letra: this.brandingColorLetra,
-      fuente_letra: this.brandingFuenteLetra,
       logo_url: this.brandingLogoUrl,
       patron_url: this.brandingPatronUrl
     };

@@ -17,7 +17,6 @@ export interface CredencialDatos {
 export interface CredencialBranding {
   color_fondo?: string;
   color_letra?: string;
-  fuente_letra?: string;
   logo_url?: string | null;
   patron_url?: string | null;
 }
@@ -88,7 +87,7 @@ export class TarjetaCredencialComponent {
   }
 
   get fuenteTarjeta(): string {
-    return this.branding.fuente_letra || 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    return "'Satoshi', system-ui, -apple-system, sans-serif";
   }
 
   get patronFondo(): string | null {
