@@ -107,7 +107,6 @@ export class FormEmisionContadoresComponent {
 
   @Input() brandingColorFondo: string = '#14275f';
   @Input() brandingColorLetra: string = '#ffffff';
-  @Input() brandingFuenteLetra: string = 'Arial, sans-serif';
   @Input() brandingLogoUrl: string | null = null;
   @Input() brandingPatronUrl: string | null = null;
   @Input() getFotoUrlFn!: (url?: string | null) => string;
@@ -134,7 +133,6 @@ export class FormEmisionContadoresComponent {
     return {
       color_fondo: this.brandingColorFondo,
       color_letra: this.brandingColorLetra,
-      fuente_letra: this.brandingFuenteLetra,
       logo_url: this.brandingLogoUrl,
       patron_url: this.brandingPatronUrl
     };

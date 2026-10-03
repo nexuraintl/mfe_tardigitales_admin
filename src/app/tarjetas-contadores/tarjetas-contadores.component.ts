@@ -118,7 +118,6 @@ export class TarjetasContadoresComponent implements OnInit {
   // Branding de Credencial para Vista Previa
   brandingColorFondo: string = '#14275f';
   brandingColorLetra: string = '#ffffff';
-  brandingFuenteLetra: string = 'Arial, sans-serif';
   brandingLogoUrl: string | null = null;
   brandingPatronUrl: string | null = null;
   samplePhotoUrl: string = PHOTO_CARD_PATH;
@@ -232,7 +231,6 @@ export class TarjetasContadoresComponent implements OnInit {
       let aplicado = false;
       if (data.color_fondo) { this.brandingColorFondo = data.color_fondo; aplicado = true; }
       if (data.color_letra) { this.brandingColorLetra = data.color_letra; aplicado = true; }
-      if (data.fuente_letra) { this.brandingFuenteLetra = data.fuente_letra; aplicado = true; }
       if (data.logo) { this.brandingLogoUrl = data.logo; aplicado = true; }
       if (data.patron) { this.brandingPatronUrl = data.patron; aplicado = true; }
       this.cdr.detectChanges();

@@ -15,6 +15,7 @@ export interface TarjetaPdfData {
   foto?: string;
   hash_sha256?: string;
   logo_url?: string | null;
+  patron_url?: string | null;
 }
 
 /**
@@ -64,10 +65,10 @@ export class TarjetaPdfService {
 
       // Ajustar dimensiones preservando relación de aspecto
       const canvasAspectRatio = canvas.width / canvas.height;
-      const targetWidth = 140; // 140mm de ancho centrado en la página A4
+      const targetWidth = 135; // 135mm de ancho centrado en la página A4
       const targetHeight = targetWidth / canvasAspectRatio;
       const posX = (pdfWidth - targetWidth) / 2;
-      const posY = 15; // 15mm de margen superior
+      const posY = 16; // Margen superior equilibrado
 
       pdf.addImage(imgData, 'PNG', posX, posY, targetWidth, targetHeight, undefined, 'FAST');
 
@@ -119,130 +120,136 @@ export class TarjetaPdfService {
   }
 
   /**
-   * Construye el DOM del documento fiel a la maqueta oficial solicitada.
+   * Construye el DOM de la credencial oficial idéntica al branding, adaptada en escala de grises para impresión.
    */
   private construirElementoHtml(datos: TarjetaPdfData, qrDataUrl: string): HTMLElement {
     const wrapper = document.createElement('div');
     wrapper.style.position = 'fixed';
     wrapper.style.left = '-9999px';
     wrapper.style.top = '-9999px';
-    wrapper.style.width = '600px';
+    wrapper.style.width = '420px';
     wrapper.style.backgroundColor = '#ffffff';
-    wrapper.style.padding = '36px 32px 32px 32px';
-    wrapper.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+    wrapper.style.padding = '24px 24px 20px 24px';
+    wrapper.style.fontFamily = "'Satoshi', sans-serif";
     wrapper.style.color = '#0f172a';
     wrapper.style.boxSizing = 'border-box';
 
     const isSociedad = datos.tipo === 'sociedad';
-    const labelRegistro = isSociedad ? 'NIT / Registro Sociedad' : 'Tarjeta profesional';
+
+    // Mapeo unificado y exacto a TarjetaCredencialComponent
+    const labelRegistro = isSociedad ? 'Número de Registro' : 'Tarjeta profesional';
+    const valorRegistro = datos.matricula || (isSociedad ? '5892' : '492031-T');
+
+    const labelFecha = isSociedad ? 'Fecha Res. Inscripción' : 'Fecha Res. Inscripción';
+    const valorFecha = datos.fecha_resolucion || (isSociedad ? '12 - Mar - 2025' : '06 - Feb - 2026');
+
+    const labelMedio3 = isSociedad ? 'Número de Expediente' : 'Resolución Inscripción';
+    const valorMedio3 = isSociedad ? (datos.expediente || '621948') : (datos.resolucion || '289');
+
     const labelTitular = isSociedad ? 'Razón social' : 'Nombre';
-    const labelDocumento = isSociedad ? 'NIT' : 'Cédula de ciudadania';
-    const labelExtra = isSociedad ? 'Tipo de Sociedad' : 'Institución de Educación Superior';
+    const valorTitular = datos.solicitante || (isSociedad ? 'Sociedad de Contadores Públicos' : 'Andrés Felipe Torres Cárdenas');
+
+    const labelDocumento = isSociedad ? 'NIT' : 'Cédula de Ciudadanía';
+    const valorDocumento = String(datos.documento || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim() || (isSociedad ? '901482310-5' : '1.053.892.146');
+
+    const labelExtra = isSociedad ? 'Tipo de registro' : 'Institución de Educación Superior';
     const valorExtra = datos.universidad || (isSociedad ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle');
+
+    const labelPie2Der = isSociedad ? 'Res. Inscripción' : 'Res. Inscripción';
+    const valorPie2Der = isSociedad ? (datos.resolucion || '1042') : (datos.resolucion || '289');
+
+    const fotoSrc = datos.foto || (isSociedad ? 'assets/images/card-logo-sociedades.png' : 'assets/images/photo_card.jpg');
+    // Logo oficial institucional para impresión suministrado por el usuario
+    const logoSrc = 'assets/images/logo_impresion_jcc.png';
+    // Patrón de fondo configurado en branding (transparente grisáceo)
+    const patronSrc = datos.patron_url || (isSociedad ? 'assets/images/pattern_sociedades_opt.jpg' : 'assets/images/pattern_jcc_opt.jpg');
+
     const legalText = isSociedad
-      ? 'Este documento acredita la inscripción de la Sociedad de Contadores Públicos, conforme a lo establecido en la normatividad vigente.'
+      ? 'Este documento acredita el registro de la Sociedad de Contadores Públicos, conforme a lo establecido en la normatividad legal vigente.'
       : 'Este documento acredita la calidad de Contador Público, conforme a lo establecido en la Ley 43 de 1990 y el Decreto 1510 de 1998.';
 
-    const fotoSrc = datos.foto || 'assets/images/photo_card.jpg';
-    const logoSrc = datos.logo_url || 'assets/images/logo-jcc.png';
-
     wrapper.innerHTML = `
-      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.06); padding: 24px; position: relative; overflow: hidden; background-image: radial-gradient(#f1f5f9 1.5px, transparent 1.5px); background-size: 24px 24px;">
-        <!-- Cabecera de Tarjeta: Logo y Título Institucional -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="font-size: 10px; font-weight: 700; color: #475569; letter-spacing: 0.3px; line-height: 1.2;">
-              UNIDAD ADMINISTRATIVA ESPECIAL<br/>
-              <span style="font-size: 11px; color: #0f172a;">JUNTA CENTRAL DE CONTADORES</span>
-            </div>
+      <!-- 1. TARJETA CREDENCIAL OFICIAL (VERSIÓN PARA IMPRIMIR: BLANCA CON BORDES Y PATRÓN) -->
+      <div style="position: relative; overflow: hidden; width: 100%; border-radius: 26px; padding: 24px 22px 22px 22px; box-sizing: border-box; background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04); user-select: none;">
+        
+        <!-- Capa de Patrón de Fondo Oficial de Branding (imagen transparente grisácea) -->
+        <div style="position: absolute; inset: 0; z-index: 0; background-image: url('${patronSrc}'); background-repeat: no-repeat; background-position: center; background-size: cover; mix-blend-mode: multiply; opacity: 0.18; pointer-events: none; border-radius: inherit;"></div>
+
+        <!-- Fila 1: Logo Institucional Oficial a la Izquierda -->
+        <div style="position: relative; z-index: 2; display: flex; justify-content: flex-start; align-items: flex-start; margin-bottom: 20px;">
+          <img src="${logoSrc}" alt="Logo JCC" style="height: 38px; max-width: 170px; object-fit: contain; object-position: left center;" crossorigin="anonymous" />
+        </div>
+
+        <!-- Fila 2: Foto/Logo + Datos Laterales -->
+        <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 46% 1fr; gap: 16px; align-items: center; margin-bottom: 20px;">
+          <!-- Foto o Logo -->
+          <div style="width: 100%; aspect-ratio: 1 / 1.05; border-radius: 20px; overflow: hidden; background-color: #f8fafc; border: 1px solid #f1f5f9; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);">
+            <img src="${fotoSrc}" alt="Fotografía" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%;" crossorigin="anonymous" />
           </div>
-          <div style="height: 38px; display: flex; align-items: center;">
-            <img src="${logoSrc}" alt="Logo JCC" style="height: 36px; max-width: 140px; object-fit: contain;" crossorigin="anonymous" />
+
+          <!-- Datos Laterales Derechos -->
+          <div style="display: grid; gap: 14px; align-content: center; text-align: right; min-width: 0;">
+            <div>
+              <span style="display: block; font-size: 11.5px; color: #475569; margin-bottom: 3px; font-weight: 500;">${labelRegistro}</span>
+              <strong style="display: block; font-size: 21px; font-weight: 800; color: #0f172a; line-height: 1.1; white-space: nowrap;">${valorRegistro}</strong>
+            </div>
+            <div>
+              <span style="display: block; font-size: 11px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelFecha}</span>
+              <strong style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.15;">${valorFecha}</strong>
+            </div>
           </div>
         </div>
 
-        <!-- Cuerpo de Tarjeta: Foto + Datos Principales -->
-        <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px;">
-          <!-- Fotografía del Titular -->
-          <div style="width: 125px; height: 155px; border-radius: 14px; overflow: hidden; background: #e2e8f0; flex-shrink: 0; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
-            <img src="${fotoSrc}" alt="Foto" style="width: 100%; height: 100%; object-fit: cover;" crossorigin="anonymous" />
-          </div>
-
-          <!-- Columna Registro y Fechas -->
-          <div style="flex-grow: 1; min-width: 0;">
-            <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 2px;">${labelRegistro}</div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
-              <span style="font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">${datos.matricula}</span>
-              <span style="display: inline-block; width: 16px; height: 16px; border: 1.5px solid #64748b; border-radius: 3px; position: relative;">
-                <span style="position: absolute; right: -3px; top: -3px; width: 14px; height: 14px; border: 1.5px solid #64748b; border-radius: 3px;"></span>
-              </span>
-            </div>
-
-            <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">Fecha Res. Inscripción</div>
-            <div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 14px;">${datos.fecha_resolucion || '06 - Feb - 2026'}</div>
-
-            <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">Res. Inscripción</div>
-            <div style="font-size: 14px; font-weight: 700; color: #1e293b;">${datos.resolucion || '289'}</div>
-          </div>
-        </div>
-
-        <!-- Grilla de Información Secundaria (2 Columnas) -->
-        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px 20px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+        <!-- Fila 3: Grilla de Detalles Inferiores (2 Columnas) -->
+        <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 58% 1fr; gap: 14px 16px; align-items: start; padding-top: 16px; border-top: 1px solid #f1f5f9;">
           <div>
-            <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">${labelTitular}</div>
-            <div style="font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.3;">${datos.solicitante}</div>
+            <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelTitular}</span>
+            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.25;">${valorTitular}</strong>
           </div>
-
-          <div>
-            <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">${labelDocumento}</div>
-            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${String(datos.documento || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim()}</div>
+          <div style="text-align: right;">
+            <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelDocumento}</span>
+            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.25; white-space: nowrap;">${valorDocumento}</strong>
           </div>
-
           <div>
-            <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">${labelExtra}</div>
-            <div style="font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.3;">${valorExtra}</div>
+            <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelExtra}</span>
+            <strong style="display: block; font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.25;">${valorExtra}</strong>
           </div>
-
-          <div>
-            <div style="font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 2px;">N. Expediente</div>
-            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${datos.expediente || '-'}</div>
+          <div style="text-align: right;">
+            <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelPie2Der}</span>
+            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.25;">${valorPie2Der}</strong>
           </div>
         </div>
       </div>
 
-      <!-- Sección Validador QR con Leyenda de Autenticidad -->
-      <div style="display: flex; align-items: center; gap: 20px; margin-top: 26px; padding: 0 8px;">
-        <div style="width: 120px; height: 120px; flex-shrink: 0; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
+      <!-- 2. SECCIÓN VALIDADOR QR DE AUTENTICIDAD -->
+      <div style="margin-top: 24px; display: flex; align-items: center; gap: 18px; padding: 0 6px;">
+        <div style="width: 100px; height: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
           <img src="${qrDataUrl}" alt="Código QR de verificación" style="width: 100%; height: 100%; object-fit: contain;" />
         </div>
-        <div style="font-size: 15px; font-weight: 600; color: #1e293b; line-height: 1.4; max-width: 260px;">
+        <div style="font-size: 14.5px; font-weight: 600; color: #1e293b; line-height: 1.35;">
           Código de verificación<br/>de autenticidad
         </div>
       </div>
 
-      <!-- Sección Firma Institucional de Dirección General -->
-      <div style="margin-top: 24px; background-color: #f1f5f9; border-radius: 18px; padding: 22px 20px; text-align: center;">
-        <div style="display: flex; justify-content: center; margin-bottom: 8px;">
-          <!-- Firma Caligráfica Vectorial Oficial -->
-          <svg width="150" height="42" viewBox="0 0 150 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 30 C25 12, 35 8, 42 22 C48 34, 52 38, 58 18 C60 10, 66 12, 68 25 C70 34, 78 28, 86 22 C96 16, 102 28, 112 24 C122 20, 128 26, 138 22" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M22 25 L50 20 M28 35 Q45 40 82 34 Q118 28 135 30" stroke="#1e293b" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
+      <!-- 3. SECCIÓN FIRMA INSTITUCIONAL DIRECCIÓN GENERAL -->
+      <div style="margin-top: 22px; background-color: #f1f3f5; border-radius: 18px; padding: 18px 20px 16px 20px; text-align: center;">
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 4px;">
+          <img src="assets/images/firma_directora.png" alt="Firma Sandra Milena Barrios Pulido" style="height: 48px; max-width: 150px; object-fit: contain; mix-blend-mode: multiply; display: block;" crossorigin="anonymous" />
         </div>
-        <div style="font-size: 13px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase;">
+        <div style="font-size: 12.5px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase;">
           SANDRA MILENA BARRIOS PULIDO
         </div>
-        <div style="font-size: 10px; font-weight: 600; color: #64748b; letter-spacing: 0.6px; text-transform: uppercase; margin-top: 3px;">
+        <div style="font-size: 9.5px; font-weight: 600; color: #64748b; letter-spacing: 0.6px; text-transform: uppercase; margin-top: 2px;">
           DIRECTOR GENERAL
         </div>
       </div>
 
-      <!-- Pie Informativo Legal con Icono -->
-      <div style="margin-top: 24px; padding: 12px 14px; background: #ffffff; border-radius: 10px; display: flex; align-items: flex-start; gap: 10px;">
-        <div style="width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #64748b; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px;">
+      <!-- 4. PIE INFORMATIVO LEGAL -->
+      <div style="margin-top: 16px; background-color: #f8fafc; border-radius: 14px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; border: 1px solid #edf2f7;">
+        <div style="width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #64748b; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px; font-family: serif;">
           i
         </div>
-        <div style="font-size: 11.5px; color: #475569; line-height: 1.45;">
+        <div style="font-size: 11px; color: #334155; line-height: 1.45;">
           ${legalText}
         </div>
       </div>

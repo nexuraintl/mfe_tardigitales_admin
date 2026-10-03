@@ -18,7 +18,6 @@ export interface BrandingHistoryItem {
   published: boolean;
   color_fondo: string;
   color_letra: string;
-  fuente_letra: string;
   logo?: string;
   patron?: string;
 }
@@ -57,7 +56,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
   // Form / Draft fields
   colorFondo: string = '#14275f';
   colorLetra: string = '#ffffff';
-  fuenteLetra: string = 'Arial, sans-serif';
   logoFile: File | null = null;
   logoPreviewUrl: string | null = null;
   logoSourceText: string = '';
@@ -69,7 +67,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
   selectedVersionBase: {
     color_fondo: string;
     color_letra: string;
-    fuente_letra: string;
     logo: string | null;
     patron: string | null;
   } | null = null;
@@ -81,11 +78,10 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
     const bgChanged = (this.colorFondo || '').toLowerCase() !== (this.selectedVersionBase.color_fondo || '').toLowerCase();
     const textChanged = (this.colorLetra || '').toLowerCase() !== (this.selectedVersionBase.color_letra || '').toLowerCase();
-    const fontChanged = this.fuenteLetra !== this.selectedVersionBase.fuente_letra;
     const logoChanged = (this.logoPreviewUrl || null) !== (this.selectedVersionBase.logo || null);
     const patronChanged = (this.patronPreviewUrl || null) !== (this.selectedVersionBase.patron || null);
 
-    return bgChanged || textChanged || fontChanged || logoChanged || patronChanged;
+    return bgChanged || textChanged || logoChanged || patronChanged;
   }
 
   // Sample data for preview depending on module
@@ -121,7 +117,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
     return {
       color_fondo: this.colorFondo,
       color_letra: this.colorLetra,
-      fuente_letra: this.fuenteLetra,
       logo_url: this.logoPreviewUrl,
       patron_url: this.patronPreviewUrl
     };
@@ -214,14 +209,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
               this.publishedVersion = pubV;
               if (data.color_fondo) this.colorFondo = data.color_fondo;
               if (data.color_letra) this.colorLetra = data.color_letra;
-              if (data.fuente_letra) this.fuenteLetra = data.fuente_letra;
               if (data.logo) this.logoPreviewUrl = data.logo;
               if (data.patron) this.patronPreviewUrl = data.patron;
 
               this.selectedVersionBase = {
                 color_fondo: this.colorFondo,
                 color_letra: this.colorLetra,
-                fuente_letra: this.fuenteLetra,
                 logo: this.logoPreviewUrl,
                 patron: this.patronPreviewUrl
               };
@@ -250,14 +243,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
               if (data.version_publicada) this.publishedVersion = Number(data.version_publicada);
               if (data.color_fondo) this.colorFondo = data.color_fondo;
               if (data.color_letra) this.colorLetra = data.color_letra;
-              if (data.fuente_letra) this.fuenteLetra = data.fuente_letra;
               if (data.logo) this.logoPreviewUrl = data.logo;
               if (data.patron) this.patronPreviewUrl = data.patron;
 
               this.selectedVersionBase = {
                 color_fondo: this.colorFondo,
                 color_letra: this.colorLetra,
-                fuente_letra: this.fuenteLetra,
                 logo: this.logoPreviewUrl,
                 patron: this.patronPreviewUrl
               };
@@ -315,7 +306,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
                 published: isPublished,
                 color_fondo: item.color_fondo,
                 color_letra: item.color_letra,
-                fuente_letra: item.fuente_letra,
                 logo: item.logo,
                 patron: item.patron
               };
@@ -503,7 +493,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
     formData.append('version_actual', nextVersion.toString());
     formData.append('color_fondo', this.colorFondo);
     formData.append('color_letra', this.colorLetra);
-    formData.append('fuente_letra', this.fuenteLetra);
     formData.append('usuario_creacion_id', '141');
     formData.append('tipo_id', this.tipoId.toString());
 
@@ -557,7 +546,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.selectedVersionNumber = v.version;
     if (v.color_fondo) this.colorFondo = v.color_fondo;
     if (v.color_letra) this.colorLetra = v.color_letra;
-    if (v.fuente_letra) this.fuenteLetra = v.fuente_letra;
     
     if (v.logo !== undefined) {
       this.logoFile = null;
@@ -574,7 +562,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.selectedVersionBase = {
       color_fondo: this.colorFondo,
       color_letra: this.colorLetra,
-      fuente_letra: this.fuenteLetra,
       logo: this.logoPreviewUrl,
       patron: this.patronPreviewUrl
     };
