@@ -3,6 +3,8 @@
   [class.layout-stack]="layout === 'stack'"
   [class.layout-side]="layout === 'side-by-side'"
   [class.layout-auto]="layout === 'auto'"
+  [class.modo-impresion]="isImpresion"
+  [class.modo-digital]="!isImpresion"
   [style.--branding-card-background]="fondoTarjeta"
   [style.--branding-card-background-dark]="fondoTarjetaOscuro"
   [style.--branding-card-background-deep]="fondoTarjetaProfundo"
@@ -13,6 +15,8 @@
     <!-- TARJETA CREDENCIAL UNIFICADA (CONTADORES Y SOCIEDADES) -->
     <article
       class="branding-id-card"
+      [class.modo-impresion]="isImpresion"
+      [class.modo-digital]="!isImpresion"
       [attr.aria-label]="tipo === 'sociedad' ? 'Vista previa de la tarjeta profesional de la sociedad' : 'Vista previa de la tarjeta profesional del contador'"
     >
       <!-- Fila 1: Logo Institucional Oficial -->
@@ -39,6 +43,7 @@
             <div class="credencial-card-registration">
               <strong class="credencial-card-value">{{ valorRegistro }}</strong>
               <span
+                *ngIf="!isImpresion"
                 class="credencial-card-copy"
                 (click)="copiarMatricula($event)"
                 role="button"
