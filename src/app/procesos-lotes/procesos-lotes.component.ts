@@ -158,6 +158,7 @@ export class ProcesosLotesComponent implements OnInit, OnDestroy {
   };
   loadingConfig = false;
   savingConfig = false;
+  restartingWorker = false;
 
   // Operaciones
   runningTask = false;
@@ -334,6 +335,29 @@ export class ProcesosLotesComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.savingConfig = false;
         this.mensajeError = err?.error?.detail || 'Error al guardar la configuración de colas.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  reiniciarWorker(): void {
+    if (this.restartingWorker) return;
+    this.restartingWorker = true;
+    this.limpiarMensajes();
+
+    this.http.post<any>(`${API_BASE}/colas/reiniciar-worker?client_id=${CLIENT_ID}`, {}).subscribe({
+      next: (resp) => {
+        this.restartingWorker = false;
+        if (resp && resp.status === 'success') {
+          this.mensajeExito = resp.message || 'Worker de procesamiento reiniciado y activado exitosamente en caliente.';
+          this.cargarMetricas();
+          this.cargarConfiguracion();
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.restartingWorker = false;
+        this.mensajeError = err?.error?.detail || 'Error al intentar reiniciar el worker en caliente.';
         this.cdr.markForCheck();
       }
     });
