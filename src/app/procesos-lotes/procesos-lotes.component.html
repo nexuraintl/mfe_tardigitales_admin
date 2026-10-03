@@ -511,7 +511,18 @@
 
           <!-- Sección: Estado General del Worker -->
           <div class="mb-4 pb-3 border-bottom">
-            <h6 class="fw-bold text-dark mb-3">1. Estado General del Procesamiento</h6>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold text-dark mb-0">1. Estado General del Procesamiento</h6>
+              <button 
+                type="button" 
+                class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+                (click)="reiniciarWorker()"
+                [disabled]="restartingWorker"
+                title="Reinicia y reactiva el hilo de ejecución del Worker en caliente sin reiniciar el contenedor Docker">
+                <i class="fa fa-refresh" [class.fa-spin]="restartingWorker"></i>
+                {{ restartingWorker ? 'Reiniciando...' : 'Reiniciar Worker' }}
+              </button>
+            </div>
             
             <div class="form-check form-switch d-flex align-items-center gap-3">
               <input 
