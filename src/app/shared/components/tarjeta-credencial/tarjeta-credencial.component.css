@@ -201,3 +201,52 @@
   width: 14px;
   height: 14px;
 }
+
+/* ========================================================
+   MODO IMPRESIÓN (BLANCO Y NEGRO / PDF / ALTA LEGIBILIDAD)
+   - Fondo blanco para cero consumo innecesario de tinta
+   - Tipografía negra / pizarra de alto contraste
+   - Patrón transparente como marca de agua sutil
+   - Sin botones interactivos de copia
+   ======================================================== */
+.branding-id-card.modo-impresion {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.branding-id-card.modo-impresion::before {
+  mix-blend-mode: multiply;
+  opacity: 0.18;
+}
+
+.branding-id-card.modo-impresion::after {
+  display: none !important;
+}
+
+.branding-id-card.modo-impresion .credencial-card-label {
+  color: #475569 !important;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.branding-id-card.modo-impresion .credencial-card-value {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+
+.branding-id-card.modo-impresion .credencial-card-photo {
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  background-color: #f8fafc;
+}
+
+.branding-id-card.modo-impresion .credencial-card-copy {
+  display: none !important;
+}
+
+.branding-id-card.modo-impresion .credencial-card-details {
+  border-top: 1px solid #f1f5f9;
+}
+

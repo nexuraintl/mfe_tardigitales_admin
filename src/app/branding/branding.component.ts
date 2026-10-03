@@ -54,6 +54,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
   selectedVersionNumber: number | null = null;
 
   // Form / Draft fields
+  modoPreview: 'digital' | 'impresion' = 'digital';
   colorFondo: string = '#14275f';
   colorLetra: string = '#ffffff';
   logoFile: File | null = null;

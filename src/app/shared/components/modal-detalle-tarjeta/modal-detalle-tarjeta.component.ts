@@ -168,18 +168,43 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
     <div class="modal fade show d-block" tabindex="-1" *ngIf="isCardModalOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrarTarjeta.emit()">
       <div class="modal-dialog modal-dialog-centered modal-xl" (click)="$event.stopPropagation()">
         <div class="modal-content shadow border-0">
-          <div class="modal-header bg-white border-bottom py-3 px-4">
+          <div class="modal-header bg-white border-bottom py-2.5 px-4 d-flex justify-content-between align-items-center">
             <div>
               <h5 class="modal-title fw-bold text-dark mb-0">Visualización de Tarjeta Profesional</h5>
-              <small class="text-muted">Diseño activo de branding aplicado</small>
+              <small class="text-muted">Diseño oficial para {{ isSociedades ? 'Sociedades' : 'Contadores' }}</small>
             </div>
-            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar"></button>
+            
+            <div class="d-flex align-items-center gap-3">
+              <div class="btn-group btn-group-sm" role="group" aria-label="Modo de visualización">
+                <button
+                  type="button"
+                  class="btn"
+                  [ngClass]="modoTarjetaModal === 'digital' ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="modoTarjetaModal = 'digital'"
+                  title="Vista digital estándar"
+                >
+                  <i class="fa fa-desktop me-1"></i> Digital
+                </button>
+                <button
+                  type="button"
+                  class="btn"
+                  [ngClass]="modoTarjetaModal === 'impresion' ? 'btn-primary' : 'btn-outline-secondary'"
+                  (click)="modoTarjetaModal = 'impresion'"
+                  title="Vista oficial para impresión y PDF"
+                >
+                  <i class="fa fa-print me-1"></i> Impresión / PDF
+                </button>
+              </div>
+
+              <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar"></button>
+            </div>
           </div>
           
           <div class="modal-body p-4 d-flex justify-content-center bg-light">
             <div class="branding-preview-card w-100" style="max-width: 900px;">
               <app-tarjeta-credencial
                 [tipo]="isSociedades ? 'sociedad' : 'contador'"
+                [modo]="modoTarjetaModal"
                 vista="ambas"
                 layout="auto"
                 [datos]="credencialDatos"
@@ -219,6 +244,8 @@ export class ModalDetalleTarjetaComponent {
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() cerrarTarjeta = new EventEmitter<void>();
+
+  modoTarjetaModal: 'digital' | 'impresion' = 'digital';
 
   private pdfService = inject(TarjetaPdfService);
   exportandoPdf: boolean = false;

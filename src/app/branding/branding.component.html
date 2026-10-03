@@ -216,10 +216,30 @@
   <!-- Columna Derecha: Vista Previa -->
   <div>
     <section class="card shadow-sm border-0">
-      <div class="card-header bg-white py-3 border-bottom">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
         <h5 class="card-title fw-bold mb-0 text-dark">
           Vista Previa
         </h5>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Modo de previsualización">
+          <button
+            type="button"
+            class="btn"
+            [ngClass]="modoPreview === 'digital' ? 'btn-primary' : 'btn-outline-secondary'"
+            (click)="modoPreview = 'digital'"
+            title="Vista digital estándar"
+          >
+            <i class="fa fa-desktop me-1"></i> Digital
+          </button>
+          <button
+            type="button"
+            class="btn"
+            [ngClass]="modoPreview === 'impresion' ? 'btn-primary' : 'btn-outline-secondary'"
+            (click)="modoPreview = 'impresion'"
+            title="Vista de impresión / PDF"
+          >
+            <i class="fa fa-print me-1"></i> Impresión
+          </button>
+        </div>
       </div>
 
       <div class="card-body p-4">
@@ -231,6 +251,7 @@
         <div *ngIf="!loading" class="branding-preview-card">
           <app-tarjeta-credencial
             [tipo]="moduleName === 'sociedades' ? 'sociedad' : 'contador'"
+            [modo]="modoPreview"
             vista="ambas"
             layout="stack"
             [datos]="previewDatos"
@@ -238,7 +259,7 @@
           ></app-tarjeta-credencial>
 
           <p class="branding-preview-note mt-3 mb-0">
-            Vista previa oficial de la credencial digital para {{ label.toLowerCase() }}.
+            Vista previa oficial {{ modoPreview === 'impresion' ? 'para impresión / PDF' : 'digital' }} para {{ label.toLowerCase() }}.
           </p>
         </div>
       </div>
