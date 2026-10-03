@@ -7,106 +7,39 @@
   [style.--branding-card-background-dark]="fondoTarjetaOscuro"
   [style.--branding-card-background-deep]="fondoTarjetaProfundo"
   [style.--branding-card-text]="colorLetra"
-  [style.--branding-card-font]="fuenteTarjeta"
   [style.--branding-card-pattern]="patronFondo"
 >
-  <div
-    class="branding-preview-stack"
-    [class.accountant-card-stack]="tipo === 'contador'"
-    [class.company-card-stack]="tipo === 'sociedad'"
-  >
-    <!-- ================= TARJETA PROFESIONAL DEL CONTADOR ================= -->
+  <div class="branding-preview-stack">
+    <!-- TARJETA CREDENCIAL UNIFICADA (CONTADORES Y SOCIEDADES) -->
     <article
-      *ngIf="tipo === 'contador'"
-      class="branding-id-card accountant-branding-card"
-      aria-label="Vista previa de la tarjeta profesional del contador"
+      class="branding-id-card"
+      [attr.aria-label]="tipo === 'sociedad' ? 'Vista previa de la tarjeta profesional de la sociedad' : 'Vista previa de la tarjeta profesional del contador'"
     >
-      <div class="accountant-card-logo-row">
+      <!-- Fila 1: Logo Institucional Oficial -->
+      <div class="credencial-card-logo-row">
         <img
           [src]="logoUrl"
           id="brandingPreviewLogo"
-          class="accountant-card-logo branding-card-logo"
+          class="credencial-card-logo branding-card-logo"
           alt="Logo de la Junta Central de Contadores"
           (error)="onLogoError($event)"
         />
       </div>
-      <div class="accountant-card-main">
-        <img class="branding-card-photo" [src]="fotoUrl" alt="Fotografía del contador" />
-        <div class="accountant-card-side">
-          <div class="accountant-card-info">
-            <span class="accountant-card-label">{{ labelRegistro }}</span>
-            <div class="accountant-card-registration">
-              <strong class="accountant-card-value">{{ valorRegistro }}</strong>
-              <span
-                class="accountant-card-copy"
-                (click)="copiarMatricula($event)"
-                role="button"
-                tabindex="0"
-                [title]="copiadoExitoso ? '¡Copiado!' : 'Copiar número'"
-                aria-label="Copiar número"
-              >
-                <svg *ngIf="!copiadoExitoso" class="credencial-copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2.5" ry="2.5"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span *ngIf="copiadoExitoso" class="fa fa-check text-success" style="font-size: 13px;"></span>
-              </span>
-            </div>
-          </div>
-          <div class="accountant-card-info">
-            <span class="accountant-card-label">{{ labelFecha }}</span>
-            <strong class="accountant-card-value">{{ valorFecha }}</strong>
-          </div>
-          <div class="accountant-card-info">
-            <span class="accountant-card-label">{{ labelMedio3 }}</span>
-            <strong class="accountant-card-value">{{ valorMedio3 }}</strong>
-          </div>
-        </div>
-      </div>
-      <div class="accountant-card-details">
-        <div class="accountant-card-info">
-          <span class="accountant-card-label">{{ labelTitular }}</span>
-          <strong class="accountant-card-value">{{ valorTitular }}</strong>
-        </div>
-        <div class="accountant-card-info">
-          <span class="accountant-card-label">{{ labelDocumento }}</span>
-          <strong class="accountant-card-value">{{ valorDocumento }}</strong>
-        </div>
-        <div class="accountant-card-info">
-          <span class="accountant-card-label">{{ labelExtra }}</span>
-          <strong class="accountant-card-value">{{ valorExtra }}</strong>
-        </div>
-        <div class="accountant-card-info">
-          <span class="accountant-card-label">{{ labelPie2Der }}</span>
-          <strong class="accountant-card-value">{{ valorPie2Der }}</strong>
-        </div>
-      </div>
-    </article>
 
-    <!-- ================= TARJETA PROFESIONAL DE LA SOCIEDAD ================= -->
-    <article
-      *ngIf="tipo === 'sociedad'"
-      class="branding-id-card company-branding-card"
-      aria-label="Vista previa de la tarjeta profesional de la sociedad"
-    >
-      <div class="company-card-logo-row">
+      <!-- Fila 2: Foto/Logo + Datos Laterales -->
+      <div class="credencial-card-main">
         <img
-          [src]="logoUrl"
-          id="brandingPreviewLogo"
-          class="company-card-header-logo branding-card-logo"
-          alt="Logo de la Junta Central de Contadores"
-          (error)="onLogoError($event)"
+          class="credencial-card-photo"
+          [src]="fotoUrl"
+          [alt]="tipo === 'sociedad' ? 'Logo de la sociedad' : 'Fotografía del contador'"
         />
-      </div>
-      <div class="company-card-main">
-        <img class="company-card-mark" [src]="fotoUrl" alt="Logo de la sociedad" />
-        <div class="company-card-side">
-          <div class="company-card-info">
-            <span class="company-card-label">{{ labelRegistro }}</span>
-            <div class="company-card-registration">
-              <strong class="company-card-value">{{ valorRegistro }}</strong>
+        <div class="credencial-card-side">
+          <div class="credencial-card-info">
+            <span class="credencial-card-label">{{ labelRegistro }}</span>
+            <div class="credencial-card-registration">
+              <strong class="credencial-card-value">{{ valorRegistro }}</strong>
               <span
-                class="company-card-copy"
+                class="credencial-card-copy"
                 (click)="copiarMatricula($event)"
                 role="button"
                 tabindex="0"
@@ -121,32 +54,34 @@
               </span>
             </div>
           </div>
-          <div class="company-card-info">
-            <span class="company-card-label">{{ labelFecha }}</span>
-            <strong class="company-card-value">{{ valorFecha }}</strong>
+          <div class="credencial-card-info">
+            <span class="credencial-card-label">{{ labelFecha }}</span>
+            <strong class="credencial-card-value">{{ valorFecha }}</strong>
           </div>
-          <div class="company-card-info">
-            <span class="company-card-label">{{ labelMedio3 }}</span>
-            <strong class="company-card-value">{{ valorMedio3 }}</strong>
+          <div class="credencial-card-info">
+            <span class="credencial-card-label">{{ labelMedio3 }}</span>
+            <strong class="credencial-card-value">{{ valorMedio3 }}</strong>
           </div>
         </div>
       </div>
-      <div class="company-card-details">
-        <div class="company-card-info">
-          <span class="company-card-label">{{ labelTitular }}</span>
-          <strong class="company-card-value">{{ valorTitular }}</strong>
+
+      <!-- Fila 3: Grilla de Detalles Inferiores (4 Campos) -->
+      <div class="credencial-card-details">
+        <div class="credencial-card-info">
+          <span class="credencial-card-label">{{ labelTitular }}</span>
+          <strong class="credencial-card-value">{{ valorTitular }}</strong>
         </div>
-        <div class="company-card-info">
-          <span class="company-card-label">{{ labelDocumento }}</span>
-          <strong class="company-card-value">{{ valorDocumento }}</strong>
+        <div class="credencial-card-info">
+          <span class="credencial-card-label">{{ labelDocumento }}</span>
+          <strong class="credencial-card-value">{{ valorDocumento }}</strong>
         </div>
-        <div class="company-card-info">
-          <span class="company-card-label">{{ labelExtra }}</span>
-          <strong class="company-card-value">{{ valorExtra }}</strong>
+        <div class="credencial-card-info">
+          <span class="credencial-card-label">{{ labelExtra }}</span>
+          <strong class="credencial-card-value">{{ valorExtra }}</strong>
         </div>
-        <div class="company-card-info">
-          <span class="company-card-label">{{ labelPie2Der }}</span>
-          <strong class="company-card-value">{{ valorPie2Der }}</strong>
+        <div class="credencial-card-info">
+          <span class="credencial-card-label">{{ labelPie2Der }}</span>
+          <strong class="credencial-card-value">{{ valorPie2Der }}</strong>
         </div>
       </div>
     </article>
