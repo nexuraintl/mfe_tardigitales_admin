@@ -18,6 +18,7 @@ export interface CredencialBranding {
   color_fondo?: string;
   color_letra?: string;
   logo_url?: string | null;
+  logo_impresion_url?: string | null;
   patron_url?: string | null;
 }
 
@@ -31,6 +32,9 @@ export interface CredencialBranding {
 export class TarjetaCredencialComponent {
   /** 'contador' | 'sociedad' */
   @Input() tipo: 'contador' | 'sociedad' = 'contador';
+
+  /** 'digital' | 'impresion' */
+  @Input() modo: 'digital' | 'impresion' = 'digital';
 
   /** 'ambas' | 'frente' | 'reverso' */
   @Input() vista: 'ambas' | 'frente' | 'reverso' = 'ambas';
@@ -50,15 +54,22 @@ export class TarjetaCredencialComponent {
   copiadoExitoso: boolean = false;
   logoError: boolean = false;
 
+  get isImpresion(): boolean {
+    return this.modo === 'impresion';
+  }
+
   get fondoTarjeta(): string {
+    if (this.isImpresion) return '#ffffff';
     return this.branding.color_fondo || (this.tipo === 'sociedad' ? '#170e00' : '#14275f');
   }
 
   get fondoTarjetaOscuro(): string {
+    if (this.isImpresion) return '#ffffff';
     return this.oscurecerColor(this.fondoTarjeta, 14);
   }
 
   get fondoTarjetaProfundo(): string {
+    if (this.isImpresion) return '#ffffff';
     return this.oscurecerColor(this.fondoTarjeta, 25);
   }
 
@@ -83,6 +94,7 @@ export class TarjetaCredencialComponent {
   }
 
   get colorLetra(): string {
+    if (this.isImpresion) return '#0f172a';
     return this.branding.color_letra || '#ffffff';
   }
 
@@ -91,12 +103,21 @@ export class TarjetaCredencialComponent {
   }
 
   get patronFondo(): string | null {
-    return this.branding.patron_url ? `url(${this.branding.patron_url})` : null;
+    if (this.branding.patron_url) {
+      return `url(${this.branding.patron_url})`;
+    }
+    const defaultPatron = this.tipo === 'sociedad'
+      ? 'assets/images/pattern_sociedades_opt.jpg'
+      : 'assets/images/pattern_jcc_opt.jpg';
+    return `url(${defaultPatron})`;
   }
 
   get logoUrl(): string | null {
     if (this.logoError) return null;
-    return this.branding.logo_url || null;
+    if (this.isImpresion) {
+      return this.branding.logo_impresion_url || 'assets/images/logo_impresion_jcc.png';
+    }
+    return this.branding.logo_url || 'assets/images/logo-jcc.png';
   }
 
   onLogoError(event: Event): void {
@@ -104,7 +125,10 @@ export class TarjetaCredencialComponent {
   }
 
   get fotoUrl(): string {
-    return this.datos.foto || this.defaultPhoto;
+    if (this.datos.foto) return this.datos.foto;
+    return this.tipo === 'sociedad'
+      ? 'assets/images/card-logo-sociedades.png'
+      : this.defaultPhoto;
   }
 
   // ===== BLOQUE MEDIO DERECHA (Item 1: Registro / Tarjeta) =====
