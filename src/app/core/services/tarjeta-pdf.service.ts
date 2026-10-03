@@ -140,7 +140,7 @@ export class TarjetaPdfService {
     const labelRegistro = isSociedad ? 'Número de Registro' : 'Tarjeta profesional';
     const valorRegistro = datos.matricula || (isSociedad ? '5892' : '492031-T');
 
-    const labelFecha = isSociedad ? 'Fecha Res. Inscripción' : 'Fecha Res. Inscripción';
+    const labelFecha = isSociedad ? 'Fecha Res. Inscripción' : 'Fecha Resolución Ins.';
     const valorFecha = datos.fecha_resolucion || (isSociedad ? '12 - Mar - 2025' : '06 - Feb - 2026');
 
     const labelMedio3 = isSociedad ? 'Número de Expediente' : 'Resolución Inscripción';
@@ -149,14 +149,14 @@ export class TarjetaPdfService {
     const labelTitular = isSociedad ? 'Razón social' : 'Nombre';
     const valorTitular = datos.solicitante || (isSociedad ? 'Sociedad de Contadores Públicos' : 'Andrés Felipe Torres Cárdenas');
 
-    const labelDocumento = isSociedad ? 'NIT' : 'Cédula de Ciudadanía';
+    const labelDocumento = isSociedad ? 'NIT' : 'Cédula de ciudadanía';
     const valorDocumento = String(datos.documento || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim() || (isSociedad ? '901482310-5' : '1.053.892.146');
 
     const labelExtra = isSociedad ? 'Tipo de registro' : 'Institución de Educación Superior';
-    const valorExtra = datos.universidad || (isSociedad ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle');
+    const valorExtra = datos.universidad || (isSociedad ? 'Sociedad de contadores' : 'Universidad de La Salle');
 
-    const labelPie2Der = isSociedad ? 'Res. Inscripción' : 'Res. Inscripción';
-    const valorPie2Der = isSociedad ? (datos.resolucion || '1042') : (datos.resolucion || '289');
+    const labelPie2Der = isSociedad ? 'Res. Inscripción' : 'N. Expediente';
+    const valorPie2Der = isSociedad ? (datos.resolucion || '0142') : (datos.expediente || '621948');
 
     const fotoSrc = datos.foto || (isSociedad ? 'assets/images/card-logo-sociedades.png' : 'assets/images/photo_card.jpg');
     // Logo oficial institucional para impresión suministrado por el usuario
