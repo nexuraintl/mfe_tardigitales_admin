@@ -174,37 +174,14 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
               <small class="text-muted">Diseño oficial para {{ isSociedades ? 'Sociedades' : 'Contadores' }}</small>
             </div>
             
-            <div class="d-flex align-items-center gap-3">
-              <div class="btn-group btn-group-sm" role="group" aria-label="Modo de visualización">
-                <button
-                  type="button"
-                  class="btn"
-                  [ngClass]="modoTarjetaModal === 'digital' ? 'btn-primary' : 'btn-outline-secondary'"
-                  (click)="modoTarjetaModal = 'digital'"
-                  title="Vista digital estándar"
-                >
-                  <i class="fa fa-desktop me-1"></i> Digital
-                </button>
-                <button
-                  type="button"
-                  class="btn"
-                  [ngClass]="modoTarjetaModal === 'impresion' ? 'btn-primary' : 'btn-outline-secondary'"
-                  (click)="modoTarjetaModal = 'impresion'"
-                  title="Vista oficial para impresión y PDF"
-                >
-                  <i class="fa fa-print me-1"></i> Impresión / PDF
-                </button>
-              </div>
-
-              <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar"></button>
-            </div>
+            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar"></button>
           </div>
           
           <div class="modal-body p-4 d-flex justify-content-center bg-light">
             <div class="branding-preview-card w-100" style="max-width: 900px;">
               <app-tarjeta-credencial
                 [tipo]="isSociedades ? 'sociedad' : 'contador'"
-                [modo]="modoTarjetaModal"
+                modo="digital"
                 vista="ambas"
                 layout="auto"
                 [datos]="credencialDatos"
@@ -240,12 +217,15 @@ export class ModalDetalleTarjetaComponent {
   @Input() brandingColorLetra: string = '#ffffff';
   @Input() brandingLogoUrl: string | null = null;
   @Input() brandingPatronUrl: string | null = null;
+  @Input() brandingLogoImpresionUrl: string | null = null;
+  @Input() brandingPatronImpresionUrl: string | null = null;
+  @Input() brandingColorLetraImpresion: string = '#0f172a';
+  @Input() brandingNombreDirector: string | null = null;
+  @Input() brandingFirmaDirector: string | null = null;
   @Input() getFotoUrlFn?: (url?: string | null) => string;
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() cerrarTarjeta = new EventEmitter<void>();
-
-  modoTarjetaModal: 'digital' | 'impresion' = 'digital';
 
   private pdfService = inject(TarjetaPdfService);
   exportandoPdf: boolean = false;
@@ -267,7 +247,12 @@ export class ModalDetalleTarjetaComponent {
         foto: this.getFoto(this.selectedTarjeta.foto),
         hash_sha256: this.selectedTarjeta.hash_sha256,
         logo_url: this.brandingLogoUrl || 'assets/images/logo-jcc.png',
-        patron_url: this.brandingPatronUrl
+        patron_url: this.brandingPatronUrl,
+        logo_impresion_url: this.brandingLogoImpresionUrl,
+        patron_impresion_url: this.brandingPatronImpresionUrl,
+        color_letra_impresion: this.brandingColorLetraImpresion,
+        nombre_director: this.brandingNombreDirector,
+        firma_director: this.brandingFirmaDirector
       });
     } catch (err) {
       console.error('Error al exportar PDF de tarjeta:', err);

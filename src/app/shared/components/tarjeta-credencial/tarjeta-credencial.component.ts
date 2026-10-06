@@ -17,9 +17,11 @@ export interface CredencialDatos {
 export interface CredencialBranding {
   color_fondo?: string;
   color_letra?: string;
+  color_letra_impresion?: string;
   logo_url?: string | null;
   logo_impresion_url?: string | null;
   patron_url?: string | null;
+  patron_impresion_url?: string | null;
 }
 
 @Component({
@@ -94,7 +96,9 @@ export class TarjetaCredencialComponent {
   }
 
   get colorLetra(): string {
-    if (this.isImpresion) return '#0f172a';
+    if (this.isImpresion) {
+      return this.branding.color_letra_impresion || '#0f172a';
+    }
     return this.branding.color_letra || '#ffffff';
   }
 
@@ -103,6 +107,12 @@ export class TarjetaCredencialComponent {
   }
 
   get patronFondo(): string | null {
+    if (this.isImpresion) {
+      if (this.branding.patron_impresion_url) {
+        return `url(${this.branding.patron_impresion_url})`;
+      }
+      return 'none';
+    }
     if (this.branding.patron_url) {
       return `url(${this.branding.patron_url})`;
     }
@@ -115,7 +125,7 @@ export class TarjetaCredencialComponent {
   get logoUrl(): string | null {
     if (this.logoError) return null;
     if (this.isImpresion) {
-      return this.branding.logo_impresion_url || 'assets/images/logo_impresion_jcc.png';
+      return this.branding.logo_impresion_url || this.branding.logo_url || 'assets/images/logo_impresion_jcc.png';
     }
     return this.branding.logo_url || 'assets/images/logo-jcc.png';
   }
