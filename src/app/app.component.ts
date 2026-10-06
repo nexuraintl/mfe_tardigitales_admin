@@ -50,6 +50,7 @@ export class App implements OnInit {
     '/branding': 'Branding de credenciales',
     '/branding-contadores': 'Branding de credenciales — Contadores',
     '/branding-sociedades': 'Branding de credenciales — Sociedades',
+    '/branding-institucional': 'Branding — Firma Institucional',
     '/auditoria': 'Auditoría API',
     '/procesos-lotes': 'Gestión de Colas y Procesos en Lote',
     '/usuarios': 'Usuarios'
@@ -120,7 +121,8 @@ export class App implements OnInit {
           icon: 'fa fa-paint-brush',
           children: [
             { label: 'Contadores', icon: 'fa fa-user', path: '/branding-contadores' },
-            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/branding-sociedades' }
+            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/branding-sociedades' },
+            { label: 'Firma Institucional', icon: 'fa fa-pencil-square-o', path: '/branding-institucional' }
           ]
         },
         { label: 'Validador QR', icon: 'fa fa-qrcode', path: '/validador-qr' },
