@@ -1,0 +1,232 @@
+<!-- Alertas y Mensajes de Estado -->
+<nx-alert *ngIf="currentError" [error]="currentError"></nx-alert>
+
+<div *ngIf="mensajeExito" class="alert alert-success d-flex align-items-center mb-3 shadow-sm" role="alert">
+  <span class="fa fa-check-circle me-2 fs-5 text-success"></span>
+  <div>{{ mensajeExito }}</div>
+</div>
+
+<div class="branding-layout">
+  <!-- Columna Izquierda: Formulario de Configuración e Historial -->
+  <div class="d-flex flex-column gap-4">
+    <!-- Card 1: Formulario de Configuración -->
+    <section class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Configuración de Firma Institucional
+        </h5>
+        <small class="text-muted">
+          Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar' }}</strong>
+        </small>
+      </div>
+
+      <div class="card-body p-4">
+        <div class="branding-fields">
+          <!-- Campo: Nombre del Director General -->
+          <div class="branding-field full mb-3">
+            <label for="brandingNombreDirector" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Nombre del Director General</span>
+              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+            </label>
+            <input
+              type="text"
+              id="brandingNombreDirector"
+              class="form-control form-control-sm"
+              placeholder="Ej: SANDRA MILENA BARRIOS PULIDO"
+              [(ngModel)]="nombreDirector"
+            />
+            <div class="text-muted mt-1" style="font-size: 11px;">
+              Nombre oficial del titular que se imprime en credenciales y certificados.
+            </div>
+          </div>
+
+          <!-- Campo: Cargo Institucional -->
+          <div class="branding-field full mb-3">
+            <label for="brandingCargoDirector" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Cargo Institucional</span>
+              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+            </label>
+            <input
+              type="text"
+              id="brandingCargoDirector"
+              class="form-control form-control-sm"
+              placeholder="Ej: DIRECTOR GENERAL"
+              [(ngModel)]="cargoDirector"
+            />
+          </div>
+
+          <!-- Campo: Firma del Director General -->
+          <div class="branding-field full mb-3">
+            <label for="brandingFirmaDirector" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Firma del Director General (PNG transparente o JPG - Máx. 500 KB)</span>
+              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+            </label>
+
+            <!-- Previsualización de la firma seleccionada -->
+            <div *ngIf="firmaPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
+              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 80px; height: 40px; min-width: 80px; overflow: hidden;">
+                <img [src]="firmaPreviewUrl" alt="Vista previa de la firma" style="max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply;" />
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25" style="font-size: 10px;">
+                    {{ firmaSourceText || 'Firma seleccionada' }}
+                  </span>
+                </div>
+                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
+                  Se incluirá como firma oficial en el PDF y credenciales
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                title="Quitar firma"
+                style="font-size: 12px;"
+                (click)="quitarFirma()"
+              >
+                <span class="fa fa-times me-1"></span> Quitar
+              </button>
+            </div>
+
+            <input
+              type="file"
+              id="brandingFirmaDirector"
+              accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm"
+              (change)="onFirmaSelected($event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer bg-light border-top p-3 text-end">
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-4 py-2 fw-semibold"
+          [disabled]="saving || !hasFormChanges"
+          [title]="!hasFormChanges ? 'Modifique al menos un parámetro (nombre, cargo o firma del director) para poder guardar una nueva versión' : ''"
+          (click)="guardarNuevaVersion()"
+        >
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          <span class="fa fa-save me-1" *ngIf="!saving"></span>
+          {{ saving ? 'Guardando...' : 'Guardar nueva versión' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Card 2: Historial de Versiones -->
+    <section class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Historial de Versiones
+        </h5>
+      </div>
+
+      <div class="card-body p-0">
+        <!-- Skeleton para carga -->
+        <div *ngIf="loading" class="p-3 d-flex flex-column gap-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="skeleton-box" style="width: 50%; height: 18px;"></div>
+            <div class="skeleton-box" style="width: 25%; height: 26px; border-radius: 12px;"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="skeleton-box" style="width: 45%; height: 18px;"></div>
+            <div class="skeleton-box" style="width: 25%; height: 26px; border-radius: 12px;"></div>
+          </div>
+        </div>
+
+        <ul class="list-group list-group-flush branding-history mb-0" *ngIf="!loading && historyVersions.length > 0">
+          <li
+            *ngFor="let item of historyVersions"
+            class="list-group-item p-3 d-flex justify-content-between align-items-center transition-all"
+            [class.active-version]="item.version === selectedVersionNumber"
+          >
+            <div class="cursor-pointer flex-grow-1" (click)="seleccionarVersionHistorial(item)">
+              <strong class="d-block text-dark">
+                Versión v{{ item.version }}
+                <span class="badge bg-primary-subtle text-primary ms-1 font-normal" *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
+              </strong>
+              <small class="text-muted d-block">
+                {{ item.created_at_formatted || 'Fecha no disponible' }}
+              </small>
+              <small class="text-secondary d-block text-truncate mt-0.5" *ngIf="item.nombre_director" style="font-size: 11px; max-width: 220px;">
+                <span class="fa fa-user me-1"></span>{{ item.nombre_director }}
+              </small>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1" *ngIf="item.publicado">Publicada</span>
+              <button
+                *ngIf="!item.publicado"
+                type="button"
+                [class]="item.version === selectedVersionNumber ? 'btn btn-primary btn-sm px-3 py-1.5 fw-bold shadow-sm' : 'btn btn-outline-primary btn-sm px-3 py-1'"
+                style="font-size: 12px;"
+                (click)="seleccionarVersionHistorial(item); publicarVersion(item.version)"
+                [disabled]="publishing"
+              >
+                <span *ngIf="publishing && item.version === versionBeingPublished" class="spinner-border spinner-border-sm me-1"></span>
+                <span class="fa fa-upload me-1" *ngIf="!(publishing && item.version === versionBeingPublished)"></span>
+                {{ (publishing && item.version === versionBeingPublished) ? 'Publicando...' : (item.version === selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
+              </button>
+            </div>
+          </li>
+        </ul>
+
+        <div *ngIf="!loading && historyVersions.length === 0" class="p-4 text-center text-muted small">
+          No hay versiones registradas en el historial.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Columna Derecha: Vista Previa -->
+  <div>
+    <section class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Vista Previa
+        </h5>
+        <span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 11px;">
+          Versión v{{ selectedVersionNumber || 1 }}
+        </span>
+      </div>
+
+      <div class="card-body p-4">
+        <!-- Skeleton para Vista Previa mientras carga -->
+        <div *ngIf="loading" class="p-4">
+          <div class="skeleton-box" style="height: 180px; border-radius: 12px;"></div>
+        </div>
+
+        <div *ngIf="!loading" class="branding-preview-card text-center">
+          <div class="official-signature-block p-4 mx-auto" style="max-width: 380px;">
+            <div class="signature-img-container d-flex align-items-center justify-content-center mb-3" style="height: 70px;">
+              <img
+                *ngIf="firmaPreviewUrl"
+                [src]="firmaPreviewUrl"
+                alt="Firma del Director"
+                class="signature-img"
+              />
+              <span *ngIf="!firmaPreviewUrl" class="text-muted small fst-italic">
+                Sin firma seleccionada
+              </span>
+            </div>
+            <div class="signature-line mb-3"></div>
+            <div class="fw-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">
+              {{ nombreDirector || 'NOMBRE DEL DIRECTOR GENERAL' }}
+            </div>
+            <div class="text-secondary small fw-semibold text-uppercase mt-1" style="font-size: 11px;">
+              {{ cargoDirector || 'DIRECTOR GENERAL' }}
+            </div>
+            <div class="text-muted text-uppercase mt-1" style="font-size: 10px; letter-spacing: 0.3px;">
+              Junta Central de Contadores
+            </div>
+          </div>
+
+          <p class="branding-preview-note mt-3 mb-0">
+            Vista previa oficial del pie de firma para certificados y documentos PDF.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

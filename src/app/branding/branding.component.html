@@ -67,7 +67,7 @@
           <div class="branding-field full mb-3">
             <label for="brandingPatron" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
               <span>Imagen de patrón de fondo (PNG, JPG, SVG - Máx. 3 MB)</span>
-              <span class="text-muted small" style="font-size: 11px;">Opcional</span>
+              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
             </label>
 
             <!-- Previsualización del patrón seleccionado -->
@@ -105,9 +105,13 @@
             />
           </div>
 
+
           <div class="row g-3 mb-3">
             <div class="col-6">
-              <label for="brandingPrimary" class="form-label fw-semibold text-secondary small mb-1">Color de fondo</label>
+              <label for="brandingPrimary" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+                <span>Color de fondo</span>
+                <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+              </label>
               <input
                 type="color"
                 id="brandingPrimary"
@@ -118,7 +122,10 @@
             </div>
 
             <div class="col-6">
-              <label for="brandingSecondary" class="form-label fw-semibold text-secondary small mb-1">Color de letra</label>
+              <label for="brandingSecondary" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+                <span>Color de letra (Digital)</span>
+                <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+              </label>
               <input
                 type="color"
                 id="brandingSecondary"
@@ -126,6 +133,122 @@
                 style="height: 42px; cursor: pointer;"
                 [(ngModel)]="colorLetra"
               />
+            </div>
+          </div>
+
+          <!-- Separador y Bloque: Versión de Impresión / PDF -->
+          <div class="border-top pt-3 mt-4 mb-3">
+            <h6 class="fw-bold text-dark mb-1">Versión de Impresión / PDF</h6>
+            <p class="text-muted small mb-3">Configuración de apariencia oficial para la credencial impresa y exportada a PDF.</p>
+          </div>
+
+          <!-- Campo: Logo para Impresión -->
+          <div class="branding-field full mb-3">
+            <label for="brandingLogoImpresion" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Logo para impresión (PNG, JPG, SVG - Máx. 300 KB)</span>
+              <span class="text-muted small" style="font-size: 11px;">Opcional (fallback: logo digital)</span>
+            </label>
+
+            <!-- Previsualización del logo de impresión -->
+            <div *ngIf="logoImpresionPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
+              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px;">
+                <img [src]="logoImpresionPreviewUrl" alt="Vista previa del logo de impresión" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-info-subtle text-info border border-info border-opacity-25" style="font-size: 10px;">
+                    {{ logoImpresionSourceText || 'Logo de impresión seleccionado' }}
+                  </span>
+                </div>
+                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
+                  Se aplicará en el documento impreso o exportado a PDF
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                title="Quitar logo de impresión"
+                style="font-size: 12px;"
+                (click)="quitarLogoImpresion()"
+              >
+                <span class="fa fa-times me-1"></span> Quitar
+              </button>
+            </div>
+
+            <input
+              type="file"
+              id="brandingLogoImpresion"
+              accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm"
+              (change)="onLogoImpresionSelected($event)"
+            />
+          </div>
+
+          <!-- Campo: Patrón de Fondo para Impresión -->
+          <div class="branding-field full mb-3">
+            <label for="brandingPatronImpresion" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+              <span>Patrón de fondo para impresión (PNG, JPG, SVG - Máx. 3 MB)</span>
+              <span class="text-muted small" style="font-size: 11px;">Opcional (fallback: patrón digital)</span>
+            </label>
+
+            <!-- Previsualización del patrón de impresión -->
+            <div *ngIf="patronImpresionPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
+              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px; overflow: hidden;">
+                <img [src]="patronImpresionPreviewUrl" alt="Vista previa del patrón de impresión" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25" style="font-size: 10px;">
+                    {{ patronImpresionSourceText || 'Patrón de impresión seleccionado' }}
+                  </span>
+                </div>
+                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
+                  Se aplicará de fondo en el formato impreso
+                </div>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                title="Quitar patrón de impresión"
+                style="font-size: 12px;"
+                (click)="quitarPatronImpresion()"
+              >
+                <span class="fa fa-times me-1"></span> Quitar
+              </button>
+            </div>
+
+            <input
+              type="file"
+              id="brandingPatronImpresion"
+              accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm"
+              (change)="onPatronImpresionSelected($event)"
+            />
+          </div>
+
+          <!-- Campo: Color de Letra para Impresión -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label for="brandingColorLetraImpresion" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
+                <span>Color de texto (Impresión / PDF)</span>
+                <span class="text-muted small" style="font-size: 11px;">Por defecto oscuro para legibilidad</span>
+              </label>
+              <div class="d-flex align-items-center gap-3">
+                <input
+                  type="color"
+                  id="brandingColorLetraImpresion"
+                  class="form-control form-control-color"
+                  style="width: 60px; height: 42px; cursor: pointer;"
+                  [(ngModel)]="colorLetraImpresion"
+                />
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  style="max-width: 140px; font-family: monospace;"
+                  [(ngModel)]="colorLetraImpresion"
+                  placeholder="#0f172a"
+                />
+              </div>
             </div>
           </div>
 
@@ -137,7 +260,7 @@
           type="button"
           class="btn btn-outline-secondary px-4 py-2 fw-semibold"
           [disabled]="saving || !hasFormChanges"
-          [title]="!hasFormChanges ? 'Modifique al menos un parámetro (colores, fuente o logo) para poder guardar una nueva versión' : ''"
+          [title]="!hasFormChanges ? 'Modifique al menos un parámetro (colores, fuente, logo, patrón, nombre o firma del director) para poder guardar una nueva versión' : ''"
           (click)="guardarNuevaVersion()"
         >
           <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
@@ -183,8 +306,11 @@
                 Versión v{{ item.version }}
                 <span class="badge bg-primary-subtle text-primary ms-1 font-normal" *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
               </strong>
-              <small class="text-muted">
+              <small class="text-muted d-block">
                 {{ item.stamp || item.created_at || 'Fecha no disponible' }}
+              </small>
+              <small class="text-secondary d-block text-truncate mt-0.5" *ngIf="item.nombre_director" style="font-size: 11px; max-width: 220px;">
+                <span class="fa fa-user-tie me-1"></span>{{ item.nombre_director }}
               </small>
             </div>
 

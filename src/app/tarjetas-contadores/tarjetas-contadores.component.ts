@@ -120,6 +120,11 @@ export class TarjetasContadoresComponent implements OnInit {
   brandingColorLetra: string = '#ffffff';
   brandingLogoUrl: string | null = null;
   brandingPatronUrl: string | null = null;
+  brandingLogoImpresionUrl: string | null = null;
+  brandingPatronImpresionUrl: string | null = null;
+  brandingColorLetraImpresion: string = '#0f172a';
+  brandingNombreDirector: string = 'SANDRA MILENA BARRIOS PULIDO';
+  brandingFirmaDirector: string | null = null;
   samplePhotoUrl: string = PHOTO_CARD_PATH;
 
   getFotoUrl(url?: string | null): string {
@@ -233,6 +238,11 @@ export class TarjetasContadoresComponent implements OnInit {
       if (data.color_letra) { this.brandingColorLetra = data.color_letra; aplicado = true; }
       if (data.logo) { this.brandingLogoUrl = data.logo; aplicado = true; }
       if (data.patron) { this.brandingPatronUrl = data.patron; aplicado = true; }
+      if (data.logo_impresion) { this.brandingLogoImpresionUrl = data.logo_impresion; aplicado = true; }
+      if (data.patron_impresion) { this.brandingPatronImpresionUrl = data.patron_impresion; aplicado = true; }
+      if (data.color_letra_impresion) { this.brandingColorLetraImpresion = data.color_letra_impresion; aplicado = true; }
+      if (data.nombre_director) { this.brandingNombreDirector = data.nombre_director; aplicado = true; }
+      if (data.firma_director) { this.brandingFirmaDirector = data.firma_director; aplicado = true; }
       this.cdr.detectChanges();
       return aplicado;
     }
