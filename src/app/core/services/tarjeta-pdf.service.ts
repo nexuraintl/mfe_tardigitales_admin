@@ -16,6 +16,11 @@ export interface TarjetaPdfData {
   hash_sha256?: string;
   logo_url?: string | null;
   patron_url?: string | null;
+  logo_impresion_url?: string | null;
+  patron_impresion_url?: string | null;
+  color_letra_impresion?: string | null;
+  nombre_director?: string | null;
+  firma_director?: string | null;
 }
 
 /**
@@ -159,10 +164,11 @@ export class TarjetaPdfService {
     const valorPie2Der = isSociedad ? (datos.resolucion || '0142') : (datos.expediente || '621948');
 
     const fotoSrc = datos.foto || (isSociedad ? 'assets/images/card-logo-sociedades.png' : 'assets/images/photo_card.jpg');
-    // Logo oficial institucional para impresión suministrado por el usuario
-    const logoSrc = 'assets/images/logo_impresion_jcc.png';
-    // Patrón de fondo configurado en branding (transparente grisáceo)
-    const patronSrc = datos.patron_url || (isSociedad ? 'assets/images/pattern_sociedades_opt.jpg' : 'assets/images/pattern_jcc_opt.jpg');
+    // Logo oficial institucional para impresión
+    const logoSrc = datos.logo_impresion_url || datos.logo_url || 'assets/images/logo_impresion_jcc.png';
+    // Patrón de fondo para impresión (marca de agua/trama sutil)
+    const patronSrc = datos.patron_impresion_url || datos.patron_url || (isSociedad ? 'assets/images/pattern_sociedades_opt.jpg' : 'assets/images/pattern_jcc_opt.jpg');
+    const colorTexto = datos.color_letra_impresion || '#0f172a';
 
     const legalText = isSociedad
       ? 'Este documento acredita el registro de la Sociedad de Contadores Públicos, conforme a lo establecido en la normatividad legal vigente.'
@@ -191,11 +197,11 @@ export class TarjetaPdfService {
           <div style="display: grid; gap: 14px; align-content: center; text-align: right; min-width: 0;">
             <div>
               <span style="display: block; font-size: 11.5px; color: #475569; margin-bottom: 3px; font-weight: 500;">${labelRegistro}</span>
-              <strong style="display: block; font-size: 21px; font-weight: 800; color: #0f172a; line-height: 1.1; white-space: nowrap;">${valorRegistro}</strong>
+              <strong style="display: block; font-size: 21px; font-weight: 800; color: ${colorTexto}; line-height: 1.1; white-space: nowrap;">${valorRegistro}</strong>
             </div>
             <div>
               <span style="display: block; font-size: 11px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelFecha}</span>
-              <strong style="display: block; font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.15;">${valorFecha}</strong>
+              <strong style="display: block; font-size: 14px; font-weight: 700; color: ${colorTexto}; line-height: 1.15;">${valorFecha}</strong>
             </div>
           </div>
         </div>
@@ -204,19 +210,19 @@ export class TarjetaPdfService {
         <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 58% 1fr; gap: 14px 16px; align-items: start; padding-top: 16px; border-top: 1px solid #f1f5f9;">
           <div>
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelTitular}</span>
-            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.25;">${valorTitular}</strong>
+            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: ${colorTexto}; line-height: 1.25;">${valorTitular}</strong>
           </div>
           <div style="text-align: right;">
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelDocumento}</span>
-            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.25; white-space: nowrap;">${valorDocumento}</strong>
+            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: ${colorTexto}; line-height: 1.25; white-space: nowrap;">${valorDocumento}</strong>
           </div>
           <div>
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelExtra}</span>
-            <strong style="display: block; font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.25;">${valorExtra}</strong>
+            <strong style="display: block; font-size: 13px; font-weight: 700; color: ${colorTexto}; line-height: 1.25;">${valorExtra}</strong>
           </div>
           <div style="text-align: right;">
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelPie2Der}</span>
-            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.25;">${valorPie2Der}</strong>
+            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: ${colorTexto}; line-height: 1.25;">${valorPie2Der}</strong>
           </div>
         </div>
       </div>
@@ -234,10 +240,10 @@ export class TarjetaPdfService {
       <!-- 3. SECCIÓN FIRMA INSTITUCIONAL DIRECCIÓN GENERAL -->
       <div style="margin-top: 22px; background-color: #f1f3f5; border-radius: 18px; padding: 18px 20px 16px 20px; text-align: center;">
         <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 4px;">
-          <img src="assets/images/firma_directora.png" alt="Firma Sandra Milena Barrios Pulido" style="height: 48px; max-width: 150px; object-fit: contain; mix-blend-mode: multiply; display: block;" crossorigin="anonymous" />
+          <img src="${datos.firma_director || 'assets/images/firma_directora.png'}" alt="Firma ${datos.nombre_director || 'Director General'}" style="height: 48px; max-width: 150px; object-fit: contain; mix-blend-mode: multiply; display: block;" crossorigin="anonymous" />
         </div>
         <div style="font-size: 12.5px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px; text-transform: uppercase;">
-          SANDRA MILENA BARRIOS PULIDO
+          ${(datos.nombre_director || 'SANDRA MILENA BARRIOS PULIDO').toUpperCase()}
         </div>
         <div style="font-size: 9.5px; font-weight: 600; color: #64748b; letter-spacing: 0.6px; text-transform: uppercase; margin-top: 2px;">
           DIRECTOR GENERAL

@@ -18,8 +18,13 @@ export interface BrandingHistoryItem {
   published: boolean;
   color_fondo: string;
   color_letra: string;
+  color_letra_impresion?: string;
   logo?: string;
   patron?: string;
+  logo_impresion?: string;
+  patron_impresion?: string;
+  nombre_director?: string;
+  firma_director?: string;
 }
 
 @Component({
@@ -57,6 +62,8 @@ export class BrandingComponent implements OnInit, OnDestroy {
   modoPreview: 'digital' | 'impresion' = 'digital';
   colorFondo: string = '#14275f';
   colorLetra: string = '#ffffff';
+  colorLetraImpresion: string = '#0f172a';
+
   logoFile: File | null = null;
   logoPreviewUrl: string | null = null;
   logoSourceText: string = '';
@@ -65,24 +72,40 @@ export class BrandingComponent implements OnInit, OnDestroy {
   patronPreviewUrl: string | null = null;
   patronSourceText: string = '';
 
+  logoImpresionFile: File | null = null;
+  logoImpresionPreviewUrl: string | null = null;
+  logoImpresionSourceText: string = '';
+
+  patronImpresionFile: File | null = null;
+  patronImpresionPreviewUrl: string | null = null;
+  patronImpresionSourceText: string = '';
+
   selectedVersionBase: {
     color_fondo: string;
     color_letra: string;
+    color_letra_impresion: string;
     logo: string | null;
     patron: string | null;
+    logo_impresion: string | null;
+    patron_impresion: string | null;
   } | null = null;
 
   get hasFormChanges(): boolean {
     if (this.logoFile !== null) return true;
     if (this.patronFile !== null) return true;
+    if (this.logoImpresionFile !== null) return true;
+    if (this.patronImpresionFile !== null) return true;
     if (!this.selectedVersionBase) return true;
 
     const bgChanged = (this.colorFondo || '').toLowerCase() !== (this.selectedVersionBase.color_fondo || '').toLowerCase();
     const textChanged = (this.colorLetra || '').toLowerCase() !== (this.selectedVersionBase.color_letra || '').toLowerCase();
+    const textImpChanged = (this.colorLetraImpresion || '').toLowerCase() !== (this.selectedVersionBase.color_letra_impresion || '').toLowerCase();
     const logoChanged = (this.logoPreviewUrl || null) !== (this.selectedVersionBase.logo || null);
     const patronChanged = (this.patronPreviewUrl || null) !== (this.selectedVersionBase.patron || null);
+    const logoImpChanged = (this.logoImpresionPreviewUrl || null) !== (this.selectedVersionBase.logo_impresion || null);
+    const patronImpChanged = (this.patronImpresionPreviewUrl || null) !== (this.selectedVersionBase.patron_impresion || null);
 
-    return bgChanged || textChanged || logoChanged || patronChanged;
+    return bgChanged || textChanged || textImpChanged || logoChanged || patronChanged || logoImpChanged || patronImpChanged;
   }
 
   // Sample data for preview depending on module
@@ -118,8 +141,11 @@ export class BrandingComponent implements OnInit, OnDestroy {
     return {
       color_fondo: this.colorFondo,
       color_letra: this.colorLetra,
+      color_letra_impresion: this.colorLetraImpresion,
       logo_url: this.logoPreviewUrl,
-      patron_url: this.patronPreviewUrl
+      logo_impresion_url: this.logoImpresionPreviewUrl,
+      patron_url: this.patronPreviewUrl,
+      patron_impresion_url: this.patronImpresionPreviewUrl
     };
   }
 
@@ -151,6 +177,11 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.logoPreviewUrl = null;
     this.patronFile = null;
     this.patronPreviewUrl = null;
+    this.logoImpresionFile = null;
+    this.logoImpresionPreviewUrl = null;
+    this.patronImpresionFile = null;
+    this.patronImpresionPreviewUrl = null;
+    this.colorLetraImpresion = '#0f172a';
     this.selectedVersionNumber = null;
 
     if (url.includes('sociedades')) {
@@ -210,14 +241,20 @@ export class BrandingComponent implements OnInit, OnDestroy {
               this.publishedVersion = pubV;
               if (data.color_fondo) this.colorFondo = data.color_fondo;
               if (data.color_letra) this.colorLetra = data.color_letra;
+              if (data.color_letra_impresion) this.colorLetraImpresion = data.color_letra_impresion;
               if (data.logo) this.logoPreviewUrl = data.logo;
               if (data.patron) this.patronPreviewUrl = data.patron;
+              if (data.logo_impresion) this.logoImpresionPreviewUrl = data.logo_impresion;
+              if (data.patron_impresion) this.patronImpresionPreviewUrl = data.patron_impresion;
 
               this.selectedVersionBase = {
                 color_fondo: this.colorFondo,
                 color_letra: this.colorLetra,
+                color_letra_impresion: this.colorLetraImpresion,
                 logo: this.logoPreviewUrl,
-                patron: this.patronPreviewUrl
+                patron: this.patronPreviewUrl,
+                logo_impresion: this.logoImpresionPreviewUrl,
+                patron_impresion: this.patronImpresionPreviewUrl
               };
 
               this.cargarHistorial();
@@ -244,14 +281,20 @@ export class BrandingComponent implements OnInit, OnDestroy {
               if (data.version_publicada) this.publishedVersion = Number(data.version_publicada);
               if (data.color_fondo) this.colorFondo = data.color_fondo;
               if (data.color_letra) this.colorLetra = data.color_letra;
+              if (data.color_letra_impresion) this.colorLetraImpresion = data.color_letra_impresion;
               if (data.logo) this.logoPreviewUrl = data.logo;
               if (data.patron) this.patronPreviewUrl = data.patron;
+              if (data.logo_impresion) this.logoImpresionPreviewUrl = data.logo_impresion;
+              if (data.patron_impresion) this.patronImpresionPreviewUrl = data.patron_impresion;
 
               this.selectedVersionBase = {
                 color_fondo: this.colorFondo,
                 color_letra: this.colorLetra,
+                color_letra_impresion: this.colorLetraImpresion,
                 logo: this.logoPreviewUrl,
-                patron: this.patronPreviewUrl
+                patron: this.patronPreviewUrl,
+                logo_impresion: this.logoImpresionPreviewUrl,
+                patron_impresion: this.patronImpresionPreviewUrl
               };
             }
           }
@@ -307,8 +350,13 @@ export class BrandingComponent implements OnInit, OnDestroy {
                 published: isPublished,
                 color_fondo: item.color_fondo,
                 color_letra: item.color_letra,
+                color_letra_impresion: item.color_letra_impresion,
                 logo: item.logo,
-                patron: item.patron
+                patron: item.patron,
+                logo_impresion: item.logo_impresion,
+                patron_impresion: item.patron_impresion,
+                nombre_director: item.nombre_director,
+                firma_director: item.firma_director
               };
             });
 
@@ -444,6 +492,104 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  onLogoImpresionSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 300 * 1024) {
+      event.target.value = '';
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Error de Validación',
+        message: 'El archivo de logo de impresión supera el tamaño máximo permitido de 300 KB.',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
+      event.target.value = '';
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Error de Validación',
+        message: 'Seleccione un formato de imagen válido para el logo de impresión (PNG, JPG o SVG).',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    this.logoImpresionFile = file;
+    this.logoImpresionSourceText = `Archivo: ${file.name}`;
+    this.currentError = null;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.logoImpresionPreviewUrl = e.target.result;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  quitarLogoImpresion(): void {
+    this.logoImpresionFile = null;
+    this.logoImpresionPreviewUrl = null;
+    this.logoImpresionSourceText = '';
+    const input = document.getElementById('brandingLogoImpresion') as HTMLInputElement;
+    if (input) input.value = '';
+    this.cdr.detectChanges();
+  }
+
+  onPatronImpresionSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 3 * 1024 * 1024) {
+      event.target.value = '';
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Error de Validación',
+        message: 'El archivo de patrón de impresión supera el tamaño máximo permitido de 3 MB.',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
+      event.target.value = '';
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Error de Validación',
+        message: 'Seleccione un formato de imagen válido para el patrón de fondo de impresión (PNG, JPG o SVG).',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    this.patronImpresionFile = file;
+    this.patronImpresionSourceText = `Archivo: ${file.name}`;
+    this.currentError = null;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.patronImpresionPreviewUrl = e.target.result;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  quitarPatronImpresion(): void {
+    this.patronImpresionFile = null;
+    this.patronImpresionPreviewUrl = null;
+    this.patronImpresionSourceText = '';
+    const input = document.getElementById('brandingPatronImpresion') as HTMLInputElement;
+    if (input) input.value = '';
+    this.cdr.detectChanges();
+  }
+
   private dataURLtoFile(dataurl: string, filename: string): File {
     const arr = dataurl.split(',');
     const mimeMatch = arr[0].match(/:(.*?);/);
@@ -465,7 +611,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
       this.currentError = {
         code: 'MS-3803',
         title: 'Sin Cambios Detectados',
-        message: 'No se han modificado los parámetros (colores, fuente, logo o patrón) con respecto a la versión seleccionada.',
+        message: 'No se han modificado los parámetros con respecto a la versión seleccionada.',
         httpStatus: 400,
         timestamp: new Date()
       };
@@ -483,6 +629,39 @@ export class BrandingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.patronFile && !this.patronPreviewUrl) {
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Patrón de Fondo Obligatorio',
+        message: 'La imagen de patrón de fondo es obligatoria. Debe seleccionar un archivo de imagen o elegir una versión del historial que contenga patrón.',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    if (!this.colorFondo) {
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Color de Fondo Obligatorio',
+        message: 'El color de fondo es obligatorio.',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    if (!this.colorLetra) {
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Color de Letra Obligatorio',
+        message: 'El color de letra es obligatorio.',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
     this.saving = true;
 
     const nextVersion = this.historyVersions.length
@@ -494,6 +673,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     formData.append('version_actual', nextVersion.toString());
     formData.append('color_fondo', this.colorFondo);
     formData.append('color_letra', this.colorLetra);
+    formData.append('color_letra_impresion', this.colorLetraImpresion || '#0f172a');
     formData.append('usuario_creacion_id', '141');
     formData.append('tipo_id', this.tipoId.toString());
 
@@ -519,6 +699,28 @@ export class BrandingComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (this.logoImpresionFile) {
+      formData.append('logo_impresion', this.logoImpresionFile);
+    } else if (this.logoImpresionPreviewUrl && this.logoImpresionPreviewUrl.startsWith('data:')) {
+      try {
+        const fileFromPreview = this.dataURLtoFile(this.logoImpresionPreviewUrl, `logo_imp_v${nextVersion}.png`);
+        formData.append('logo_impresion', fileFromPreview);
+      } catch (err) {
+        console.warn('No se pudo convertir logoImpresionPreviewUrl a File:', err);
+      }
+    }
+
+    if (this.patronImpresionFile) {
+      formData.append('patron_impresion', this.patronImpresionFile);
+    } else if (this.patronImpresionPreviewUrl && this.patronImpresionPreviewUrl.startsWith('data:')) {
+      try {
+        const fileFromPreview = this.dataURLtoFile(this.patronImpresionPreviewUrl, `patron_imp_v${nextVersion}.png`);
+        formData.append('patron_impresion', fileFromPreview);
+      } catch (err) {
+        console.warn('No se pudo convertir patronImpresionPreviewUrl a File:', err);
+      }
+    }
+
     this.http
       .post(`${API_BASE}/tarjetas/branding-credentials/create?client_id=${this.clientId}`, formData)
       .subscribe({
@@ -526,6 +728,8 @@ export class BrandingComponent implements OnInit, OnDestroy {
           this.saving = false;
           this.logoFile = null;
           this.patronFile = null;
+          this.logoImpresionFile = null;
+          this.patronImpresionFile = null;
           this.mensajeExito = `Versión v${nextVersion} guardada correctamente para ${this.label}. Aún no está publicada.`;
           this.cargarHistorial(nextVersion);
           this.cdr.detectChanges();
@@ -547,6 +751,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.selectedVersionNumber = v.version;
     if (v.color_fondo) this.colorFondo = v.color_fondo;
     if (v.color_letra) this.colorLetra = v.color_letra;
+    this.colorLetraImpresion = v.color_letra_impresion || '#0f172a';
     
     if (v.logo !== undefined) {
       this.logoFile = null;
@@ -560,11 +765,26 @@ export class BrandingComponent implements OnInit, OnDestroy {
       this.patronSourceText = v.patron ? `Versión v${v.version}` : '';
     }
 
+    if (v.logo_impresion !== undefined) {
+      this.logoImpresionFile = null;
+      this.logoImpresionPreviewUrl = v.logo_impresion ? v.logo_impresion : null;
+      this.logoImpresionSourceText = v.logo_impresion ? `Versión v${v.version}` : '';
+    }
+
+    if (v.patron_impresion !== undefined) {
+      this.patronImpresionFile = null;
+      this.patronImpresionPreviewUrl = v.patron_impresion ? v.patron_impresion : null;
+      this.patronImpresionSourceText = v.patron_impresion ? `Versión v${v.version}` : '';
+    }
+
     this.selectedVersionBase = {
       color_fondo: this.colorFondo,
       color_letra: this.colorLetra,
+      color_letra_impresion: this.colorLetraImpresion,
       logo: this.logoPreviewUrl,
-      patron: this.patronPreviewUrl
+      patron: this.patronPreviewUrl,
+      logo_impresion: this.logoImpresionPreviewUrl,
+      patron_impresion: this.patronImpresionPreviewUrl
     };
 
     this.cdr.detectChanges();

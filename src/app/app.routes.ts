@@ -9,6 +9,7 @@ import { ValidadorQrComponent } from './validador-qr/validador-qr.component';
 import { CertificadosComponent } from './certificados/certificados.component';
 import { AuditoriaComponent } from './auditoria/auditoria.component';
 import { BrandingComponent } from './branding/branding.component';
+import { BrandingInstitucionalComponent } from './branding-institucional/branding-institucional.component';
 import { ProcesosLotesComponent } from './procesos-lotes/procesos-lotes.component';
 
 export const routes: Routes = [
@@ -84,6 +85,10 @@ export const routes: Routes = [
   {
     path: 'branding-sociedades',
     component: BrandingComponent
+  },
+  {
+    path: 'branding-institucional',
+    component: BrandingInstitucionalComponent
   },
   {
     path: 'validador-qr',
