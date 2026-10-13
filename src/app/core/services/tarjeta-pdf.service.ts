@@ -145,7 +145,7 @@ export class TarjetaPdfService {
     const labelRegistro = isSociedad ? 'Número de Registro' : 'Tarjeta profesional';
     const valorRegistro = datos.matricula || (isSociedad ? '5892' : '492031-T');
 
-    const labelFecha = isSociedad ? 'Fecha Res. Inscripción' : 'Fecha Resolución Ins.';
+    const labelFecha = 'Fecha Res. Inscripción';
     const valorFecha = datos.fecha_resolucion || (isSociedad ? '12 - Mar - 2025' : '06 - Feb - 2026');
 
     const labelMedio3 = isSociedad ? 'Número de Expediente' : 'Resolución Inscripción';

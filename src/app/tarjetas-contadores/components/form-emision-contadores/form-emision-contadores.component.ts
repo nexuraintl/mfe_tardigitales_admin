@@ -21,20 +21,22 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
             <p class="text-muted small mb-3">Ingrese el número de identificación del contador para consultar el registro oficial y generar la vista previa de la tarjeta.</p>
             <div class="mb-3">
               <label for="individualIssueType" class="form-label fw-semibold text-secondary small mb-1">
-                Tipo de solicitud
+                Tipo de solicitud <span class="text-danger">*</span>
               </label>
-              <select id="individualIssueType" class="form-select" aria-label="Tipo de solicitud" [ngModel]="tipoSolicitud" (ngModelChange)="tipoSolicitudChange.emit($event)">
+              <select id="individualIssueType" class="form-select" [class.is-invalid]="!!errorTipoSolicitud" aria-label="Tipo de solicitud" [ngModel]="tipoSolicitud" (ngModelChange)="onTipoChange($event)">
                 <option value="">Seleccionar tipo</option>
                 <option value="primeraVez">Primera vez</option>
                 <option value="duplicado">Duplicado</option>
                 <option value="sustitucion">Sustitución</option>
               </select>
+              <div *ngIf="errorTipoSolicitud" class="text-danger small mt-1">{{ errorTipoSolicitud }}</div>
             </div>
             <div class="mb-3">
               <label for="individualIssueIdentification" class="form-label fw-semibold text-secondary small mb-1">
-                Número de identificación
+                Número de identificación <span class="text-danger">*</span>
               </label>
-              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" placeholder="Ej. 1152226268" [ngModel]="nuevaIdentificacion" (ngModelChange)="nuevaIdentificacionChange.emit($event)" (keyup.enter)="consultarMatricula.emit()">
+              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 1152226268" [ngModel]="nuevaIdentificacion" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="consultarMatricula.emit()">
+              <div *ngIf="errorIdentificacion" class="text-danger small mt-1">{{ errorIdentificacion }}</div>
             </div>
             <button type="button" class="btn btn-primary w-100 fw-semibold" id="individualIssueSearch" (click)="consultarMatricula.emit()" [disabled]="cargandoBusqueda">
               <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar matrícula</span>
@@ -92,11 +94,30 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
   `
 })
 export class FormEmisionContadoresComponent {
-  @Input() tipoSolicitud: string = 'primeraVez';
+  @Input() tipoSolicitud: string = '';
   @Output() tipoSolicitudChange = new EventEmitter<string>();
 
   @Input() nuevaIdentificacion: string = '';
   @Output() nuevaIdentificacionChange = new EventEmitter<string>();
+
+  @Input() errorTipoSolicitud: string = '';
+  @Input() errorIdentificacion: string = '';
+
+  onTipoChange(val: string): void {
+    this.tipoSolicitud = val;
+    this.tipoSolicitudChange.emit(val);
+    if (val) {
+      this.errorTipoSolicitud = '';
+    }
+  }
+
+  onIdentificacionChange(val: string): void {
+    this.nuevaIdentificacion = val;
+    this.nuevaIdentificacionChange.emit(val);
+    if (val && val.trim()) {
+      this.errorIdentificacion = '';
+    }
+  }
 
   @Input() cargandoBusqueda: boolean = false;
   @Input() busquedaRealizada: boolean = false;

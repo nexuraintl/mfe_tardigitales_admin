@@ -34,6 +34,7 @@ export interface TarjetaSociedad {
   matricula?: string;
   inscripcion?: string;
   tipo_sociedad?: string;
+  tipo_registro?: string;
   correo?: string;
   representante?: string;
   representante_legal?: string;
@@ -45,6 +46,9 @@ export interface TarjetaSociedad {
   fecha_resolucion?: string;
   acta_jcc?: string;
   fecha_inscripcion?: string;
+  fecha_radicacion?: string;
+  estado_solicitud?: string;
+  tipo_solicitud?: string;
   fecha?: string;
   fecha_emision?: string;
   foto?: string | null;
@@ -106,7 +110,9 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   // Variables para la creación de tarjeta (Emisión individual)
   nuevaIdentificacion: string = '';
-  tipoSolicitud: string = 'primeraVez';
+  tipoSolicitud: string = '';
+  errorTipoSolicitud: string = '';
+  errorIdentificacion: string = '';
   busquedaRealizada: boolean = false;
   cargandoBusqueda: boolean = false;
   datosConsulta: any = null;
@@ -324,13 +330,31 @@ export class TarjetasSociedadesComponent implements OnInit {
       .subscribe({
         next: (res) => {
           if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-            this.dbColumns = res.data.map((c: any) => ({
-              key: c.key,
-              label: c.label,
-              visible: !!c.visible_defecto,
-              es_filtrable: !!c.es_filtrable,
-              tipo_dato: c.tipo_dato || 'string'
-            }));
+            let cols = res.data.map((c: any) => {
+              let label = c.label;
+              if (c.key === 'tipo_sociedad' || c.key === 'tipo_registro') {
+                label = 'Tipo de registro';
+              } else if (c.key === 'fecha_inscripcion' || c.key === 'fecha_radicacion') {
+                label = 'Fecha de radicación';
+              }
+              return {
+                key: c.key,
+                label: label,
+                visible: !!c.visible_defecto,
+                es_filtrable: !!c.es_filtrable,
+                tipo_dato: c.tipo_dato || 'string'
+              };
+            });
+            if (!cols.some((c: any) => c.key === 'correo')) {
+              cols.splice(5, 0, {
+                key: 'correo',
+                label: 'Correo',
+                visible: true,
+                es_filtrable: true,
+                tipo_dato: 'string'
+              });
+            }
+            this.dbColumns = cols;
             this.availableColumns = this.dbColumns.map(c => ({ ...c }));
           }
           this.applySavedColumnsPreference();
@@ -424,15 +448,19 @@ export class TarjetasSociedadesComponent implements OnInit {
             nit: String(item.nit ?? item.documento ?? ''),
             matricula: item.inscripcion ?? item.matricula ?? '',
             inscripcion: item.inscripcion ?? item.matricula ?? '',
-            tipo_sociedad: item.tipo_sociedad ?? '',
+            tipo_sociedad: item.tipo_sociedad ?? item.tipo_registro ?? '',
+            tipo_registro: item.tipo_registro ?? item.tipo_sociedad ?? '',
             correo: item.correo ?? '',
             representante: item.representante_legal ?? item.representante ?? '',
             representante_legal: item.representante_legal ?? item.representante ?? '',
             resolucion: item.resolucion ?? '',
             fecha_resolucion: item.fecha_resolucion ?? '',
             acta_jcc: item.acta_jcc ?? '',
-            fecha_inscripcion: item.fecha_inscripcion ?? '',
-            tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+            fecha_inscripcion: item.fecha_radicacion ?? item.fecha_inscripcion ?? '',
+            fecha_radicacion: item.fecha_radicacion ?? item.fecha_inscripcion ?? '',
+            tipo_asociado: item.tipo_asociado ?? item.tipo_solicitud ?? 'primeraVez',
+            tipo_solicitud: item.tipo_solicitud ?? item.tipo_asociado ?? item.tipo ?? '',
+            estado_solicitud: item.estado_solicitud ?? item.estado ?? '',
             estado_sociedad: item.estado_sociedad ?? 'ACTIVO',
             tarjeta: item.estado_tarjeta ?? 'Emitida',
             estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
@@ -717,17 +745,24 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   consultarSociedad(): void {
-    const identification = this.nuevaIdentificacion.trim();
-    if (!identification) {
-      this.mensajeError = "Ingrese el NIT de la sociedad.";
-      return;
-    }
-    if (!this.tipoSolicitud) {
-      this.mensajeError = "Seleccione el tipo de solicitud.";
-      return;
-    }
+    this.errorTipoSolicitud = '';
+    this.errorIdentificacion = '';
     this.mensajeError = '';
     this.mensajeExito = '';
+
+    let hasError = false;
+    if (!this.tipoSolicitud) {
+      this.errorTipoSolicitud = 'Seleccione el tipo de solicitud.';
+      hasError = true;
+    }
+    const identification = this.nuevaIdentificacion.trim();
+    if (!identification) {
+      this.errorIdentificacion = 'Ingrese el número de identificación.';
+      hasError = true;
+    }
+    if (hasError) {
+      return;
+    }
     this.cargandoBusqueda = true;
 
     this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&tipo=${encodeURIComponent(this.tipoSolicitud)}&client_id=${this.clientId}`)
@@ -771,7 +806,11 @@ export class TarjetasSociedadesComponent implements OnInit {
           this.busquedaRealizada = true;
           this.datosConsulta = null;
           const appErr = this.errorHandler.parseError(err, 'MS_3834_CONSULTA_MATRICULA', `${API_BASE}/tarjetas/consult-registry`);
-          this.mensajeError = `${appErr.title}: ${appErr.message}`;
+          let userMsg = appErr.mensaje_base || appErr.message;
+          userMsg = userMsg.replace(/^Error\s+\d+\s*-\s*[A-Z_]+:\s*/i, '');
+          userMsg = userMsg.split('Tabla afectada:')[0].trim();
+          userMsg = userMsg.split('Detalle técnico:')[0].trim();
+          this.mensajeError = userMsg || 'No se pudo consultar el registro de la sociedad.';
           this.cdr.detectChanges();
         }
       });
