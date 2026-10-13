@@ -29,6 +29,16 @@ export class AuthService {
 
   constructor() {
     this.restoreTokenFromStorage();
+    if (typeof window !== 'undefined') {
+      (window as any).authService = this;
+    }
+    console.log('[AuthService] Inicializado. Token en caché:', this.cachedToken ? 'Sí' : 'No');
+    // Disparar prueba de sesión inmediatamente al inicializar el servicio
+    if (this.cachedToken) {
+      this.testRedisSession(this.cachedToken);
+    } else {
+      this.getGatewayToken().subscribe();
+    }
   }
 
   /**
@@ -38,6 +48,8 @@ export class AuthService {
    */
   public getGatewayToken(): Observable<string | null> {
     if (this.isTokenValid()) {
+      console.log('[AuthService] Token vigente en caché. Disparando testRedisSession...');
+      this.testRedisSession(this.cachedToken!);
       return of(this.cachedToken);
     }
 
@@ -45,19 +57,25 @@ export class AuthService {
       return this.tokenRequest$;
     }
 
+    console.log('[AuthService] Solicitando token a:', TOKEN_URL);
     this.tokenRequest$ = this.http.get<TokenResponse>(TOKEN_URL).pipe(
       map(response => {
-        const token = response?.data?.token || null;
+        console.log('[AuthService] Respuesta recibida de TOKEN_URL:', response);
+        const token = response?.data?.token || (response as any)?.token || null;
         if (token) {
           this.setToken(token);
           this.testRedisSession(token);
           return token;
         }
+        console.warn('[AuthService] TOKEN_URL no incluyó token en la respuesta:', response);
+        this.testRedisSession();
         return null;
       }),
       catchError(error => {
         console.error('[AuthService] Error al obtener token para Gateway:', error);
         this.clearToken();
+        // Se ejecuta la prueba aun si falla la obtención del token para evaluar cookies/sesión
+        this.testRedisSession();
         return of(null);
       }),
       tap(() => {
@@ -159,6 +177,10 @@ export class AuthService {
     const authToken = token || this.cachedToken;
     const testUrl = 'https://preproduccion9-jcc.nexura.com.co/apig/core/auth/redis-session-test';
 
+    console.log('[AuthService] ==> Iniciando petición a redis-session-test...');
+    console.log('[AuthService] URL destino:', testUrl);
+    console.log('[AuthService] Bearer token:', authToken ? `Presente (${authToken.substring(0, 15)}...)` : 'No disponible');
+
     const headers: Record<string, string> = {};
     if (authToken) {
       headers['Authorization'] = `Bearer ${authToken}`;
@@ -169,10 +191,10 @@ export class AuthService {
       withCredentials: true
     }).subscribe({
       next: (res) => {
-        console.log('[AuthService] redis-session-test respuesta exitosa:', res);
+        console.log('[AuthService] ✅ redis-session-test respuesta exitosa:', res);
       },
       error: (err) => {
-        console.warn('[AuthService] redis-session-test error:', err);
+        console.warn('[AuthService] ❌ redis-session-test error:', err);
       }
     });
   }
