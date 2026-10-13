@@ -17,18 +17,18 @@ import { TarjetaContador } from '../../tarjetas-contadores.component';
 
           <div class="flex-grow-1 min-w-0">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
-              <h5 class="fw-bold text-dark mb-0" style="font-size: 16px;">{{ selectedTarjeta.nombre_completo || selectedTarjeta.solicitante }}</h5>
+              <h5 class="fw-bold text-dark mb-0" style="font-size: 16px;">{{ selectedTarjeta.nombre_completo }}</h5>
               <div class="ms-auto d-flex align-items-center gap-2">
                 <span class="text-secondary small me-1">Estado:</span>
                 <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-1.5 fw-bold" style="font-size: 11px;">
-                  {{ selectedTarjeta.estado_tarjeta || selectedTarjeta.tarjeta || 'Activa' }}
+                  {{ selectedTarjeta.estado_tarjeta || 'Activa' }}
                 </span>
               </div>
             </div>
 
             <div class="d-flex flex-wrap gap-3 text-secondary small" style="font-size: 12px;">
-              <span>Identificación: <strong class="text-dark">{{ selectedTarjeta.documento }}</strong></span>
-              <span>Expediente: <strong class="text-dark">{{ selectedTarjeta.no_expd || selectedTarjeta.expediente }}</strong></span>
+              <span>Identificación: <strong class="text-dark">{{ selectedTarjeta.no_documento }}</strong></span>
+              <span>Expediente: <strong class="text-dark">{{ selectedTarjeta.no_expd }}</strong></span>
               <span *ngIf="selectedTarjeta.correo">Correo: <strong class="text-dark text-break">{{ selectedTarjeta.correo }}</strong></span>
               <span>Fecha emisión: <strong class="text-dark">{{ getFechaEmisionFn() }}</strong></span>
               <span *ngIf="selectedTarjeta.universidad">Universidad: <strong class="text-dark">{{ selectedTarjeta.universidad }}</strong></span>

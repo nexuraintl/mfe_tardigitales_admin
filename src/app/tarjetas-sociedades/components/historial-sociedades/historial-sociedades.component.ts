@@ -30,7 +30,7 @@ import { TarjetaSociedad } from '../../tarjetas-sociedades.component';
               <span>NIT: <strong class="text-dark">{{ selectedTarjeta.nit }}</strong></span>
               <span>No. Inscripción: <strong class="text-dark">{{ selectedTarjeta.inscripcion }}</strong></span>
               <span>Expediente: <strong class="text-dark">{{ selectedTarjeta.no_expd }}</strong></span>
-              <span *ngIf="selectedTarjeta.representante_legal || selectedTarjeta.representante">Representante: <strong class="text-dark">{{ selectedTarjeta.representante_legal || selectedTarjeta.representante }}</strong></span>
+              <span *ngIf="selectedTarjeta.representante_legal">Representante: <strong class="text-dark">{{ selectedTarjeta.representante_legal }}</strong></span>
               <span>Correo: <strong class="text-dark text-break">{{ selectedTarjeta.correo || '-' }}</strong></span>
               <span>Fecha emisión: <strong class="text-dark">{{ getFechaEmisionFn() }}</strong></span>
             </div>
