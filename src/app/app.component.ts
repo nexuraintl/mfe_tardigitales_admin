@@ -27,22 +27,22 @@ export class App implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   currentUrl = (typeof window !== 'undefined' && window.location.pathname) ? window.location.pathname : '';
-  pageTitle = 'Tarjeta Digital para Contadores';
+  pageTitle = 'Tarjeta digital para contadores';
   activeComponent: any = null;
   viewActions: HeaderAction[] = [];
   sidebarCollapsed = false;
 
   private routeTitles: { [key: string]: string } = {
     '/tarjetas-contadores/historial': 'Historial de la tarjeta',
-    '/tarjetas-contadores/nueva': 'Emitir Tarjeta de Contador',
-    '/tarjetas-contadores/emision-masiva': 'Emisión Masiva de Credenciales',
-    '/tarjetas-contadores': 'Tarjeta Digital para Contadores',
+    '/tarjetas-contadores/nueva': 'Emitir tarjeta de contador',
+    '/tarjetas-contadores/emision-masiva': 'Emisión masiva de credenciales',
+    '/tarjetas-contadores': 'Tarjeta digital para contadores',
     '/sociedades/historial': 'Historial de la sociedad',
-    '/sociedades/nueva': 'Emitir Tarjeta de Sociedad',
-    '/sociedades/emision-masiva': 'Emisión Masiva de Sociedades',
-    '/sociedades': 'Tarjeta Digital para Sociedades',
-    '/historial': 'Historial de Notificaciones',
-    '/crear-notificacion': 'Crear Notificación',
+    '/sociedades/nueva': 'Emitir tarjeta de sociedad',
+    '/sociedades/emision-masiva': 'Emisión masiva de sociedades',
+    '/sociedades': 'Tarjeta digital para sociedades',
+    '/historial': 'Historial de notificaciones',
+    '/crear-notificacion': 'Nueva notificación',
     '/crud': 'Gestión de Trámites',
     '/validador-qr': 'Campos del Validador QR',
     '/certificados': 'Certificados Oficiales',
@@ -96,8 +96,8 @@ export class App implements OnInit {
           label: 'Tarjetas',
           icon: 'fa fa-id-card',
           children: [
-            { label: 'Tarjetas Contadores', icon: 'fa fa-user', path: '/tarjetas-contadores' },
-            { label: 'Tarjetas Sociedades', icon: 'fa fa-building-o', path: '/sociedades' }
+            { label: 'Tarjetas contadores', icon: 'fa fa-user', path: '/tarjetas-contadores' },
+            { label: 'Tarjetas sociedades', icon: 'fa fa-building-o', path: '/sociedades' }
           ]
         },
         {
@@ -105,7 +105,7 @@ export class App implements OnInit {
           label: 'Notificaciones',
           icon: 'fa fa-bell',
           children: [
-            { label: 'Crear notificación', icon: 'fa fa-paper-plane', path: '/crear-notificacion' },
+            { label: 'Nueva notificación', icon: 'fa fa-paper-plane', path: '/crear-notificacion' },
             { label: 'Historial de notificaciones', icon: 'fa fa-history', path: '/historial' }
           ]
         }

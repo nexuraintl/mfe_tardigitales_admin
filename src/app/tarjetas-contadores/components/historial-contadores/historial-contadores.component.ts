@@ -28,7 +28,6 @@ import { TarjetaContador } from '../../tarjetas-contadores.component';
 
             <div class="d-flex flex-wrap gap-3 text-secondary small" style="font-size: 12px;">
               <span>Identificación: <strong class="text-dark">{{ selectedTarjeta.documento }}</strong></span>
-              <span>Matrícula: <strong class="text-dark">{{ selectedTarjeta.no_tarjeta || selectedTarjeta.matricula }}</strong></span>
               <span>Expediente: <strong class="text-dark">{{ selectedTarjeta.no_expd || selectedTarjeta.expediente }}</strong></span>
               <span *ngIf="selectedTarjeta.correo">Correo: <strong class="text-dark text-break">{{ selectedTarjeta.correo }}</strong></span>
               <span>Fecha emisión: <strong class="text-dark">{{ getFechaEmisionFn() }}</strong></span>
