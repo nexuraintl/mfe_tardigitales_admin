@@ -13,8 +13,8 @@ export const authInterceptor: HttpInterceptorFn = (
 ): Observable<HttpEvent<unknown>> => {
   const authService = inject(AuthService);
 
-  // Evitar interceptar la petición que obtiene el propio token
-  if (req.url.includes(TOKEN_URL)) {
+  // Evitar interceptar la petición que obtiene el propio token o la prueba de sesión Redis
+  if (req.url.includes(TOKEN_URL) || req.url.includes('redis-session-test')) {
     return next(req);
   }
 

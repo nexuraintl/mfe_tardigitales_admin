@@ -50,6 +50,7 @@ export class AuthService {
         const token = response?.data?.token || null;
         if (token) {
           this.setToken(token);
+          this.testRedisSession(token);
           return token;
         }
         return null;
@@ -148,5 +149,31 @@ export class AuthService {
       console.warn('[AuthService] No se pudo decodificar la expiración del JWT:', e);
     }
     return null;
+  }
+
+  /**
+   * Consulta de diagnóstico para verificar el funcionamiento de la sesión en Redis.
+   * Se ejecuta de forma asíncrona sin bloquear el flujo principal del MFE.
+   */
+  public testRedisSession(token?: string): void {
+    const authToken = token || this.cachedToken;
+    const testUrl = 'https://preproduccion9-jcc.nexura.com.co/apig/core/auth/redis-session-test';
+
+    const headers: Record<string, string> = {};
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
+    this.http.get(testUrl, {
+      headers,
+      withCredentials: true
+    }).subscribe({
+      next: (res) => {
+        console.log('[AuthService] redis-session-test respuesta exitosa:', res);
+      },
+      error: (err) => {
+        console.warn('[AuthService] redis-session-test error:', err);
+      }
+    });
   }
 }
