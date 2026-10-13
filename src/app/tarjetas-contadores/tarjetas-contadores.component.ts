@@ -45,6 +45,9 @@ export interface TarjetaContador {
   resolucion?: string;
   fecha_resolucion?: string;
   acta_jcc?: string;
+  fecha_estado?: string;
+  fecha_radicacion?: string;
+  fecha_registro?: string;
   fecha_grado?: string;
   seccional?: string;
   fecha?: string;
@@ -108,7 +111,9 @@ export class TarjetasContadoresComponent implements OnInit {
 
   // Variables para la creación de tarjeta (Emisión individual)
   nuevaIdentificacion: string = '';
-  tipoSolicitud: string = 'primeraVez';
+  tipoSolicitud: string = '';
+  errorTipoSolicitud: string = '';
+  errorIdentificacion: string = '';
   busquedaRealizada: boolean = false;
   cargandoBusqueda: boolean = false;
   datosConsulta: any = null;
@@ -327,13 +332,19 @@ export class TarjetasContadoresComponent implements OnInit {
       .subscribe({
         next: (res) => {
           if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-            this.dbColumns = res.data.map((c: any) => ({
-              key: c.key,
-              label: c.label,
-              visible: !!c.visible_defecto,
-              es_filtrable: !!c.es_filtrable,
-              tipo_dato: c.tipo_dato || 'string'
-            }));
+            this.dbColumns = res.data.map((c: any) => {
+              let label = c.label;
+              if (c.key === 'fecha_registro' || c.key === 'fecha_radicacion') {
+                label = 'Fecha de radicación';
+              }
+              return {
+                key: c.key,
+                label: label,
+                visible: !!c.visible_defecto,
+                es_filtrable: !!c.es_filtrable,
+                tipo_dato: c.tipo_dato || 'string'
+              };
+            });
             this.availableColumns = this.dbColumns.map(c => ({ ...c }));
           }
           this.applySavedColumnsPreference();
@@ -439,6 +450,9 @@ export class TarjetasContadoresComponent implements OnInit {
             resolucion: item.resolucion ?? '',
             fecha_resolucion: item.fecha_resolucion ?? '',
             acta_jcc: item.acta_jcc ?? '',
+            fecha_estado: item.fecha_estado ?? item.FECHA_ESTADO ?? '',
+            fecha_radicacion: item.fecha_radicacion ?? item.fecha_registro ?? item.FECHA_RADICACION ?? '',
+            fecha_registro: item.fecha_radicacion ?? item.fecha_registro ?? item.FECHA_RADICACION ?? '',
             fecha_grado: item.fecha_grado ?? '',
             seccional: item.seccional ?? '',
             fecha: item.fecha_emision ?? item.fecha ?? '',
@@ -721,17 +735,24 @@ export class TarjetasContadoresComponent implements OnInit {
   }
 
   consultarMatricula(): void {
-    const identification = this.nuevaIdentificacion.trim();
-    if (!identification) {
-      this.mensajeError = "Ingrese el número de identificación.";
-      return;
-    }
-    if (!this.tipoSolicitud) {
-      this.mensajeError = "Seleccione el tipo de solicitud.";
-      return;
-    }
+    this.errorTipoSolicitud = '';
+    this.errorIdentificacion = '';
     this.mensajeError = '';
     this.mensajeExito = '';
+
+    let hasError = false;
+    if (!this.tipoSolicitud) {
+      this.errorTipoSolicitud = 'Seleccione el tipo de solicitud.';
+      hasError = true;
+    }
+    const identification = this.nuevaIdentificacion.trim();
+    if (!identification) {
+      this.errorIdentificacion = 'Ingrese el número de identificación.';
+      hasError = true;
+    }
+    if (hasError) {
+      return;
+    }
     this.cargandoBusqueda = true;
 
     this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=contadores&tipo=${encodeURIComponent(this.tipoSolicitud)}&client_id=${this.clientId}`)
@@ -776,7 +797,11 @@ export class TarjetasContadoresComponent implements OnInit {
           this.busquedaRealizada = true;
           this.datosConsulta = null;
           const appErr = this.errorHandler.parseError(err, 'MS_3834_CONSULTA_MATRICULA', `${API_BASE}/tarjetas/consult-registry`);
-          this.mensajeError = `${appErr.title}: ${appErr.message}`;
+          let userMsg = appErr.mensaje_base || appErr.message;
+          userMsg = userMsg.replace(/^Error\s+\d+\s*-\s*[A-Z_]+:\s*/i, '');
+          userMsg = userMsg.split('Tabla afectada:')[0].trim();
+          userMsg = userMsg.split('Detalle técnico:')[0].trim();
+          this.mensajeError = userMsg || 'No se pudo consultar el registro de matrícula.';
           this.cdr.detectChanges();
         }
       });

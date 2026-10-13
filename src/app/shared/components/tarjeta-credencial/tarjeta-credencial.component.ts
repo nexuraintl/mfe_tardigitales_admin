@@ -152,7 +152,7 @@ export class TarjetaCredencialComponent {
 
   // ===== BLOQUE MEDIO DERECHA (Item 2: Fecha de Inscripción) =====
   get labelFecha(): string {
-    return this.tipo === 'sociedad' ? 'Fecha Res. Inscripción' : 'Fecha Resolución Ins.';
+    return 'Fecha Res. Inscripción';
   }
 
   get valorFecha(): string {
@@ -161,7 +161,7 @@ export class TarjetaCredencialComponent {
 
   // ===== BLOQUE MEDIO DERECHA (Item 3: Resolución en Contador / Expediente en Sociedad) =====
   get labelMedio3(): string {
-    return this.tipo === 'sociedad' ? 'Número de Expediente' : 'Resolucion Inscripción';
+    return this.tipo === 'sociedad' ? 'Número de Expediente' : 'Resolución Inscripción';
   }
 
   get valorMedio3(): string | number {
