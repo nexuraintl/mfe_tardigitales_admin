@@ -46,7 +46,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                 </div>
                 <div class="small text-muted" style="font-size: 11px;">
                   <span class="me-3">Expediente: <strong>{{ expedienteVal }}</strong></span>
-                  <span *ngIf="!isSociedades && selectedTarjeta.correo">Correo: {{ selectedTarjeta.correo }}</span>
+                  <span *ngIf="selectedTarjeta.correo">Correo: {{ selectedTarjeta.correo }}</span>
                 </div>
               </div>
             </div>
@@ -138,6 +138,11 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                   <div class="col-md-6">
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Resolución</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ resolucionVal }}</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Correo</label>
+                    <div class="fw-semibold text-dark text-break" style="font-size: 13px;">{{ selectedTarjeta.correo || '-' }}</div>
                   </div>
 
                   <div class="col-md-6">
