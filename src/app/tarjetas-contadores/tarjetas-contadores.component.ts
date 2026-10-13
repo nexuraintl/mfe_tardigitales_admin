@@ -24,35 +24,29 @@ export interface TarjetaContador {
   id: number;
   client_id?: number;
   tipo_tarjeta: string;
-  codigo?: string;
   no_tarjeta?: string;
-  expediente?: number;
   no_expd?: number;
-  solicitante?: string;
   nombre_completo?: string;
-  documento?: string;
-  no_documento?: string;
+  nombres?: string;
+  primer_apellido?: string;
+  segundo_apellido?: string;
   tipo_documento?: string;
-  matricula?: string;
+  no_documento?: string;
   correo?: string;
   universidad?: string;
-  representante?: string;
-  tarjeta?: string;
   estado_tarjeta?: string;
   tipo_asociado?: string;
   estado_contador?: string;
-  estado_registro?: string;
   resolucion?: string;
   fecha_resolucion?: string;
   acta_jcc?: string;
   fecha_estado?: string;
   fecha_radicacion?: string;
-  fecha_registro?: string;
   fecha_grado?: string;
   seccional?: string;
-  fecha?: string;
   fecha_emision?: string;
   foto?: string | null;
+  hash_sha256?: string | null;
 }
 
 @Component({
@@ -137,8 +131,8 @@ export class TarjetasContadoresComponent implements OnInit {
   }
 
   getFechaEmision(): string {
-    if (this.selectedTarjeta?.fecha) {
-      return this.selectedTarjeta.fecha;
+    if (this.selectedTarjeta?.fecha_emision) {
+      return this.selectedTarjeta.fecha_emision;
     }
     if (this.selectedTarjetaHistorial && Array.isArray(this.selectedTarjetaHistorial.estados)) {
       const state = this.selectedTarjetaHistorial.estados.find((e: any) => 
@@ -400,13 +394,13 @@ export class TarjetasContadoresComponent implements OnInit {
 
     if (this.filterColumn && this.filterValue) {
       const val = encodeURIComponent(this.filterValue.trim());
-      if (this.filterColumn === 'documento') {
+      if (this.filterColumn === 'no_documento') {
         url += `&filtro_documento=${val}`;
-      } else if (this.filterColumn === 'matricula') {
+      } else if (this.filterColumn === 'no_tarjeta') {
         url += `&filtro_no_tarjeta=${val}`;
-      } else if (this.filterColumn === 'solicitante') {
+      } else if (this.filterColumn === 'nombre_completo') {
         url += `&texto=${val}`;
-      } else if (this.filterColumn === 'expediente') {
+      } else if (this.filterColumn === 'no_expd') {
         url += `&filtro_expediente=${val}`;
       } else if (this.filterColumn === 'correo') {
         url += `&filtro_correo=${val}`;
@@ -429,35 +423,29 @@ export class TarjetasContadoresComponent implements OnInit {
             id: item.id,
             client_id: this.clientId,
             tipo_tarjeta: item.tipo_tarjeta ?? 'contadores',
-            codigo: item.no_tarjeta ?? item.codigo ?? `TJM-${item.id}`,
-            no_tarjeta: item.no_tarjeta ?? item.codigo ?? '',
-            expediente: item.expediente ?? item.no_expd ?? 0,
-            no_expd: item.no_expd ?? item.expediente ?? 0,
-            solicitante: item.nombre_completo ?? item.solicitante ?? '',
-            nombre_completo: item.nombre_completo ?? item.solicitante ?? '',
-            documento: String(item.documento ?? ''),
-            no_documento: String(item.no_documento ?? ''),
+            no_tarjeta: item.no_tarjeta ?? '',
+            no_expd: item.no_expd ?? 0,
+            nombre_completo: item.nombre_completo ?? '',
+            nombres: item.nombres ?? '',
+            primer_apellido: item.primer_apellido ?? '',
+            segundo_apellido: item.segundo_apellido ?? '',
             tipo_documento: item.tipo_documento ?? 'CC',
-            matricula: item.no_tarjeta ?? item.matricula ?? '',
+            no_documento: String(item.no_documento ?? ''),
             correo: item.correo ?? '',
             universidad: item.universidad ?? '',
-            representante: item.representante ?? '',
-            tarjeta: item.estado_tarjeta ?? 'Emitida',
             estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
             tipo_asociado: item.tipo_asociado ?? 'primeraVez',
-            estado_contador: item.estado_registro ?? item.estado_contador ?? 'ACTIVO',
-            estado_registro: item.estado_registro ?? item.estado_contador ?? 'ACTIVO',
+            estado_contador: item.estado_contador ?? 'ACTIVO',
             resolucion: item.resolucion ?? '',
             fecha_resolucion: item.fecha_resolucion ?? '',
             acta_jcc: item.acta_jcc ?? '',
-            fecha_estado: item.fecha_estado ?? item.FECHA_ESTADO ?? '',
-            fecha_radicacion: item.fecha_radicacion ?? item.fecha_registro ?? item.FECHA_RADICACION ?? '',
-            fecha_registro: item.fecha_radicacion ?? item.fecha_registro ?? item.FECHA_RADICACION ?? '',
+            fecha_estado: item.fecha_estado ?? '',
+            fecha_radicacion: item.fecha_radicacion ?? '',
             fecha_grado: item.fecha_grado ?? '',
             seccional: item.seccional ?? '',
-            fecha: item.fecha_emision ?? item.fecha ?? '',
-            fecha_emision: item.fecha_emision ?? item.fecha ?? '',
-            foto: item.foto ?? null
+            fecha_emision: item.fecha_emision ?? '',
+            foto: item.foto ?? null,
+            hash_sha256: item.hash_sha256 ?? null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -550,7 +538,7 @@ export class TarjetasContadoresComponent implements OnInit {
   }
 
   trackByTarjetaId(index: number, item: TarjetaContador): number | string {
-    return item.id || item.matricula || index;
+    return item.id || item.no_tarjeta || index;
   }
 
   abrirDetalle(t: TarjetaContador): void {
@@ -769,7 +757,7 @@ export class TarjetasContadoresComponent implements OnInit {
             const docNum = item.no_documento ?? identification;
 
             const localTarjeta = this.tarjetas.find(t =>
-              (t.documento || t.no_documento || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
+              (t.no_documento || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
             );
 
             this.datosConsulta = {
@@ -888,14 +876,14 @@ export class TarjetasContadoresComponent implements OnInit {
       alert('No hay registros para exportar');
       return;
     }
-    const headers = ['Expediente', 'Solicitante', 'Documento', 'Tarjeta Profesional', 'Estado', 'Fecha'];
+    const headers = ['Expediente', 'Nombre completo', 'Documento', 'Tarjeta Profesional', 'Estado', 'Fecha'];
     const rows = this.filteredTarjetas.map(t => [
-      `"${t.expediente}"`,
-      `"${(t.solicitante || '').replace(/"/g, '""')}"`,
-      `"${t.documento}"`,
-      `"${t.matricula}"`,
-      `"${t.tarjeta}"`,
-      `"${t.fecha}"`
+      `"${t.no_expd}"`,
+      `"${(t.nombre_completo || '').replace(/"/g, '""')}"`,
+      `"${t.no_documento}"`,
+      `"${t.no_tarjeta}"`,
+      `"${t.estado_tarjeta}"`,
+      `"${t.fecha_emision}"`
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);

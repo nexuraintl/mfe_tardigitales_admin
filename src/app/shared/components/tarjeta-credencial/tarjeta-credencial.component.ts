@@ -3,11 +3,18 @@ import { CommonModule } from '@angular/common';
 import { PHOTO_CARD_PATH } from '../../../core/constants/assets.constants';
 
 export interface CredencialDatos {
+  no_tarjeta?: string;
+  inscripcion?: string;
   matricula?: string;
   fecha_resolucion?: string;
   resolucion?: string;
+  no_expd?: string | number;
   expediente?: string | number;
+  nombre_completo?: string;
+  razon_social?: string;
   solicitante?: string;
+  no_documento?: string;
+  nit?: string;
   documento?: string;
   universidad?: string;
   foto?: string;
@@ -147,7 +154,7 @@ export class TarjetaCredencialComponent {
   }
 
   get valorRegistro(): string {
-    return this.datos.matricula || (this.tipo === 'sociedad' ? '5892' : '492031-T');
+    return this.datos.no_tarjeta || this.datos.inscripcion || this.datos.matricula || (this.tipo === 'sociedad' ? '5892' : '492031-T');
   }
 
   // ===== BLOQUE MEDIO DERECHA (Item 2: Fecha de Inscripción) =====
@@ -166,7 +173,7 @@ export class TarjetaCredencialComponent {
 
   get valorMedio3(): string | number {
     return this.tipo === 'sociedad'
-      ? (this.datos.expediente || '621948')
+      ? (this.datos.no_expd || this.datos.expediente || '621948')
       : (this.datos.resolucion || '289');
   }
 
@@ -176,7 +183,7 @@ export class TarjetaCredencialComponent {
   }
 
   get valorTitular(): string {
-    return this.datos.solicitante || (this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas');
+    return this.datos.nombre_completo || this.datos.razon_social || this.datos.solicitante || (this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas');
   }
 
   // ===== PIE INFERIOR (Fila 1 Der: Documento / NIT) =====
@@ -185,7 +192,7 @@ export class TarjetaCredencialComponent {
   }
 
   get valorDocumento(): string {
-    const raw = this.datos.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
+    const raw = this.datos.no_documento || this.datos.nit || this.datos.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
     if (!raw) return '';
     return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
   }

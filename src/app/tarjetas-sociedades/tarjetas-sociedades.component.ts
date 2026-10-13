@@ -24,34 +24,25 @@ export interface TarjetaSociedad {
   id: number;
   client_id?: number;
   tipo_tarjeta: string;
-  codigo?: string;
-  expediente?: number;
   no_expd?: number;
-  solicitante?: string;
   razon_social?: string;
-  documento?: string;
   nit?: string;
-  matricula?: string;
   inscripcion?: string;
   tipo_sociedad?: string;
-  tipo_registro?: string;
   correo?: string;
-  representante?: string;
   representante_legal?: string;
-  tarjeta?: string;
   estado_tarjeta?: string;
   tipo_asociado?: string;
   estado_sociedad?: string;
   resolucion?: string;
   fecha_resolucion?: string;
   acta_jcc?: string;
-  fecha_inscripcion?: string;
   fecha_radicacion?: string;
   estado_solicitud?: string;
   tipo_solicitud?: string;
-  fecha?: string;
   fecha_emision?: string;
   foto?: string | null;
+  hash_sha256?: string | null;
 }
 
 @Component({
@@ -135,8 +126,8 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   getFechaEmision(): string {
-    if (this.selectedTarjeta?.fecha) {
-      return this.selectedTarjeta.fecha;
+    if (this.selectedTarjeta?.fecha_emision) {
+      return this.selectedTarjeta.fecha_emision;
     }
     if (this.selectedTarjetaHistorial && Array.isArray(this.selectedTarjetaHistorial.estados)) {
       const state = this.selectedTarjetaHistorial.estados.find((e: any) => 
@@ -410,13 +401,13 @@ export class TarjetasSociedadesComponent implements OnInit {
 
     if (this.filterColumn && this.filterValue) {
       const val = encodeURIComponent(this.filterValue.trim());
-      if (this.filterColumn === 'documento') {
+      if (this.filterColumn === 'nit') {
         url += `&filtro_documento=${val}`;
-      } else if (this.filterColumn === 'matricula') {
+      } else if (this.filterColumn === 'inscripcion') {
         url += `&filtro_inscripcion=${val}`;
-      } else if (this.filterColumn === 'solicitante') {
+      } else if (this.filterColumn === 'razon_social') {
         url += `&texto=${val}`;
-      } else if (this.filterColumn === 'expediente') {
+      } else if (this.filterColumn === 'no_expd') {
         url += `&filtro_expediente=${val}`;
       } else if (this.filterColumn === 'correo') {
         url += `&filtro_correo=${val}`;
@@ -439,34 +430,25 @@ export class TarjetasSociedadesComponent implements OnInit {
             id: item.id,
             client_id: this.clientId,
             tipo_tarjeta: item.tipo_tarjeta ?? 'sociedades',
-            codigo: item.codigo ?? `SOC-${item.id}`,
-            expediente: item.expediente ?? item.no_expd ?? 0,
-            no_expd: item.no_expd ?? item.expediente ?? 0,
-            solicitante: item.razon_social ?? item.solicitante ?? '',
-            razon_social: item.razon_social ?? item.solicitante ?? '',
-            documento: String(item.nit ?? item.documento ?? ''),
-            nit: String(item.nit ?? item.documento ?? ''),
-            matricula: item.inscripcion ?? item.matricula ?? '',
-            inscripcion: item.inscripcion ?? item.matricula ?? '',
-            tipo_sociedad: item.tipo_sociedad ?? item.tipo_registro ?? '',
-            tipo_registro: item.tipo_registro ?? item.tipo_sociedad ?? '',
+            no_expd: item.no_expd ?? 0,
+            razon_social: item.razon_social ?? '',
+            nit: String(item.nit ?? ''),
+            inscripcion: item.inscripcion ?? '',
+            tipo_sociedad: item.tipo_sociedad ?? '',
             correo: item.correo ?? '',
-            representante: item.representante_legal ?? item.representante ?? '',
-            representante_legal: item.representante_legal ?? item.representante ?? '',
+            representante_legal: item.representante_legal ?? '',
             resolucion: item.resolucion ?? '',
             fecha_resolucion: item.fecha_resolucion ?? '',
             acta_jcc: item.acta_jcc ?? '',
-            fecha_inscripcion: item.fecha_radicacion ?? item.fecha_inscripcion ?? '',
-            fecha_radicacion: item.fecha_radicacion ?? item.fecha_inscripcion ?? '',
-            tipo_asociado: item.tipo_asociado ?? item.tipo_solicitud ?? 'primeraVez',
-            tipo_solicitud: item.tipo_solicitud ?? item.tipo_asociado ?? item.tipo ?? '',
-            estado_solicitud: item.estado_solicitud ?? item.estado ?? '',
+            fecha_radicacion: item.fecha_radicacion ?? '',
+            tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+            tipo_solicitud: item.tipo_solicitud ?? '',
+            estado_solicitud: item.estado_solicitud ?? '',
             estado_sociedad: item.estado_sociedad ?? 'ACTIVO',
-            tarjeta: item.estado_tarjeta ?? 'Emitida',
             estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
-            fecha: item.fecha_emision ?? item.fecha ?? '',
-            fecha_emision: item.fecha_emision ?? item.fecha ?? '',
-            foto: item.foto ?? null
+            fecha_emision: item.fecha_emision ?? '',
+            foto: item.foto ?? null,
+            hash_sha256: item.hash_sha256 ?? null
           }));
           this.loading = false;
           this.cdr.detectChanges();
@@ -560,7 +542,7 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   trackBySociedadId(index: number, item: TarjetaSociedad): number | string {
-    return item.id || item.matricula || index;
+    return item.id || item.inscripcion || index;
   }
 
   abrirDetalle(t: TarjetaSociedad): void {
@@ -774,20 +756,20 @@ export class TarjetasSociedadesComponent implements OnInit {
           const item = res && res.status === 'success' ? res.data : (res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null);
 
           if (item) {
-            const razonSocial = item.razon_social ?? item.solicitante ?? "Sociedad de Contadores Públicos";
-            const docNum = item.nit ?? item.documento ?? identification;
+            const razonSocial = item.razon_social ?? "Sociedad de Contadores Públicos";
+            const docNum = item.nit ?? identification;
 
             const localTarjeta = this.tarjetas.find(t =>
-              (t.documento || t.nit || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
+              (t.nit || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
             );
 
             this.datosConsulta = {
               solicitante: razonSocial,
               documento: String(docNum),
-              matricula: item.inscripcion ?? item.no_tarjeta ?? `REG-${docNum}`,
-              expediente: item.no_expd ?? item.expediente ?? 0,
+              matricula: item.inscripcion ?? `REG-${docNum}`,
+              expediente: item.no_expd ?? 0,
               correo: localTarjeta?.correo ?? item.correo ?? '',
-              representante: item.representante_legal ?? item.representante ?? "Representante Legal Autorizado",
+              representante: item.representante_legal ?? "Representante Legal Autorizado",
               estado: item.estado_sociedad ?? "ACTIVO",
               seccional: item.seccional ?? "",
               resolucion: item.resolucion ?? "",
@@ -897,15 +879,15 @@ export class TarjetasSociedadesComponent implements OnInit {
       alert('No hay registros para exportar');
       return;
     }
-    const headers = ['Expediente', 'Razón Social', 'NIT', 'Registro Sociedad', 'Representante', 'Estado', 'Fecha'];
+    const headers = ['Expediente', 'Razón Social', 'NIT', 'Inscripción', 'Representante', 'Estado', 'Fecha'];
     const rows = this.filteredTarjetas.map(t => [
-      `"${t.expediente}"`,
-      `"${(t.solicitante || '').replace(/"/g, '""')}"`,
-      `"${t.documento}"`,
-      `"${t.matricula}"`,
-      `"${(t.representante || '').replace(/"/g, '""')}"`,
-      `"${t.tarjeta}"`,
-      `"${t.fecha}"`
+      `"${t.no_expd}"`,
+      `"${(t.razon_social || '').replace(/"/g, '""')}"`,
+      `"${t.nit}"`,
+      `"${t.inscripcion}"`,
+      `"${(t.representante_legal || '').replace(/"/g, '""')}"`,
+      `"${t.estado_tarjeta}"`,
+      `"${t.fecha_emision}"`
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);

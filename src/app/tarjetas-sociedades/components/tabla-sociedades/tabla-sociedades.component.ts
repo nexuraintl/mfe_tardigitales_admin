@@ -117,11 +117,8 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
               <ng-container *ngFor="let col of availableColumns">
                 <td *ngIf="col.visible">
                   <ng-container [ngSwitch]="col.key">
-                    <span *ngSwitchCase="'tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta || row.tarjeta)">
-                      {{ row.estado_tarjeta || row.tarjeta || 'Emitida' }}
-                    </span>
-                    <span *ngSwitchCase="'estado_tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta || row.tarjeta)">
-                      {{ row.estado_tarjeta || row.tarjeta || 'Emitida' }}
+                    <span *ngSwitchCase="'estado_tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta)">
+                      {{ row.estado_tarjeta || 'Emitida' }}
                     </span>
 
                     <span *ngSwitchCase="'estado_sociedad'" class="badge bg-success-subtle text-success border border-success-subtle">
@@ -180,7 +177,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
                         <span>Ver tarjeta</span>
                       </button>
                     </li>
-                    <li *ngIf="row.tarjeta === 'Emitida' || row.estado_tarjeta === 'Emitida'">
+                    <li *ngIf="row.estado_tarjeta === 'Emitida'">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="regenerarTarjeta.emit(row); activeDropdownId = null">
                         <span class="fa fa-refresh text-muted" style="width: 16px;"></span>
                         <span>Regenerar</span>
