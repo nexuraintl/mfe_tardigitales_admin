@@ -292,32 +292,32 @@ export class ModalDetalleTarjetaComponent {
 
   get nombreCompletoVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.nombre_completo || this.selectedTarjeta.solicitante || '-';
+    return this.selectedTarjeta.nombre_completo || '-';
   }
 
   get razonSocialVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.razon_social || this.selectedTarjeta.solicitante || '-';
+    return this.selectedTarjeta.razon_social || '-';
   }
 
   get documentoContadorVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return String(this.selectedTarjeta.no_documento || this.selectedTarjeta.documento || '-');
+    return String(this.selectedTarjeta.no_documento || '-');
   }
 
   get nitVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return String(this.selectedTarjeta.nit || this.selectedTarjeta.documento || '-');
+    return String(this.selectedTarjeta.nit || '-');
   }
 
   get tarjetaProfesionalVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.matricula || this.selectedTarjeta.no_tarjeta || '-';
+    return this.selectedTarjeta.no_tarjeta || '-';
   }
 
   get numeroInscripcionVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.inscripcion || this.selectedTarjeta.matricula || '-';
+    return this.selectedTarjeta.inscripcion || '-';
   }
 
   get resolucionVal(): string {
@@ -327,35 +327,34 @@ export class ModalDetalleTarjetaComponent {
 
   get solicitanteVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.razon_social || this.selectedTarjeta.nombre_completo || this.selectedTarjeta.solicitante || '-';
+    return this.selectedTarjeta.razon_social || this.selectedTarjeta.nombre_completo || '-';
   }
 
   get documentoVal(): string {
     if (!this.selectedTarjeta) return '-';
     if (this.selectedTarjeta.nit) return String(this.selectedTarjeta.nit);
     if (this.selectedTarjeta.no_documento) return String(this.selectedTarjeta.no_documento);
-    const raw = this.selectedTarjeta.documento || '-';
-    return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
+    return '-';
   }
 
   get matriculaVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.inscripcion || this.selectedTarjeta.no_tarjeta || this.selectedTarjeta.matricula || '-';
+    return this.selectedTarjeta.inscripcion || this.selectedTarjeta.no_tarjeta || '-';
   }
 
   get expedienteVal(): string | number {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.no_expd ?? this.selectedTarjeta.expediente ?? '-';
+    return this.selectedTarjeta.no_expd ?? '-';
   }
 
   get fechaVal(): string {
     if (!this.selectedTarjeta) return '-';
-    return this.selectedTarjeta.fecha_emision || this.selectedTarjeta.fecha || '-';
+    return this.selectedTarjeta.fecha_emision || '-';
   }
 
   get estadoVal(): string {
     if (!this.selectedTarjeta) return 'Emitida';
-    return this.selectedTarjeta.estado_tarjeta || this.selectedTarjeta.tarjeta || 'Emitida';
+    return this.selectedTarjeta.estado_tarjeta || 'Emitida';
   }
 
   get credencialDatos(): CredencialDatos {

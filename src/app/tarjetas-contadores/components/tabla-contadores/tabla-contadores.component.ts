@@ -117,27 +117,24 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
               <ng-container *ngFor="let col of availableColumns">
                 <td *ngIf="col.visible">
                   <ng-container [ngSwitch]="col.key">
-                    <span *ngSwitchCase="'tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta || row.tarjeta)">
-                      {{ row.estado_tarjeta || row.tarjeta || 'Emitida' }}
-                    </span>
-                    <span *ngSwitchCase="'estado_tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta || row.tarjeta)">
-                      {{ row.estado_tarjeta || row.tarjeta || 'Emitida' }}
+                    <span *ngSwitchCase="'estado_tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta)">
+                      {{ row.estado_tarjeta || 'Emitida' }}
                     </span>
 
                     <span *ngSwitchCase="'estado_contador'" class="badge bg-success-subtle text-success border border-success-subtle">
                       {{ row.estado_contador || 'Activo' }}
                     </span>
 
-                    <span *ngSwitchCase="'matricula'" class="fw-semibold text-dark">
-                      {{ getCellValue(row, 'matricula') }}
+                    <span *ngSwitchCase="'no_tarjeta'" class="fw-semibold text-dark">
+                      {{ getCellValue(row, 'no_tarjeta') }}
                     </span>
 
-                    <strong *ngSwitchCase="'solicitante'" class="text-dark">
-                      {{ getCellValue(row, 'solicitante') }}
+                    <strong *ngSwitchCase="'nombre_completo'" class="text-dark">
+                      {{ getCellValue(row, 'nombre_completo') }}
                     </strong>
 
-                    <span *ngSwitchCase="'expediente'" class="text-dark">
-                      {{ getCellValue(row, 'expediente') }}
+                    <span *ngSwitchCase="'no_expd'" class="text-dark">
+                      {{ getCellValue(row, 'no_expd') }}
                     </span>
 
                     <span *ngSwitchCase="'tipo_asociado'" class="text-secondary">
@@ -180,7 +177,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
                         <span>Ver tarjeta</span>
                       </button>
                     </li>
-                    <li *ngIf="row.tarjeta === 'Emitida' || row.estado_tarjeta === 'Emitida'">
+                    <li *ngIf="row.estado_tarjeta === 'Emitida'">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="regenerarTarjeta.emit(row); activeDropdownId = null">
                         <span class="fa fa-refresh text-muted" style="width: 16px;"></span>
                         <span>Regenerar</span>
