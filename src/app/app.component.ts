@@ -45,6 +45,8 @@ export class App implements OnInit {
     '/crear-notificacion': 'Nueva notificación',
     '/crud': 'Gestión de Trámites',
     '/validador-qr': 'Campos del Validador QR',
+    '/validador-qr-contadores': 'Validador QR — Contadores',
+    '/validador-qr-sociedades': 'Validador QR — Sociedades',
     '/certificados': 'Certificados Oficiales',
     '/reportes': 'Reportes',
     '/branding': 'Branding de credenciales',
@@ -53,8 +55,15 @@ export class App implements OnInit {
     '/branding-institucional': 'Branding — Firma Institucional',
     '/auditoria': 'Auditoría API',
     '/procesos-lotes': 'Gestión de Colas y Procesos en Lote',
-    '/usuarios': 'Usuarios'
+    '/usuarios': 'Usuarios',
+    '/verificar': 'Verificación Pública de Credencial'
   };
+
+  get isPublicRoute(): boolean {
+    const rawPath = (typeof window !== 'undefined' && window.location.pathname) ? window.location.pathname : this.router.url;
+    const cleanUrl = (rawPath || '').split('?')[0].split('#')[0];
+    return cleanUrl.includes('verificar');
+  }
 
   // Configuración del usuario para el shell
   currentUser: UserProfile = {
@@ -125,7 +134,15 @@ export class App implements OnInit {
             { label: 'Firma Institucional', icon: 'fa fa-pencil-square-o', path: '/branding-institucional' }
           ]
         },
-        { label: 'Validador QR', icon: 'fa fa-qrcode', path: '/validador-qr' },
+        {
+          id: 'grupo-validador-qr',
+          label: 'Validador QR',
+          icon: 'fa fa-qrcode',
+          children: [
+            { label: 'Contadores', icon: 'fa fa-user', path: '/validador-qr-contadores' },
+            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/validador-qr-sociedades' }
+          ]
+        },
         { label: 'Auditoría API', icon: 'fa fa-shield', path: '/auditoria' },
         { label: 'Usuarios', icon: 'fa fa-users', path: '/usuarios' }
       ]
@@ -175,6 +192,18 @@ export class App implements OnInit {
       return;
     }
 
+    if (cleanUrl.includes('validador-qr')) {
+      this.primaryAction = null;
+      this.viewActions = [];
+      return;
+    }
+
+    if (cleanUrl.includes('branding')) {
+      this.primaryAction = null;
+      this.viewActions = [];
+      return;
+    }
+
     if (cleanUrl.includes('tarjetas-contadores')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
@@ -190,24 +219,13 @@ export class App implements OnInit {
           action: () => this.activeComponent?.abrirEmisionMasiva?.()
         }
       ];
-    } else if (cleanUrl.includes('branding')) {
-      this.primaryAction = null;
-      this.viewActions = [];
     } else if (cleanUrl.includes('sociedades')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
         icon: 'fa fa-plus',
         action: () => this.activeComponent?.abrirNuevaTarjeta?.()
       };
-      this.viewActions = [
-        {
-          id: 'emision-masiva',
-          label: 'Emisión masiva',
-          icon: 'fa fa-file-excel-o',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.abrirEmisionMasiva?.()
-        }
-      ];
+      this.viewActions = [];
     } else if (cleanUrl.includes('crud')) {
       this.primaryAction = null;
       this.viewActions = [

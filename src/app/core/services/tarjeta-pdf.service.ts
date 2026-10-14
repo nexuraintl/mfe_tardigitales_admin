@@ -5,12 +5,15 @@ import * as QRCode from 'qrcode';
 
 export interface TarjetaPdfData {
   tipo: 'contador' | 'sociedad';
-  matricula: string;
-  fecha_resolucion: string;
-  resolucion: string;
-  expediente: string | number;
-  solicitante: string;
-  documento: string;
+  no_tarjeta?: string;
+  inscripcion?: string;
+  fecha_resolucion?: string;
+  resolucion?: string;
+  no_expd?: string | number;
+  nombre_completo?: string;
+  razon_social?: string;
+  no_documento?: string;
+  nit?: string;
   universidad?: string;
   foto?: string;
   hash_sha256?: string;
@@ -24,11 +27,9 @@ export interface TarjetaPdfData {
 }
 
 /**
- * NOTA ARQUITECTURA / A FUTURO:
- * La generación de este PDF se realiza actualmente en caliente en el navegador mediante JavaScript (jsPDF + html2canvas)
- * para responder de forma inmediata a la descarga sin requerir infraestructura adicional en backend.
- * A futuro, este documento debe ser generado y persistido en el repositorio de medios institucional
- * (S3 / Azure Blob / MinIO), guardando la URL física persistente en la tabla correspondiente de base de datos.
+ * NOTA ARQUITECTURA:
+ * La generación de este PDF se realiza en caliente en el navegador mediante JavaScript (jsPDF + html2canvas)
+ * para responder de forma inmediata a la descarga oficial con QR y firma institucional.
  */
 @Injectable({
   providedIn: 'root'
@@ -48,9 +49,9 @@ export class TarjetaPdfService {
     document.body.appendChild(container);
 
     try {
-      // 3. Capturar elemento con html2canvas en alta definición (2x retina)
+      // 3. Capturar elemento con html2canvas en alta definición (2.5x retina)
       const canvas = await html2canvas(container, {
-        scale: 2,
+        scale: 2.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -77,10 +78,13 @@ export class TarjetaPdfService {
 
       pdf.addImage(imgData, 'PNG', posX, posY, targetWidth, targetHeight, undefined, 'FAST');
 
-      // 5. Descargar automáticamente el PDF
+      // 5. Descargar automáticamente el PDF con nomenclatura canónica
       const prefijo = datos.tipo === 'sociedad' ? 'sociedad' : 'contador';
-      const cleanMatricula = (datos.matricula || 'tarjeta').replace(/[^a-zA-Z0-9_-]/g, '_');
-      pdf.save(`tarjeta_${prefijo}_${cleanMatricula}.pdf`);
+      const idVal = datos.tipo === 'sociedad'
+        ? (datos.nit || datos.inscripcion || 'credencial')
+        : (datos.no_tarjeta || datos.no_documento || 'credencial');
+      const cleanId = String(idVal).replace(/[^a-zA-Z0-9_-]/g, '_');
+      pdf.save(`tarjeta_${prefijo}_${cleanId}.pdf`);
 
     } finally {
       // Remover el contenedor del DOM
@@ -91,11 +95,12 @@ export class TarjetaPdfService {
   }
 
   /**
-   * Genera el código QR en Base64 PNG.
+   * Genera el código QR en Base64 PNG apuntando a la verificación pública simulada en el MFE.
    */
   private async generarQrDataUrl(hash: string): Promise<string> {
     try {
-      const urlVerificacion = `https://local-jcc.nexura.com.co/admin/tardigitales/verificar?token=${hash}`;
+      const host = (typeof window !== 'undefined' && window.location.origin) ? window.location.origin : 'http://local-jcc.nexura.com.co';
+      const urlVerificacion = `${host}/admin/tardigitales/verificar?token=${hash}`;
       return await QRCode.toDataURL(urlVerificacion, {
         width: 250,
         margin: 1,
@@ -106,7 +111,7 @@ export class TarjetaPdfService {
         errorCorrectionLevel: 'M'
       });
     } catch (err) {
-      console.warn('[TarjetaPdfService] Fallo al generar QR con qrcode, usando fallback canvas:', err);
+      console.warn('[TarjetaPdfService] Fallo al generar QR con qrcode:', err);
       return '';
     }
   }
@@ -115,7 +120,9 @@ export class TarjetaPdfService {
    * Fallback por si la tarjeta viene sin hash_sha256 previo en memoria.
    */
   private calcularHashFallback(datos: TarjetaPdfData): string {
-    const raw = `${datos.matricula}|${datos.documento}|${datos.expediente}|${datos.resolucion}`;
+    const matricula = datos.tipo === 'sociedad' ? datos.inscripcion : datos.no_tarjeta;
+    const doc = datos.tipo === 'sociedad' ? datos.nit : datos.no_documento;
+    const raw = `${matricula}|${doc}|${datos.no_expd}|${datos.resolucion}`;
     let hash = 0;
     for (let i = 0; i < raw.length; i++) {
       hash = ((hash << 5) - hash) + raw.charCodeAt(i);
@@ -143,25 +150,26 @@ export class TarjetaPdfService {
 
     // Mapeo unificado y exacto a TarjetaCredencialComponent
     const labelRegistro = isSociedad ? 'Número de Registro' : 'Tarjeta profesional';
-    const valorRegistro = datos.matricula || (isSociedad ? '5892' : '492031-T');
+    const valorRegistro = isSociedad ? (datos.inscripcion || '5892') : (datos.no_tarjeta || '492031-T');
 
     const labelFecha = 'Fecha Res. Inscripción';
     const valorFecha = datos.fecha_resolucion || (isSociedad ? '12 - Mar - 2025' : '06 - Feb - 2026');
 
     const labelMedio3 = isSociedad ? 'Número de Expediente' : 'Resolución Inscripción';
-    const valorMedio3 = isSociedad ? (datos.expediente || '621948') : (datos.resolucion || '289');
+    const valorMedio3 = isSociedad ? (datos.no_expd || '621948') : (datos.resolucion || '289');
 
     const labelTitular = isSociedad ? 'Razón social' : 'Nombre';
-    const valorTitular = datos.solicitante || (isSociedad ? 'Sociedad de Contadores Públicos' : 'Andrés Felipe Torres Cárdenas');
+    const valorTitular = isSociedad ? (datos.razon_social || 'Sociedad de Contadores Públicos') : (datos.nombre_completo || 'Andrés Felipe Torres Cárdenas');
 
     const labelDocumento = isSociedad ? 'NIT' : 'Cédula de ciudadanía';
-    const valorDocumento = String(datos.documento || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim() || (isSociedad ? '901482310-5' : '1.053.892.146');
+    const rawDoc = isSociedad ? datos.nit : datos.no_documento;
+    const valorDocumento = String(rawDoc || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim() || (isSociedad ? '901482310-5' : '1.053.892.146');
 
     const labelExtra = isSociedad ? 'Tipo de registro' : 'Institución de Educación Superior';
     const valorExtra = datos.universidad || (isSociedad ? 'Sociedad de contadores' : 'Universidad de La Salle');
 
     const labelPie2Der = isSociedad ? 'Res. Inscripción' : 'N. Expediente';
-    const valorPie2Der = isSociedad ? (datos.resolucion || '0142') : (datos.expediente || '621948');
+    const valorPie2Der = isSociedad ? (datos.resolucion || '0142') : (datos.no_expd || '621948');
 
     const fotoSrc = datos.foto || (isSociedad ? 'assets/images/card-logo-sociedades.png' : 'assets/images/photo_card.jpg');
     // Logo oficial institucional para impresión
@@ -193,15 +201,19 @@ export class TarjetaPdfService {
             <img src="${fotoSrc}" alt="Fotografía" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%;" crossorigin="anonymous" />
           </div>
 
-          <!-- Datos Laterales Derechos -->
-          <div style="display: grid; gap: 14px; align-content: center; text-align: right; min-width: 0;">
+          <!-- Datos Laterales Derechos (3 Bloques Idénticos a Branding) -->
+          <div style="display: grid; gap: 10px; align-content: center; text-align: right; min-width: 0;">
             <div>
-              <span style="display: block; font-size: 11.5px; color: #475569; margin-bottom: 3px; font-weight: 500;">${labelRegistro}</span>
-              <strong style="display: block; font-size: 21px; font-weight: 800; color: ${colorTexto}; line-height: 1.1; white-space: nowrap;">${valorRegistro}</strong>
+              <span style="display: block; font-size: 11px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelRegistro}</span>
+              <strong style="display: block; font-size: 20px; font-weight: 800; color: ${colorTexto}; line-height: 1.1; white-space: nowrap;">${valorRegistro}</strong>
             </div>
             <div>
               <span style="display: block; font-size: 11px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelFecha}</span>
-              <strong style="display: block; font-size: 14px; font-weight: 700; color: ${colorTexto}; line-height: 1.15;">${valorFecha}</strong>
+              <strong style="display: block; font-size: 13.5px; font-weight: 700; color: ${colorTexto}; line-height: 1.15;">${valorFecha}</strong>
+            </div>
+            <div>
+              <span style="display: block; font-size: 11px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelMedio3}</span>
+              <strong style="display: block; font-size: 13.5px; font-weight: 700; color: ${colorTexto}; line-height: 1.15;">${valorMedio3}</strong>
             </div>
           </div>
         </div>

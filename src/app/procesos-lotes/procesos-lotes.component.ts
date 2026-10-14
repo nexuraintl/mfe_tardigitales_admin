@@ -162,6 +162,7 @@ export class ProcesosLotesComponent implements OnInit, OnDestroy {
 
   // Operaciones
   runningTask = false;
+  sincronizandoEstados = false;
   mensajeExito = '';
   mensajeError = '';
 
@@ -398,6 +399,31 @@ export class ProcesosLotesComponent implements OnInit, OnDestroy {
     });
   }
 
+  sincronizarEstadosManual(): void {
+    if (this.sincronizandoEstados) return;
+    this.sincronizandoEstados = true;
+    this.limpiarMensajes();
+
+    this.http.post<any>(`${API_BASE}/colas/sincronizar-estados?client_id=${CLIENT_ID}`, {}).subscribe({
+      next: (resp) => {
+        this.sincronizandoEstados = false;
+        this.mensajeExito = resp?.message || 'Sincronización de estados encolada exitosamente.';
+        setTimeout(() => {
+          this.cargarMetricas(true);
+          this.cargarLotes();
+          this.cargarHistorialSincronizacion(true);
+        }, 1200);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.sincronizandoEstados = false;
+        const detail = err?.error?.detail || err?.error?.message || err?.message || 'Error al solicitar sincronización de estados.';
+        this.mensajeError = typeof detail === 'string' ? detail : JSON.stringify(detail);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   cargarHistorialSincronizacion(silent = false): void {
     if (!silent) this.loadingHistorialSincronizacion = true;
     this.http.get<any>(`${API_BASE}/colas/sincronizacion/historial?client_id=${CLIENT_ID}&limit=15`).subscribe({
@@ -517,7 +543,9 @@ export class ProcesosLotesComponent implements OnInit, OnDestroy {
   getEstadoItemBadge(resultado?: string): string {
     switch (resultado?.toLowerCase()) {
       case 'emitido_exitosamente':
+      case 'sin_novedad':
       case 'exitoso': return 'badge bg-success-subtle text-success border border-success-subtle';
+      case 'estado_actualizado': return 'badge bg-warning-subtle text-warning border border-warning-subtle';
       case 'no_apto': return 'badge bg-warning-subtle text-warning border border-warning-subtle';
       case 'fallido':
       case 'error':
@@ -532,6 +560,8 @@ export class ProcesosLotesComponent implements OnInit, OnDestroy {
   getResultadoItemTexto(resultado?: string): string {
     switch (resultado?.toLowerCase()) {
       case 'emitido_exitosamente': return 'EXITOSO';
+      case 'sin_novedad': return 'CONFIRMADO VIGENTE';
+      case 'estado_actualizado': return 'NOVEDAD APLICADA';
       case 'no_apto': return 'NO ENCONTRADO';
       case 'error_conexion': return 'ERROR CONEXIÓN';
       case 'fallido': return 'FALLIDO';

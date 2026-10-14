@@ -701,24 +701,30 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
     if (this.logoImpresionFile) {
       formData.append('logo_impresion', this.logoImpresionFile);
-    } else if (this.logoImpresionPreviewUrl && this.logoImpresionPreviewUrl.startsWith('data:')) {
-      try {
-        const fileFromPreview = this.dataURLtoFile(this.logoImpresionPreviewUrl, `logo_imp_v${nextVersion}.png`);
-        formData.append('logo_impresion', fileFromPreview);
-      } catch (err) {
-        console.warn('No se pudo convertir logoImpresionPreviewUrl a File:', err);
+    } else if (this.logoImpresionPreviewUrl) {
+      if (this.logoImpresionPreviewUrl.startsWith('data:')) {
+        try {
+          const fileFromPreview = this.dataURLtoFile(this.logoImpresionPreviewUrl, `logo_imp_v${nextVersion}.png`);
+          formData.append('logo_impresion', fileFromPreview);
+        } catch (err) {
+          console.warn('No se pudo convertir logoImpresionPreviewUrl a File:', err);
+        }
       }
+      formData.append('logo_impresion_base64', this.logoImpresionPreviewUrl);
     }
 
     if (this.patronImpresionFile) {
       formData.append('patron_impresion', this.patronImpresionFile);
-    } else if (this.patronImpresionPreviewUrl && this.patronImpresionPreviewUrl.startsWith('data:')) {
-      try {
-        const fileFromPreview = this.dataURLtoFile(this.patronImpresionPreviewUrl, `patron_imp_v${nextVersion}.png`);
-        formData.append('patron_impresion', fileFromPreview);
-      } catch (err) {
-        console.warn('No se pudo convertir patronImpresionPreviewUrl a File:', err);
+    } else if (this.patronImpresionPreviewUrl) {
+      if (this.patronImpresionPreviewUrl.startsWith('data:')) {
+        try {
+          const fileFromPreview = this.dataURLtoFile(this.patronImpresionPreviewUrl, `patron_imp_v${nextVersion}.png`);
+          formData.append('patron_impresion', fileFromPreview);
+        } catch (err) {
+          console.warn('No se pudo convertir patronImpresionPreviewUrl a File:', err);
+        }
       }
+      formData.append('patron_impresion_base64', this.patronImpresionPreviewUrl);
     }
 
     this.http

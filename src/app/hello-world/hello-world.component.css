@@ -1,5 +1,5 @@
 .mfe-container {
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: inherit;
   display: flex;
   justify-content: center;
   align-items: center;
