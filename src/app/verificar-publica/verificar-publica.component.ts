@@ -100,6 +100,7 @@ export interface ConfigValidadorSociedad {
                     layout="auto"
                     [datos]="credencialDatos"
                     [branding]="credencialBranding"
+                    [camposVisibles]="isSociedad ? configSociedad : configContador"
                   ></app-tarjeta-credencial>
                 </div>
               </div>
@@ -366,13 +367,13 @@ export class VerificarPublicaComponent implements OnInit {
     if (!this.tarjeta) return {};
 
     if (this.isSociedad) {
-      const regMostrar = this.configSociedad.val_numero_registro ? (this.tarjeta.inscripcion || '-') : 'Protegido';
-      const fechaMostrar = this.configSociedad.val_fecha_resolucion ? (this.tarjeta.fecha_resolucion || '-') : 'Protegido';
-      const expMostrar = this.configSociedad.val_expediente ? (this.tarjeta.no_expd ?? '-') : 'Protegido';
-      const rsMostrar = this.configSociedad.val_razon_social ? (this.tarjeta.razon_social || '-') : 'Información reservada';
-      const nitMostrar = this.configSociedad.val_nit ? (this.tarjeta.nit ? String(this.tarjeta.nit) : '-') : 'Protegido';
-      const tipoRegMostrar = this.configSociedad.val_tipo_registro ? (this.tarjeta.tipo_sociedad || this.tarjeta.tipo_asociado || 'Sociedad de Contadores') : 'Protegido';
-      const resMostrar = this.configSociedad.val_resolucion ? (this.tarjeta.resolucion || '-') : 'Protegido';
+      const regMostrar = this.tarjeta.inscripcion || this.tarjeta.no_tarjeta || this.tarjeta.matricula || '-';
+      const fechaMostrar = this.tarjeta.fecha_resolucion || '-';
+      const expMostrar = this.tarjeta.no_expd ?? this.tarjeta.expediente ?? '-';
+      const rsMostrar = this.tarjeta.razon_social || this.tarjeta.nombre_completo || this.tarjeta.solicitante || '-';
+      const nitMostrar = this.tarjeta.nit ? String(this.tarjeta.nit) : (this.tarjeta.no_documento || '-');
+      const tipoRegMostrar = this.tarjeta.tipo_sociedad || this.tarjeta.tipo_asociado || 'Sociedad de Contadores';
+      const resMostrar = this.tarjeta.resolucion || '-';
 
       return {
         matricula: regMostrar,
@@ -393,13 +394,13 @@ export class VerificarPublicaComponent implements OnInit {
         estado: this.configSociedad.val_estado ? (this.tarjeta.estado_tarjeta || this.tarjeta.estado || 'Emitida') : undefined
       };
     } else {
-      const tpMostrar = this.configContador.val_tarjeta_profesional ? (this.tarjeta.no_tarjeta || '-') : 'Protegido';
-      const fechaMostrar = this.configContador.val_fecha_resolucion ? (this.tarjeta.fecha_resolucion || '-') : 'Protegido';
-      const resMostrar = this.configContador.val_resolucion ? (this.tarjeta.resolucion || '-') : 'Protegido';
-      const nomMostrar = this.configContador.val_nombre ? (this.tarjeta.nombre_completo || '-') : 'Información reservada';
-      const docMostrar = this.configContador.val_cedula ? (this.tarjeta.no_documento ? String(this.tarjeta.no_documento) : '-') : 'Protegido';
-      const instMostrar = this.configContador.val_institucion ? (this.tarjeta.universidad || 'Universidad de La Salle') : 'Protegido';
-      const expMostrar = this.configContador.val_expediente ? (this.tarjeta.no_expd ?? '-') : 'Protegido';
+      const tpMostrar = this.tarjeta.no_tarjeta || this.tarjeta.matricula || this.tarjeta.inscripcion || '-';
+      const fechaMostrar = this.tarjeta.fecha_resolucion || '-';
+      const resMostrar = this.tarjeta.resolucion || '-';
+      const nomMostrar = this.tarjeta.nombre_completo || this.tarjeta.solicitante || '-';
+      const docMostrar = this.tarjeta.no_documento ? String(this.tarjeta.no_documento) : (this.tarjeta.documento || '-');
+      const instMostrar = this.tarjeta.universidad || 'Universidad de La Salle';
+      const expMostrar = this.tarjeta.no_expd ?? this.tarjeta.expediente ?? '-';
 
       return {
         matricula: tpMostrar,

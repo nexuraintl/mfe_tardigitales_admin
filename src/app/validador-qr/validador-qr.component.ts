@@ -6,6 +6,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../shared/components/tarjeta-credencial/tarjeta-credencial.component';
 
 export interface ConfigContador {
   val_tarjeta_profesional: boolean;
@@ -36,7 +37,7 @@ export interface ConfigSociedad {
 @Component({
   selector: 'app-validador-qr',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NxAlertComponent],
+  imports: [CommonModule, FormsModule, RouterModule, NxAlertComponent, TarjetaCredencialComponent],
   templateUrl: './validador-qr.component.html'
 })
 export class ValidadorQrComponent implements OnInit {
@@ -53,6 +54,58 @@ export class ValidadorQrComponent implements OnInit {
   currentError: AppError | null = null;
 
   tipoTarjeta: 'contadores' | 'sociedades' = 'contadores';
+
+  // Branding de credencial
+  brandingColorFondo: string = '#14275f';
+  brandingColorLetra: string = '#ffffff';
+  brandingLogoUrl: string | null = null;
+  brandingPatronUrl: string | null = null;
+
+  get credencialBranding(): CredencialBranding {
+    return {
+      color_fondo: this.isSociedades ? (this.brandingColorFondo || '#170e00') : this.brandingColorFondo,
+      color_letra: this.brandingColorLetra,
+      logo_url: this.brandingLogoUrl,
+      patron_url: this.brandingPatronUrl
+    };
+  }
+
+  get datosEjemplo(): CredencialDatos {
+    if (this.isSociedades) {
+      return {
+        matricula: '5892',
+        no_tarjeta: '5892',
+        inscripcion: '5892',
+        fecha_resolucion: '12 - Mar - 2025',
+        expediente: '621948',
+        no_expd: '621948',
+        razon_social: 'Innovación Financiera y Tributaria S.A.S.',
+        nombre_completo: 'Innovación Financiera y Tributaria S.A.S.',
+        nit: '901482310-5',
+        no_documento: '901482310-5',
+        documento: '901482310-5',
+        universidad: 'Sociedad de contadores',
+        resolucion: '0142',
+        estado: 'Emitida'
+      };
+    }
+    return {
+      matricula: '492031-T',
+      no_tarjeta: '492031-T',
+      inscripcion: '492031-T',
+      fecha_resolucion: '06 - Feb - 2026',
+      resolucion: '289',
+      nombre_completo: 'Andrés Felipe Torres Cárdenas',
+      razon_social: 'Andrés Felipe Torres Cárdenas',
+      no_documento: '1.053.892.146',
+      nit: '1.053.892.146',
+      documento: '1.053.892.146',
+      universidad: 'Universidad de La Salle',
+      expediente: '621948',
+      no_expd: '621948',
+      estado: 'Emitida'
+    };
+  }
 
   // Configuración de campos Contadores
   configContador: ConfigContador = {
@@ -169,6 +222,7 @@ export class ValidadorQrComponent implements OnInit {
           }
         }
         this.loading = false;
+        this.cargarBranding();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -177,6 +231,23 @@ export class ValidadorQrComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  private cargarBranding(): void {
+    const tipoId = this.isSociedades ? 2 : 1;
+    this.http.get<any>(`${API_BASE}/tarjetas/branding-credentials/info-published/${tipoId}?client_id=${this.clientId}`).subscribe({
+      next: (res) => {
+        const data = Array.isArray(res) ? res[0] : res;
+        if (data && (data.color_fondo || data.logo || data.patron)) {
+          if (data.color_fondo) this.brandingColorFondo = data.color_fondo;
+          if (data.color_letra) this.brandingColorLetra = data.color_letra;
+          if (data.logo) this.brandingLogoUrl = data.logo;
+          if (data.patron) this.brandingPatronUrl = data.patron;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {}
     });
   }
 

@@ -34,11 +34,12 @@
       <div class="credencial-card-main">
         <img
           class="credencial-card-photo"
+          [class.campo-oculto]="!isFotoVisible"
           [src]="fotoUrl"
           [alt]="tipo === 'sociedad' ? 'Logo de la sociedad' : 'Fotografía del contador'"
         />
         <div class="credencial-card-side">
-          <div class="credencial-card-info">
+          <div class="credencial-card-info" [class.campo-oculto]="!isRegistroVisible">
             <span class="credencial-card-label">{{ labelRegistro }}</span>
             <div class="credencial-card-registration">
               <strong class="credencial-card-value">{{ valorRegistro }}</strong>
@@ -58,11 +59,11 @@
               </span>
             </div>
           </div>
-          <div class="credencial-card-info">
+          <div class="credencial-card-info" [class.campo-oculto]="!isFechaVisible">
             <span class="credencial-card-label">{{ labelFecha }}</span>
             <strong class="credencial-card-value">{{ valorFecha }}</strong>
           </div>
-          <div class="credencial-card-info">
+          <div class="credencial-card-info" [class.campo-oculto]="!isMedio3Visible">
             <span class="credencial-card-label">{{ labelMedio3 }}</span>
             <strong class="credencial-card-value">{{ valorMedio3 }}</strong>
           </div>
@@ -71,19 +72,19 @@
 
       <!-- Fila 3: Grilla de Detalles Inferiores (4 Campos) -->
       <div class="credencial-card-details">
-        <div class="credencial-card-info">
+        <div class="credencial-card-info" [class.campo-oculto]="!isTitularVisible">
           <span class="credencial-card-label">{{ labelTitular }}</span>
           <strong class="credencial-card-value">{{ valorTitular }}</strong>
         </div>
-        <div class="credencial-card-info">
+        <div class="credencial-card-info" [class.campo-oculto]="!isDocumentoVisible">
           <span class="credencial-card-label">{{ labelDocumento }}</span>
           <strong class="credencial-card-value">{{ valorDocumento }}</strong>
         </div>
-        <div class="credencial-card-info">
+        <div class="credencial-card-info" [class.campo-oculto]="!isExtraVisible">
           <span class="credencial-card-label">{{ labelExtra }}</span>
           <strong class="credencial-card-value">{{ valorExtra }}</strong>
         </div>
-        <div class="credencial-card-info">
+        <div class="credencial-card-info" [class.campo-oculto]="!isPie2DerVisible">
           <span class="credencial-card-label">{{ labelPie2Der }}</span>
           <strong class="credencial-card-value">{{ valorPie2Der }}</strong>
         </div>
