@@ -13,6 +13,7 @@ import { FormEmisionSociedadesComponent } from './components/form-emision-socied
 import { EmisionMasivaSociedadesComponent } from './components/emision-masiva-sociedades/emision-masiva-sociedades.component';
 import { HistorialSociedadesComponent } from './components/historial-sociedades/historial-sociedades.component';
 import { ModalDetalleTarjetaComponent } from '../shared/components/modal-detalle-tarjeta/modal-detalle-tarjeta.component';
+import { FilterColumnConfig, ActiveFilter } from '../shared/components/filter-builder/filter-builder.component';
 
 export interface TableColumn {
   key: string;
@@ -81,6 +82,8 @@ export class TarjetasSociedadesComponent implements OnInit {
   searchQuery: string = '';
   filterColumn: string = '';
   filterValue: string = '';
+  multiFilters: ActiveFilter[] = [];
+  esModoReporte: boolean = false;
   pageSize: number = 10;
   pageSizeOptions: number[] = [5, 10, 25, 50];
   currentPage: number = 1;
@@ -164,6 +167,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   evaluarRutaActual(paramsMap?: any): void {
     const url = this.router.url;
+    this.esModoReporte = url.includes('/reportes');
     let idStr = paramsMap ? paramsMap.get('id') : this.route.snapshot.paramMap.get('id');
 
     if (!idStr && url.includes('/historial/')) {
@@ -462,17 +466,68 @@ export class TarjetasSociedadesComponent implements OnInit {
       });
   }
 
+  get filterColumnsConfig(): FilterColumnConfig[] {
+    return [
+      { key: 'no_expd', label: 'Expediente', tipo: 'number' },
+      { key: 'razon_social', label: 'Razón social', tipo: 'string' },
+      { key: 'nit', label: 'NIT', tipo: 'string' },
+      { key: 'no_tarjeta', label: 'Número de tarjeta', tipo: 'string' },
+      { key: 'tipo_sociedad', label: 'Tipo de sociedad', tipo: 'string' },
+      { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Modificación'] },
+      { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
+      { key: 'correo', label: 'Correo', tipo: 'string' },
+      { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Emitida'] },
+      { key: 'estado_sociedad', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
+      { key: 'resolucion', label: 'Resolución', tipo: 'string' },
+      { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
+      { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' }
+    ];
+  }
+
+  onApplyMultiFilters(filters: ActiveFilter[]): void {
+    this.multiFilters = filters;
+    this.currentPage = 1;
+    this.cargarTarjetas();
+  }
+
+  onClearMultiFilters(): void {
+    this.multiFilters = [];
+    this.currentPage = 1;
+    this.cargarTarjetas();
+  }
+
   // Filtrado reactivo
   get filteredTarjetas(): TarjetaSociedad[] {
-    return this.tarjetas;
+    if (!this.multiFilters || this.multiFilters.length === 0) {
+      return this.tarjetas;
+    }
+    return this.tarjetas.filter(item => {
+      return this.multiFilters.every(f => {
+        const val = (item as any)[f.column];
+        if (f.column.startsWith('fecha')) {
+          const rowDate = String(val || '').slice(0, 10);
+          return (!f.dateFrom || rowDate >= f.dateFrom) && (!f.dateTo || rowDate <= f.dateTo);
+        }
+        if (f.column === 'no_expd' || f.column === 'expediente') {
+          return String(val || '') === f.value;
+        }
+        if (f.column === 'estado_tarjeta') {
+          return String(val || '').toLowerCase() === f.value.toLowerCase();
+        }
+        if (f.column === 'estado_sociedad') {
+          return String(val || '').toLowerCase() === f.value.toLowerCase();
+        }
+        return String(val || '').toLowerCase().includes(f.value.toLowerCase());
+      });
+    });
   }
 
   get sortedTarjetas(): TarjetaSociedad[] {
-    return this.tarjetas;
+    return this.filteredTarjetas;
   }
 
   get paginatedTarjetas(): TarjetaSociedad[] {
-    return this.tarjetas;
+    return this.filteredTarjetas;
   }
 
   get totalPages(): number {

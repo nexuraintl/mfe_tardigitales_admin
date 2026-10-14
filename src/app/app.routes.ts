@@ -4,6 +4,7 @@ import { TramitesCrudComponent } from './tramites-crud/tramites-crud.component';
 import { TarjetasContadoresComponent } from './tarjetas-contadores/tarjetas-contadores.component';
 import { TarjetasSociedadesComponent } from './tarjetas-sociedades/tarjetas-sociedades.component';
 import { CrearNotificacionComponent } from './crear-notificacion/crear-notificacion.component';
+import { ReportesDashboardComponent } from './reportes/reportes-dashboard/reportes-dashboard.component';
 import { PlaceholderComponent } from './placeholder/placeholder.component';
 import { ValidadorQrComponent } from './validador-qr/validador-qr.component';
 import { CertificadosComponent } from './certificados/certificados.component';
@@ -69,7 +70,24 @@ export const routes: Routes = [
   },
   {
     path: 'reportes',
-    component: PlaceholderComponent
+    redirectTo: 'reportes/dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: 'reportes/dashboard',
+    component: ReportesDashboardComponent
+  },
+  {
+    path: 'reportes/contadores',
+    component: TarjetasContadoresComponent
+  },
+  {
+    path: 'reportes/sociedades',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'reportes/notificaciones',
+    component: NotificationsHistoryComponent
   },
   {
     path: 'certificados',

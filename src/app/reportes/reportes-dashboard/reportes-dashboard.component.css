@@ -1,0 +1,180 @@
+/* ============================================================================
+   ESTILOS NATIVOS PARA REPORTES DASHBOARD
+   ============================================================================ */
+
+/* Línea de período */
+.reports-period-line {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* Gráfico Horizontal */
+.horizontal-chart {
+  padding: 12px 0;
+}
+
+.horizontal-chart-row {
+  display: grid;
+  grid-template-columns: 85px minmax(120px, 1fr) 55px;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.horizontal-chart-row:last-child {
+  margin-bottom: 0;
+}
+
+.chart-label {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.chart-track {
+  height: 12px;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.chart-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease-in-out;
+}
+
+.horizontal-chart-row strong {
+  color: #1e293b;
+  font-size: 13px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Gráfico Donut CSS Nativo */
+.donut-report-layout {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  padding: 10px 0;
+}
+
+.report-donut {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.report-donut::after {
+  content: "";
+  position: absolute;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.report-donut-center {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.report-donut-center strong {
+  display: block;
+  color: #0f172a;
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.report-donut-center span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.donut-legend {
+  min-width: 140px;
+}
+
+/* Gráfico Vertical */
+.vertical-chart {
+  height: 180px;
+  padding: 16px 20px 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.vertical-column {
+  width: 90px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.vertical-value {
+  margin-bottom: 6px;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vertical-track {
+  width: 28px;
+  height: 110px;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.vertical-fill {
+  width: 100%;
+  border-radius: 4px;
+  transition: height 0.4s ease-in-out;
+}
+
+.vertical-label {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Dots de Leyenda */
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.report-chart-footer {
+  color: #64748b;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .donut-report-layout {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .horizontal-chart-row {
+    grid-template-columns: 75px 1fr 45px;
+  }
+}
