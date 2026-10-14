@@ -525,23 +525,31 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   get paginatedTarjetas(): TarjetaSociedad[] {
+    if (this.multiFilters && this.multiFilters.length > 0) {
+      const startIndex = (this.currentPage - 1) * this.pageSize;
+      return this.filteredTarjetas.slice(startIndex, startIndex + this.pageSize);
+    }
     return this.filteredTarjetas;
   }
 
-  get totalPages(): number {
-    return Math.max(1, this.totalPagesCount || 1);
-  }
-
   get totalRecords(): number {
+    if (this.multiFilters && this.multiFilters.length > 0) {
+      return this.filteredTarjetas.length;
+    }
     return this.totalRecordsCount;
   }
 
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalRecords / this.pageSize));
+  }
+
   get recordRangeStart(): number {
-    return this.totalRecordsCount ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+    if (this.totalRecords === 0) return 0;
+    return (this.currentPage - 1) * this.pageSize + 1;
   }
 
   get recordRangeEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.totalRecordsCount);
+    return Math.min(this.currentPage * this.pageSize, this.totalRecords);
   }
 
   get pagesArray(): number[] {
@@ -553,6 +561,7 @@ export class TarjetasSociedadesComponent implements OnInit {
     if (end - start + 1 < maxVisible) {
       start = Math.max(1, end - maxVisible + 1);
     }
+    start = Math.max(1, start);
 
     for (let i = start; i <= end; i++) {
       pages.push(i);
@@ -932,21 +941,24 @@ export class TarjetasSociedadesComponent implements OnInit {
       alert('No hay registros para exportar');
       return;
     }
-    const headers = ['Expediente', 'Razón Social', 'NIT', 'Inscripción', 'Representante', 'Estado', 'Fecha'];
-    const rows = this.filteredTarjetas.map(t => [
-      `"${t.no_expd}"`,
-      `"${(t.razon_social || '').replace(/"/g, '""')}"`,
-      `"${t.nit}"`,
-      `"${t.inscripcion}"`,
-      `"${(t.representante_legal || '').replace(/"/g, '""')}"`,
-      `"${t.estado_tarjeta}"`,
-      `"${t.fecha_emision}"`
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const visibleCols = this.availableColumns.filter(c => c.visible);
+    if (visibleCols.length === 0) {
+      alert('Debe tener al menos una columna visible para exportar');
+      return;
+    }
+    const headers = visibleCols.map(c => `"${c.label.replace(/"/g, '""')}"`);
+    const rows = this.filteredTarjetas.map(t => {
+      return visibleCols.map(c => {
+        const val = (t as any)[c.key];
+        const valStr = (val === undefined || val === null) ? '' : String(val);
+        return `"${valStr.replace(/"/g, '""')}"`;
+      }).join(',');
+    });
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `tarjetas_sociedades_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute('download', `reporte_sociedades_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
