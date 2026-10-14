@@ -48,11 +48,11 @@ export class App implements OnInit {
     '/validador-qr-contadores': 'Validador QR — Contadores',
     '/validador-qr-sociedades': 'Validador QR — Sociedades',
     '/certificados': 'Certificados Oficiales',
-    '/reportes': 'Reporte dashboard',
+    '/reportes/contadores': 'Reporte contadores',
+    '/reportes/sociedades': 'Reporte sociedades',
+    '/reportes/notificaciones': 'Reporte notificaciones',
     '/reportes/dashboard': 'Reporte dashboard',
-    '/reportes/contadores': 'Reporte de tarjetas para contadores',
-    '/reportes/sociedades': 'Reporte de tarjetas para sociedades',
-    '/reportes/notificaciones': 'Reporte de notificaciones',
+    '/reportes': 'Reporte dashboard',
     '/branding': 'Branding de credenciales',
     '/branding-contadores': 'Branding de credenciales — Contadores',
     '/branding-sociedades': 'Branding de credenciales — Sociedades',
@@ -192,7 +192,8 @@ export class App implements OnInit {
 
   private updatePageTitle(url: string) {
     const cleanUrl = url.split('?')[0].split('#')[0];
-    const match = Object.keys(this.routeTitles).find(route => cleanUrl.endsWith(route) || cleanUrl.includes(route));
+    const sortedRoutes = Object.keys(this.routeTitles).sort((a, b) => b.length - a.length);
+    const match = sortedRoutes.find(route => cleanUrl.endsWith(route) || cleanUrl.includes(route));
     if (match) {
       this.pageTitle = this.routeTitles[match];
     }
