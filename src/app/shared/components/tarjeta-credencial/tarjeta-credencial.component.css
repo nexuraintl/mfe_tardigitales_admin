@@ -238,3 +238,10 @@
   opacity: 0.6;
 }
 
+/* Ocultamiento manteniendo exactamente la estructura, dimensiones y posición */
+.campo-oculto {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
