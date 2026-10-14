@@ -236,7 +236,7 @@ export class FilterBuilderComponent implements OnInit, OnChanges {
   @Output() clearFilters = new EventEmitter<void>();
 
   selectedColumnKey = '';
-  textValue = '';
+  textValue: any = '';
   selectedValue = '';
   dateFrom = '';
   dateTo = '';
@@ -315,7 +315,8 @@ export class FilterBuilderComponent implements OnInit, OnChanges {
     if (this.selectedColumnType === 'select') {
       return Boolean(this.selectedValue);
     }
-    return Boolean(this.textValue && this.textValue.trim().length > 0);
+    const val = String(this.textValue ?? '').trim();
+    return val.length > 0;
   }
 
   onColumnChange(newKey?: string): void {
@@ -345,8 +346,9 @@ export class FilterBuilderComponent implements OnInit, OnChanges {
       value = this.selectedValue;
       displayValue = this.selectedValue;
     } else {
-      value = this.textValue.trim();
-      displayValue = this.textValue.trim();
+      const val = String(this.textValue ?? '').trim();
+      value = val;
+      displayValue = val;
     }
 
     this.sequence++;
