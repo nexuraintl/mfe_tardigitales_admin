@@ -3,17 +3,26 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableColumn, TarjetaContador } from '../../tarjetas-contadores.component';
 import { NxAlertComponent } from '../../../shared/components/alert/alert.component';
+import { FilterBuilderComponent, FilterColumnConfig, ActiveFilter } from '../../../shared/components/filter-builder/filter-builder.component';
 import { AppError } from '../../../core/services/error-handler.service';
 import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/constants/tarjetas.constants';
 
 @Component({
   selector: 'app-tabla-contadores',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent],
+  imports: [CommonModule, FormsModule, NxAlertComponent, FilterBuilderComponent],
   template: `
     <!-- Alertas del Sistema -->
     <nx-alert [error]="currentError" (onClose)="currentErrorChange.emit(null)"></nx-alert>
     <nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" (onClose)="mensajeExitoChange.emit('')"></nx-alert>
+
+    <!-- Constructor de Múltiples Filtros Dinámicos (Exclusivo para Reportes) -->
+    <app-filter-builder
+      *ngIf="esModoReporte"
+      [columns]="filterColumns"
+      (applyFilters)="applyFilters.emit($event)"
+      (clearFilters)="clearFilters.emit()"
+    ></app-filter-builder>
 
     <!-- Tabla de Datos 100% Nativa Angular -->
     <div class="nx-table-card shadow-sm mb-4">
@@ -254,6 +263,10 @@ export class TablaContadoresComponent {
   @Output() mensajeExitoChange = new EventEmitter<string>();
 
   @Input() availableColumns: TableColumn[] = [];
+  @Input() filterColumns: FilterColumnConfig[] = [];
+  @Input() esModoReporte: boolean = false;
+  @Output() applyFilters = new EventEmitter<ActiveFilter[]>();
+  @Output() clearFilters = new EventEmitter<void>();
   @Input() visibleColumnsCount: number = 0;
   @Input() columnMessageWarning: string = '';
   @Input() searchQuery: string = '';

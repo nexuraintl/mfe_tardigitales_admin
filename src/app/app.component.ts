@@ -48,7 +48,11 @@ export class App implements OnInit {
     '/validador-qr-contadores': 'Validador QR — Contadores',
     '/validador-qr-sociedades': 'Validador QR — Sociedades',
     '/certificados': 'Certificados Oficiales',
-    '/reportes': 'Reportes',
+    '/reportes': 'Reporte dashboard',
+    '/reportes/dashboard': 'Reporte dashboard',
+    '/reportes/contadores': 'Reporte de tarjetas para contadores',
+    '/reportes/sociedades': 'Reporte de tarjetas para sociedades',
+    '/reportes/notificaciones': 'Reporte de notificaciones',
     '/branding': 'Branding de credenciales',
     '/branding-contadores': 'Branding de credenciales — Contadores',
     '/branding-sociedades': 'Branding de credenciales — Sociedades',
@@ -91,7 +95,7 @@ export class App implements OnInit {
       name: 'Reportes y Analítica', 
       color: 'purple', 
       iconClass: 'fa fa-bar-chart', 
-      path: '/admin/tardigitales/reportes/metricas', 
+      path: '/admin/tardigitales/reportes/dashboard', 
       active: false 
     }
   ];
@@ -123,6 +127,17 @@ export class App implements OnInit {
     {
       sectionTitle: 'Administración',
       items: [
+        {
+          id: 'grupo-reportes',
+          label: 'Reportes',
+          icon: 'fa fa-bar-chart',
+          children: [
+            { label: 'Dashboard general', icon: 'fa fa-pie-chart', path: '/reportes/dashboard' },
+            { label: 'Reporte contadores', icon: 'fa fa-user', path: '/reportes/contadores' },
+            { label: 'Reporte sociedades', icon: 'fa fa-building-o', path: '/reportes/sociedades' },
+            { label: 'Reporte notificaciones', icon: 'fa fa-bell', path: '/reportes/notificaciones' }
+          ]
+        },
         { label: 'Certificados', icon: 'fa fa-certificate', path: '/certificados' },
         {
           id: 'grupo-branding',
@@ -295,6 +310,39 @@ export class App implements OnInit {
           action: () => this.activeComponent?.cargarAuditoria?.()
         }
       ];
+    } else if (cleanUrl.includes('reportes/dashboard') || cleanUrl === '/reportes') {
+      this.primaryAction = {
+        label: 'Imprimir',
+        icon: 'fa fa-print',
+        action: () => this.activeComponent?.imprimirReporte?.()
+      };
+      this.viewActions = [
+        {
+          id: 'actualizar-reporte',
+          label: 'Actualizar',
+          icon: 'fa fa-refresh',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.cargarDatos?.()
+        },
+        {
+          id: 'exportar-csv-reporte',
+          label: 'Exportar CSV',
+          icon: 'fa fa-download',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.exportarCSV?.()
+        }
+      ];
+    } else if (cleanUrl.includes('reportes/contadores') || cleanUrl.includes('reportes/sociedades') || cleanUrl.includes('reportes/notificaciones')) {
+      this.primaryAction = null;
+      this.viewActions = [
+        {
+          id: 'exportar-csv-subreporte',
+          label: 'Exportar CSV',
+          icon: 'fa fa-download',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.exportarCSV?.()
+        }
+      ];
     } else {
       this.primaryAction = null;
       this.viewActions = [];
@@ -303,7 +351,7 @@ export class App implements OnInit {
 
   navegarA(path: string): void {
     if (!path) return;
-    if (path.startsWith('/admin/tardigitales/reportes') || path.startsWith('/admin/reportes') || path.startsWith('http')) {
+    if (path.startsWith('http')) {
       window.location.href = path;
       return;
     }
