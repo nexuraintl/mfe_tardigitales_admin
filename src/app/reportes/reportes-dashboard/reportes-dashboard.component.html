@@ -1,0 +1,342 @@
+<!-- Alertas del Sistema -->
+<nx-alert *ngIf="errorMensaje" type="danger" [message]="errorMensaje" (onClose)="errorMensaje = null"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" (onClose)="mensajeExito = null"></nx-alert>
+
+<!-- Sección de Filtros Anidados / Condicionales -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body p-3">
+    <div class="row g-3 align-items-end">
+      <!-- Filtro Padre: Tipo de reporte -->
+      <div class="col-12 col-md-3">
+        <label class="form-label fw-bold text-secondary small mb-1" for="reportType">
+          Tipo de reporte
+        </label>
+        <select 
+          class="form-select form-select-sm" 
+          id="reportType" 
+          [(ngModel)]="tipoReporte" 
+          (ngModelChange)="onTipoReporteChange()"
+        >
+          <option value="general">Reporte general</option>
+          <option value="cards">Tarjetas digitales</option>
+          <option value="notifications">Notificaciones</option>
+        </select>
+      </div>
+
+      <!-- Filtro Rango: Fecha inicial -->
+      <div class="col-6 col-md-2">
+        <label class="form-label fw-bold text-secondary small mb-1" for="reportFrom">
+          Fecha inicial
+        </label>
+        <input 
+          type="date" 
+          class="form-control form-control-sm" 
+          id="reportFrom" 
+          [(ngModel)]="fechaDesde"
+        >
+      </div>
+
+      <!-- Filtro Rango: Fecha final -->
+      <div class="col-6 col-md-2">
+        <label class="form-label fw-bold text-secondary small mb-1" for="reportTo">
+          Fecha final
+        </label>
+        <input 
+          type="date" 
+          class="form-control form-control-sm" 
+          id="reportTo" 
+          [(ngModel)]="fechaHasta"
+        >
+      </div>
+
+      <!-- Filtro Anidado 1: Segmento (Visible en general y tarjetas) -->
+      <div class="col-6 col-md-2" *ngIf="tipoReporte !== 'notifications'">
+        <label class="form-label fw-bold text-secondary small mb-1" for="reportSegment">
+          Segmento
+        </label>
+        <select 
+          class="form-select form-select-sm" 
+          id="reportSegment" 
+          [(ngModel)]="segmento" 
+          (ngModelChange)="onSegmentoChange()"
+        >
+          <option value="all">Todos</option>
+          <option value="accountants">Contadores</option>
+          <option value="companies">Sociedades</option>
+        </select>
+      </div>
+
+      <!-- Filtro Anidado 2: Estado (Visible sólo en tarjetas o notificaciones con opciones dinámicas) -->
+      <div class="col-6 col-md-2" *ngIf="tipoReporte !== 'general'">
+        <label class="form-label fw-bold text-secondary small mb-1" for="reportStatus">
+          Estado
+        </label>
+        <select 
+          class="form-select form-select-sm" 
+          id="reportStatus" 
+          [(ngModel)]="estado" 
+          (ngModelChange)="onEstadoChange()"
+        >
+          <option *ngFor="let opt of estadosDisponibles" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+
+      <!-- Botón de acción: Generar reporte -->
+      <div class="col-12 col-md-auto ms-auto d-flex align-items-center">
+        <button 
+          type="button" 
+          class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-2 w-100" 
+          (click)="cargarDatos()"
+          [disabled]="cargando"
+        >
+          <i class="fa" [ngClass]="cargando ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+          <span>{{ cargando ? 'Consultando...' : 'Generar reporte' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Período Consultado -->
+    <div class="reports-period-line mt-3 pt-2 border-top text-muted small d-flex justify-content-between align-items-center">
+      <span>{{ periodoTexto }}</span>
+      <span *ngIf="cargando" class="badge bg-primary-subtle text-primary">Actualizando datos...</span>
+    </div>
+  </div>
+</div>
+
+<!-- Grid de Gráficos CSS Nativos -->
+<div class="row g-3 mb-4">
+  <!-- Gráfico 1: Tarjetas por estado (Visible en General y Tarjetas) -->
+  <div class="col-12 col-lg-6" *ngIf="tipoReporte === 'general' || tipoReporte === 'cards'">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="card-title fw-bold mb-0 text-dark">Tarjetas por estado</h5>
+          <small class="text-muted">Distribución consolidada de contadores y sociedades.</small>
+        </div>
+        <span class="badge bg-light text-secondary border">Total: {{ data.cards.total | number:'1.0-0' }}</span>
+      </div>
+
+      <div class="card-body px-3 py-3 d-flex flex-column justify-content-between">
+        <div class="horizontal-chart">
+          <!-- Activa -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Activa</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-success" [style.width]="getCardWidth(data.cards.activa)"></div>
+            </div>
+            <strong>{{ data.cards.activa | number:'1.0-0' }}</strong>
+          </div>
+
+          <!-- Cancelada -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Cancelada</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-danger" [style.width]="getCardWidth(data.cards.cancelada)"></div>
+            </div>
+            <strong>{{ data.cards.cancelada | number:'1.0-0' }}</strong>
+          </div>
+
+          <!-- Fallecido -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Fallecido</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-secondary" [style.width]="getCardWidth(data.cards.fallecido)"></div>
+            </div>
+            <strong>{{ data.cards.fallecido | number:'1.0-0' }}</strong>
+          </div>
+
+          <!-- Emitida -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Emitida</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-primary" [style.width]="getCardWidth(data.cards.emitida)"></div>
+            </div>
+            <strong>{{ data.cards.emitida | number:'1.0-0' }}</strong>
+          </div>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="report-chart-footer mt-2 pt-2 border-top d-flex gap-3 text-muted small">
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-success"></i> Activa</span>
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-danger"></i> Cancelada</span>
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-secondary"></i> Fallecido</span>
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-primary"></i> Emitida</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico 2: Distribución por Titular (Donut CSS nativo) (Visible en General y Tarjetas) -->
+  <div class="col-12 col-lg-6" *ngIf="tipoReporte === 'general' || tipoReporte === 'cards'">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3 px-3 border-bottom">
+        <h5 class="card-title fw-bold mb-0 text-dark">Distribución por titular</h5>
+        <small class="text-muted">Participación de personas naturales (Contadores) y jurídicas (Sociedades).</small>
+      </div>
+
+      <div class="card-body px-3 py-3 d-flex align-items-center justify-content-center">
+        <div class="donut-report-layout">
+          <!-- Círculo Donut con Gradiente Cónico Dinámico -->
+          <div class="report-donut" [style.background]="getDonutGradient()">
+            <div class="report-donut-center">
+              <strong>{{ data.cards.total | number:'1.0-0' }}</strong>
+              <span>Total</span>
+            </div>
+          </div>
+
+          <!-- Desglose y Leyenda -->
+          <div class="donut-legend">
+            <div class="py-2 border-bottom">
+              <span class="d-flex align-items-center gap-2 text-secondary small">
+                <i class="legend-dot bg-primary"></i> Contadores
+              </span>
+              <strong class="d-block fs-5 text-dark ms-3">{{ data.cards.contadores_total | number:'1.0-0' }}</strong>
+              <small class="text-muted ms-3">{{ data.cards.contadores_pct }}%</small>
+            </div>
+            <div class="py-2">
+              <span class="d-flex align-items-center gap-2 text-secondary small">
+                <i class="legend-dot bg-success"></i> Sociedades
+              </span>
+              <strong class="d-block fs-5 text-dark ms-3">{{ data.cards.sociedades_total | number:'1.0-0' }}</strong>
+              <small class="text-muted ms-3">{{ data.cards.sociedades_pct }}%</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico 3: Notificaciones por canal (Visible en General y Notificaciones) -->
+  <div class="col-12" [ngClass]="tipoReporte === 'notifications' ? 'col-lg-12' : 'col-lg-12'" *ngIf="tipoReporte === 'general' || tipoReporte === 'notifications'">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="card-title fw-bold mb-0 text-dark">Notificaciones por canal</h5>
+          <small class="text-muted">Volumen registrado según el medio de envío.</small>
+        </div>
+        <span class="badge bg-light text-secondary border">Total: {{ data.notifications.total | number:'1.0-0' }} registros</span>
+      </div>
+
+      <div class="card-body px-3 py-3">
+        <div class="vertical-chart">
+          <!-- Canal Push -->
+          <div class="vertical-column">
+            <div class="vertical-value">{{ data.notifications.push }}</div>
+            <div class="vertical-track">
+              <div class="vertical-fill bg-primary" [style.height]="getNotifHeight(data.notifications.push)"></div>
+            </div>
+            <span class="vertical-label">Push</span>
+          </div>
+
+          <!-- Canal Alerta Estándar -->
+          <div class="vertical-column">
+            <div class="vertical-value">{{ data.notifications.estandar }}</div>
+            <div class="vertical-track">
+              <div class="vertical-fill bg-warning" [style.height]="getNotifHeight(data.notifications.estandar)"></div>
+            </div>
+            <span class="vertical-label">Alerta estándar</span>
+          </div>
+
+          <!-- Canal Interna -->
+          <div class="vertical-column">
+            <div class="vertical-value">{{ data.notifications.interna }}</div>
+            <div class="vertical-track">
+              <div class="vertical-fill bg-success" [style.height]="getNotifHeight(data.notifications.interna)"></div>
+            </div>
+            <span class="vertical-label">Interna</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla Dinámica de Consolidado -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h5 class="card-title fw-bold mb-0 text-dark">{{ tablaTitulo }}</h5>
+      <small class="text-muted">{{ tablaSubtitulo }}</small>
+    </div>
+
+    <!-- Buscador en tiempo real de la tabla -->
+    <div class="d-flex align-items-center gap-2">
+      <div class="input-group input-group-sm" style="max-width: 280px;">
+        <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+        <input 
+          type="text" 
+          class="form-control border-start-0" 
+          placeholder="Filtrar consolidado..." 
+          [(ngModel)]="searchQuery"
+        >
+        <button 
+          *ngIf="searchQuery" 
+          class="btn btn-outline-secondary border-start-0" 
+          type="button" 
+          (click)="searchQuery = ''"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle text-nowrap mb-0 w-100">
+      <thead class="table-light">
+        <tr>
+          <th>Módulo</th>
+          <th>{{ tipoReporte === 'notifications' ? 'Canal' : 'Segmento' }}</th>
+          <th class="text-center">Total</th>
+          <th class="text-center">
+            {{ tipoReporte === 'cards' ? 'Tarjetas activas' : (tipoReporte === 'notifications' ? 'Entregadas' : 'Activos / Entregados') }}
+          </th>
+          <th class="text-center">
+            {{ tipoReporte === 'cards' ? 'Tarjetas emitidas' : (tipoReporte === 'notifications' ? 'Pendientes / Fallidas' : 'Tarjetas emitidas / Pendientes') }}
+          </th>
+          <th class="text-end">Última actualización</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fila of filasConsolidadoFiltradas">
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa text-primary" [ngClass]="fila.modulo.toLowerCase().includes('tarjeta') ? 'fa-id-card' : 'fa-bell'"></i>
+              <span class="fw-semibold text-dark">{{ fila.modulo }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="fila.segmento === 'Contadores' ? 'bg-primary-subtle text-primary' : (fila.segmento === 'Sociedades' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary')">
+              {{ fila.segmento }}
+            </span>
+          </td>
+          <td class="text-center fw-bold text-dark">
+            {{ fila.total | number:'1.0-0' }}
+          </td>
+          <td class="text-center">
+            <span class="badge bg-success-subtle text-success fw-bold">
+              {{ fila.activos | number:'1.0-0' }}
+            </span>
+          </td>
+          <td class="text-center">
+            <span class="badge bg-primary-subtle text-primary fw-bold">
+              {{ fila.emitidos | number:'1.0-0' }}
+            </span>
+          </td>
+          <td class="text-end text-muted small">
+            {{ fila.ultima_actualizacion }}
+          </td>
+        </tr>
+
+        <tr *ngIf="filasConsolidadoFiltradas.length === 0">
+          <td colspan="6" class="text-center py-4 text-muted">
+            <div class="d-flex flex-column align-items-center justify-content-center">
+              <i class="fa fa-info-circle fa-2x mb-2 text-secondary"></i>
+              <span>No se encontraron registros para los filtros seleccionados.</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
