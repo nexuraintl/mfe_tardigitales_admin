@@ -11,6 +11,7 @@ import { AuditoriaComponent } from './auditoria/auditoria.component';
 import { BrandingComponent } from './branding/branding.component';
 import { BrandingInstitucionalComponent } from './branding-institucional/branding-institucional.component';
 import { ProcesosLotesComponent } from './procesos-lotes/procesos-lotes.component';
+import { VerificarPublicaComponent } from './verificar-publica/verificar-publica.component';
 
 export const routes: Routes = [
   {
@@ -92,7 +93,18 @@ export const routes: Routes = [
   },
   {
     path: 'validador-qr',
-    component: ValidadorQrComponent
+    redirectTo: 'validador-qr-contadores',
+    pathMatch: 'full'
+  },
+  {
+    path: 'validador-qr-contadores',
+    component: ValidadorQrComponent,
+    data: { tipo: 'contadores' }
+  },
+  {
+    path: 'validador-qr-sociedades',
+    component: ValidadorQrComponent,
+    data: { tipo: 'sociedades' }
   },
   {
     path: 'auditoria',
@@ -107,7 +119,23 @@ export const routes: Routes = [
     component: PlaceholderComponent
   },
 
-  // Ruta genérica fallback por si acaso
+  // Ruta pública de simulación de verificación QR
+  {
+    path: 'verificar',
+    component: VerificarPublicaComponent
+  },
+  {
+    path: 'verificar/:token',
+    component: VerificarPublicaComponent
+  },
+  {
+    path: 'admin/tardigitales/verificar',
+    component: VerificarPublicaComponent
+  },
+  {
+    path: 'admin/tardigitales/verificar/:token',
+    component: VerificarPublicaComponent
+  },
   {
     path: 'construccion',
     component: PlaceholderComponent
