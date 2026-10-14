@@ -348,7 +348,17 @@
         <small class="text-muted">Consulta a los servicios externos de la JCC en busca de nuevos trámites aprobados y los encola en la base de datos para su emisión.</small>
       </div>
 
-      <div>
+      <div class="d-flex align-items-center gap-2">
+        <button 
+          type="button" 
+          class="btn btn-outline-primary fw-semibold d-flex align-items-center gap-2"
+          [disabled]="sincronizandoEstados"
+          (click)="sincronizarEstadosManual()"
+          title="Verifica en MYJCC novedades de inhabilitación o sanción para todas las tarjetas emitidas y activas">
+          <span class="fa" [class.fa-user-check]="!sincronizandoEstados" [class.fa-spinner]="sincronizandoEstados" [class.fa-spin]="sincronizandoEstados"></span>
+          <span>{{ sincronizandoEstados ? 'Auditando Estados...' : 'Auditar Estados MYJCC' }}</span>
+        </button>
+
         <button 
           type="button" 
           class="btn btn-primary fw-semibold d-flex align-items-center gap-2"
