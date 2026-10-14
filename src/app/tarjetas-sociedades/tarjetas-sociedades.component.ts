@@ -635,7 +635,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   volver(): void {
     if (this.vistaActiva !== 'listado') {
-      this.router.navigate(['/sociedades']);
+      this.router.navigate(['/tarjetas-sociedades']);
     } else if (typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     }
@@ -647,7 +647,7 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.datosConsulta = null;
     this.mensajeExito = '';
     this.mensajeError = '';
-    this.router.navigate(['/sociedades/nueva']);
+    this.router.navigate(['/tarjetas-sociedades/nueva']);
   }
 
   cerrarNuevaTarjeta(): void {
@@ -656,21 +656,21 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.datosConsulta = null;
     this.mensajeExito = '';
     this.mensajeError = '';
-    this.router.navigate(['/sociedades']);
+    this.router.navigate(['/tarjetas-sociedades']);
   }
 
   abrirEmisionMasiva(): void {
     this.bulkFile = null;
     this.bulkResultText = '';
     this.bulkResultClass = 'bulk-result';
-    this.router.navigate(['/sociedades/emision-masiva']);
+    this.router.navigate(['/tarjetas-sociedades/emision-masiva']);
   }
 
   cerrarEmisionMasiva(): void {
     this.bulkFile = null;
     this.bulkResultText = '';
     this.bulkResultClass = 'bulk-result';
-    this.router.navigate(['/sociedades']);
+    this.router.navigate(['/tarjetas-sociedades']);
   }
 
   seleccionarArchivo(event: any): void {
@@ -881,7 +881,7 @@ export class TarjetasSociedadesComponent implements OnInit {
           this.busquedaRealizada = false;
           this.datosConsulta = null;
           this.nuevaIdentificacion = '';
-          this.router.navigate(['/sociedades']);
+          this.router.navigate(['/tarjetas-sociedades']);
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -901,7 +901,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   abrirHistorial(t: TarjetaSociedad): void {
     this.selectedTarjeta = t;
-    this.router.navigate(['/sociedades/historial', t.id]);
+    this.router.navigate(['/tarjetas-sociedades/historial', t.id]);
   }
 
   regenerarTarjeta(t: TarjetaSociedad): void {
@@ -933,7 +933,7 @@ export class TarjetasSociedadesComponent implements OnInit {
   cerrarHistorial(): void {
     this.selectedTarjeta = null;
     this.selectedTarjetaHistorial = null;
-    this.router.navigate(['/sociedades']);
+    this.router.navigate(['/tarjetas-sociedades']);
   }
 
   exportarCSV(): void {

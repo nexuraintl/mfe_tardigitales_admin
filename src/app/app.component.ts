@@ -37,6 +37,10 @@ export class App implements OnInit {
     '/tarjetas-contadores/nueva': 'Emitir tarjeta de contador',
     '/tarjetas-contadores/emision-masiva': 'Emisión masiva de credenciales',
     '/tarjetas-contadores': 'Tarjeta digital para contadores',
+    '/tarjetas-sociedades/historial': 'Historial de la sociedad',
+    '/tarjetas-sociedades/nueva': 'Emitir tarjeta de sociedad',
+    '/tarjetas-sociedades/emision-masiva': 'Emisión masiva de sociedades',
+    '/tarjetas-sociedades': 'Tarjeta digital para sociedades',
     '/sociedades/historial': 'Historial de la sociedad',
     '/sociedades/nueva': 'Emitir tarjeta de sociedad',
     '/sociedades/emision-masiva': 'Emisión masiva de sociedades',
@@ -110,7 +114,7 @@ export class App implements OnInit {
           icon: 'fa fa-id-card',
           children: [
             { label: 'Tarjetas contadores', icon: 'fa fa-user', path: '/tarjetas-contadores' },
-            { label: 'Tarjetas sociedades', icon: 'fa fa-building-o', path: '/sociedades' }
+            { label: 'Tarjetas sociedades', icon: 'fa fa-building-o', path: '/tarjetas-sociedades' }
           ]
         },
         {
@@ -220,7 +224,40 @@ export class App implements OnInit {
       return;
     }
 
-    if (cleanUrl.includes('tarjetas-contadores')) {
+    if (cleanUrl.includes('reportes/dashboard') || cleanUrl === '/reportes') {
+      this.primaryAction = {
+        label: 'Imprimir',
+        icon: 'fa fa-print',
+        action: () => this.activeComponent?.imprimirReporte?.()
+      };
+      this.viewActions = [
+        {
+          id: 'actualizar-reporte',
+          label: 'Actualizar',
+          icon: 'fa fa-refresh',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.cargarDatos?.()
+        },
+        {
+          id: 'exportar-csv-reporte',
+          label: 'Exportar CSV',
+          icon: 'fa fa-download',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.exportarCSV?.()
+        }
+      ];
+    } else if (cleanUrl.includes('reportes/contadores') || cleanUrl.includes('reportes/sociedades') || cleanUrl.includes('reportes/notificaciones')) {
+      this.primaryAction = null;
+      this.viewActions = [
+        {
+          id: 'exportar-csv-subreporte',
+          label: 'Exportar CSV',
+          icon: 'fa fa-download',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.exportarCSV?.()
+        }
+      ];
+    } else if (cleanUrl.includes('tarjetas-contadores')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
         icon: 'fa fa-plus',
@@ -235,7 +272,7 @@ export class App implements OnInit {
           action: () => this.activeComponent?.abrirEmisionMasiva?.()
         }
       ];
-    } else if (cleanUrl.includes('sociedades')) {
+    } else if (cleanUrl.includes('tarjetas-sociedades') || cleanUrl === '/sociedades' || cleanUrl.startsWith('/sociedades/')) {
       this.primaryAction = {
         label: 'Nueva tarjeta',
         icon: 'fa fa-plus',
@@ -309,39 +346,6 @@ export class App implements OnInit {
           icon: 'fa fa-refresh',
           btnClass: 'btn btn-outline-secondary',
           action: () => this.activeComponent?.cargarAuditoria?.()
-        }
-      ];
-    } else if (cleanUrl.includes('reportes/dashboard') || cleanUrl === '/reportes') {
-      this.primaryAction = {
-        label: 'Imprimir',
-        icon: 'fa fa-print',
-        action: () => this.activeComponent?.imprimirReporte?.()
-      };
-      this.viewActions = [
-        {
-          id: 'actualizar-reporte',
-          label: 'Actualizar',
-          icon: 'fa fa-refresh',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.cargarDatos?.()
-        },
-        {
-          id: 'exportar-csv-reporte',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        }
-      ];
-    } else if (cleanUrl.includes('reportes/contadores') || cleanUrl.includes('reportes/sociedades') || cleanUrl.includes('reportes/notificaciones')) {
-      this.primaryAction = null;
-      this.viewActions = [
-        {
-          id: 'exportar-csv-subreporte',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
         }
       ];
     } else {

@@ -310,6 +310,6 @@ export class ValidadorQrComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate([this.isSociedades ? '/sociedades' : '/tarjetas-contadores']);
+    this.router.navigate([this.isSociedades ? '/tarjetas-sociedades' : '/tarjetas-contadores']);
   }
 }
