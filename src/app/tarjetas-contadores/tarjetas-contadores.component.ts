@@ -13,6 +13,7 @@ import { FormEmisionContadoresComponent } from './components/form-emision-contad
 import { EmisionMasivaContadoresComponent } from './components/emision-masiva-contadores/emision-masiva-contadores.component';
 import { HistorialContadoresComponent } from './components/historial-contadores/historial-contadores.component';
 import { ModalDetalleTarjetaComponent } from '../shared/components/modal-detalle-tarjeta/modal-detalle-tarjeta.component';
+import { FilterColumnConfig, ActiveFilter } from '../shared/components/filter-builder/filter-builder.component';
 
 export interface TableColumn {
   key: string;
@@ -85,6 +86,8 @@ export class TarjetasContadoresComponent implements OnInit {
   searchQuery: string = '';
   filterColumn: string = '';
   filterValue: string = '';
+  multiFilters: ActiveFilter[] = [];
+  esModoReporte: boolean = false;
   pageSize: number = 10;
   pageSizeOptions: number[] = [5, 10, 25, 50];
   currentPage: number = 1;
@@ -169,6 +172,7 @@ export class TarjetasContadoresComponent implements OnInit {
 
   evaluarRutaActual(paramsMap?: any): void {
     const url = this.router.url;
+    this.esModoReporte = url.includes('/reportes');
     let idStr = paramsMap ? paramsMap.get('id') : this.route.snapshot.paramMap.get('id');
 
     if (!idStr && url.includes('/historial/')) {
@@ -459,16 +463,71 @@ export class TarjetasContadoresComponent implements OnInit {
       });
   }
 
+  get filterColumnsConfig(): FilterColumnConfig[] {
+    return [
+      { key: 'no_tarjeta', label: 'Tarjeta profesional', tipo: 'string' },
+      { key: 'nombre_completo', label: 'Nombre completo', tipo: 'string' },
+      { key: 'no_expd', label: 'Expediente', tipo: 'number' },
+      { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Sustitución'] },
+      { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
+      { key: 'no_documento', label: 'Documento', tipo: 'string' },
+      { key: 'correo', label: 'Correo', tipo: 'string' },
+      { key: 'universidad', label: 'Universidad', tipo: 'string' },
+      { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Fallecido', 'Emitida'] },
+      { key: 'estado_contador', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
+      { key: 'resolucion', label: 'Resolución', tipo: 'string' },
+      { key: 'fecha_estado', label: 'Fecha del estado', tipo: 'date' },
+      { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' },
+      { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
+      { key: 'acta_jcc', label: 'Acta JCC', tipo: 'string' },
+      { key: 'fecha_grado', label: 'Fecha de grado', tipo: 'date' },
+      { key: 'seccional', label: 'Seccional', tipo: 'string' }
+    ];
+  }
+
+  onApplyMultiFilters(filters: ActiveFilter[]): void {
+    this.multiFilters = filters;
+    this.currentPage = 1;
+    this.cargarTarjetas();
+  }
+
+  onClearMultiFilters(): void {
+    this.multiFilters = [];
+    this.currentPage = 1;
+    this.cargarTarjetas();
+  }
+
   get filteredTarjetas(): TarjetaContador[] {
-    return this.tarjetas;
+    if (!this.multiFilters || this.multiFilters.length === 0) {
+      return this.tarjetas;
+    }
+    return this.tarjetas.filter(item => {
+      return this.multiFilters.every(f => {
+        const val = (item as any)[f.column];
+        if (f.column.startsWith('fecha')) {
+          const rowDate = String(val || '').slice(0, 10);
+          return (!f.dateFrom || rowDate >= f.dateFrom) && (!f.dateTo || rowDate <= f.dateTo);
+        }
+        if (f.column === 'no_expd' || f.column === 'expediente') {
+          return String(val || '') === f.value;
+        }
+        if (f.column === 'estado_tarjeta') {
+          return String(val || '').toLowerCase() === f.value.toLowerCase();
+        }
+        if (f.column === 'estado_contador') {
+          return String(val || '').toLowerCase() === f.value.toLowerCase();
+        }
+        return String(val || '').toLowerCase().includes(f.value.toLowerCase());
+      });
+    });
   }
 
   get sortedTarjetas(): TarjetaContador[] {
-    return this.tarjetas;
+    return this.filteredTarjetas;
   }
 
   get paginatedTarjetas(): TarjetaContador[] {
-    return this.tarjetas;
+    return this.filteredTarjetas;
   }
 
   get totalPages(): number {
