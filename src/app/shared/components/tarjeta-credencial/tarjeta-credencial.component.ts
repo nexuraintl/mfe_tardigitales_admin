@@ -57,11 +57,102 @@ export class TarjetaCredencialComponent {
   /** Configuración de branding visual */
   @Input() branding: CredencialBranding = {};
 
+  /** Configuración de visibilidad de campos (ej. Validador QR) */
+  @Input() camposVisibles?: any;
+
   /** Foto por defecto si no viene en datos */
   defaultPhoto: string = PHOTO_CARD_PATH;
 
   copiadoExitoso: boolean = false;
   logoError: boolean = false;
+
+  get isFotoVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.camposVisibles.foto !== undefined) return Boolean(this.camposVisibles.foto);
+    if (this.camposVisibles.val_foto !== undefined) return Boolean(this.camposVisibles.val_foto);
+    return true;
+  }
+
+  get isRegistroVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.camposVisibles.registro !== undefined) return Boolean(this.camposVisibles.registro);
+    if (this.tipo === 'sociedad') {
+      if (this.camposVisibles.val_numero_registro !== undefined) return Boolean(this.camposVisibles.val_numero_registro);
+      if (this.camposVisibles.val_matricula !== undefined) return Boolean(this.camposVisibles.val_matricula);
+    } else {
+      if (this.camposVisibles.val_tarjeta_profesional !== undefined) return Boolean(this.camposVisibles.val_tarjeta_profesional);
+      if (this.camposVisibles.val_matricula !== undefined) return Boolean(this.camposVisibles.val_matricula);
+    }
+    return true;
+  }
+
+  get isFechaVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.camposVisibles.fecha !== undefined) return Boolean(this.camposVisibles.fecha);
+    if (this.camposVisibles.val_fecha_resolucion !== undefined) return Boolean(this.camposVisibles.val_fecha_resolucion);
+    return true;
+  }
+
+  get isMedio3Visible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.tipo === 'sociedad') {
+      if (this.camposVisibles.expediente !== undefined) return Boolean(this.camposVisibles.expediente);
+      if (this.camposVisibles.val_expediente !== undefined) return Boolean(this.camposVisibles.val_expediente);
+    } else {
+      if (this.camposVisibles.resolucion !== undefined) return Boolean(this.camposVisibles.resolucion);
+      if (this.camposVisibles.val_resolucion !== undefined) return Boolean(this.camposVisibles.val_resolucion);
+    }
+    return true;
+  }
+
+  get isTitularVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.camposVisibles.titular !== undefined) return Boolean(this.camposVisibles.titular);
+    if (this.tipo === 'sociedad') {
+      if (this.camposVisibles.val_razon_social !== undefined) return Boolean(this.camposVisibles.val_razon_social);
+      if (this.camposVisibles.val_nombre !== undefined) return Boolean(this.camposVisibles.val_nombre);
+    } else {
+      if (this.camposVisibles.val_nombre !== undefined) return Boolean(this.camposVisibles.val_nombre);
+      if (this.camposVisibles.val_razon_social !== undefined) return Boolean(this.camposVisibles.val_razon_social);
+    }
+    return true;
+  }
+
+  get isDocumentoVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.camposVisibles.documento !== undefined) return Boolean(this.camposVisibles.documento);
+    if (this.tipo === 'sociedad') {
+      if (this.camposVisibles.val_nit !== undefined) return Boolean(this.camposVisibles.val_nit);
+      if (this.camposVisibles.val_cedula !== undefined) return Boolean(this.camposVisibles.val_cedula);
+    } else {
+      if (this.camposVisibles.val_cedula !== undefined) return Boolean(this.camposVisibles.val_cedula);
+      if (this.camposVisibles.val_nit !== undefined) return Boolean(this.camposVisibles.val_nit);
+    }
+    return true;
+  }
+
+  get isExtraVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.camposVisibles.extra !== undefined) return Boolean(this.camposVisibles.extra);
+    if (this.tipo === 'sociedad') {
+      if (this.camposVisibles.val_tipo_registro !== undefined) return Boolean(this.camposVisibles.val_tipo_registro);
+    } else {
+      if (this.camposVisibles.val_institucion !== undefined) return Boolean(this.camposVisibles.val_institucion);
+    }
+    return true;
+  }
+
+  get isPie2DerVisible(): boolean {
+    if (!this.camposVisibles) return true;
+    if (this.tipo === 'sociedad') {
+      if (this.camposVisibles.resolucion !== undefined) return Boolean(this.camposVisibles.resolucion);
+      if (this.camposVisibles.val_resolucion !== undefined) return Boolean(this.camposVisibles.val_resolucion);
+    } else {
+      if (this.camposVisibles.expediente !== undefined) return Boolean(this.camposVisibles.expediente);
+      if (this.camposVisibles.val_expediente !== undefined) return Boolean(this.camposVisibles.val_expediente);
+    }
+    return true;
+  }
 
   get isImpresion(): boolean {
     return this.modo === 'impresion';
