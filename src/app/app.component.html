@@ -1,5 +1,6 @@
-<!-- 1. Header Web Component -->
+<!-- 1. Header Web Component (Oculto en ruta de verificación pública) -->
 <nx-admin-header
+  *ngIf="!isPublicRoute"
   [appTitle]="'Tarjetas Digitales'"
   [currentUser]="currentUser"
   [appGrid]="appGrid"
@@ -9,9 +10,10 @@
   (nx-profile-action)="onProfileAction($any($event))">
 </nx-admin-header>
 
-<div class="main-container" style="display: flex; min-height: calc(100vh - 64px); background-color: #f8f9fa;">
-  <!-- 2. Sidebar de navegación -->
+<div [class.main-container]="!isPublicRoute" [style.display]="!isPublicRoute ? 'flex' : 'block'" [style.min-height]="!isPublicRoute ? 'calc(100vh - 64px)' : '100vh'" style="background-color: #f1f5f9;">
+  <!-- 2. Sidebar de navegación (Oculto en ruta pública) -->
   <nx-admin-mod-sidebar
+    *ngIf="!isPublicRoute"
     [menuSections]="menuSections"
     [activePath]="currentUrl"
     [primaryAction]="primaryAction"
@@ -22,9 +24,10 @@
   </nx-admin-mod-sidebar>
 
   <!-- 3. Área principal de contenido -->
-  <main class="content-area" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
-    <!-- Barra de opciones / Título de vista y botones dinámicos -->
+  <main class="content-area" [style.flex]="!isPublicRoute ? '1' : 'none'" style="min-width: 0; display: flex; flex-direction: column; min-height: 100vh;">
+    <!-- Barra de opciones / Título de vista y botones dinámicos (Oculto en ruta pública) -->
     <nx-admin-mod-options
+      *ngIf="!isPublicRoute"
       [pageTitle]="pageTitle"
       [showBackButton]="true"
       [actions]="viewActions"
@@ -32,14 +35,12 @@
       (nx-back)="onBack()">
     </nx-admin-mod-options>
 
-    <!-- 4. Contenedor de contenido donde se proyecta el router de Angular -->
-    <nx-admin-mod-content slot="content" style="flex: 1;">
-      <div class="container-fluid p-4">
-        <router-outlet (activate)="onRouteActivate($event)"></router-outlet>
-      </div>
-    </nx-admin-mod-content>
+    <!-- 4. Contenedor de contenido ÚNICO donde se proyecta el router de Angular -->
+    <div [class.p-4]="!isPublicRoute" style="flex: 1; width: 100%;">
+      <router-outlet (activate)="onRouteActivate($event)"></router-outlet>
+    </div>
 
-    <!-- 5. Footer Web Component (Dentro del área de contenido para no cortar el sidebar) -->
-    <nx-admin-footer [version]="'Versión 1.0.0'"></nx-admin-footer>
+    <!-- 5. Footer Web Component (Oculto en ruta pública) -->
+    <nx-admin-footer *ngIf="!isPublicRoute" [version]="'Versión 1.0.0'"></nx-admin-footer>
   </main>
 </div>
