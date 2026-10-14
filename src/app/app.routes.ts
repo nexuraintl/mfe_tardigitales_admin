@@ -49,20 +49,40 @@ export const routes: Routes = [
 
   // Rutas semánticas reales - Sociedades
   {
-    path: 'sociedades',
+    path: 'tarjetas-sociedades',
     component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'tarjetas-sociedades/nueva',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'tarjetas-sociedades/emision-masiva',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'tarjetas-sociedades/historial/:id',
+    component: TarjetasSociedadesComponent
+  },
+  {
+    path: 'sociedades',
+    redirectTo: 'tarjetas-sociedades',
+    pathMatch: 'full'
   },
   {
     path: 'sociedades/nueva',
-    component: TarjetasSociedadesComponent
+    redirectTo: 'tarjetas-sociedades/nueva',
+    pathMatch: 'full'
   },
   {
     path: 'sociedades/emision-masiva',
-    component: TarjetasSociedadesComponent
+    redirectTo: 'tarjetas-sociedades/emision-masiva',
+    pathMatch: 'full'
   },
   {
     path: 'sociedades/historial/:id',
-    component: TarjetasSociedadesComponent
+    redirectTo: 'tarjetas-sociedades/historial/:id',
+    pathMatch: 'full'
   },
   {
     path: 'crear-notificacion',
