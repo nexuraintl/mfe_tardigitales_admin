@@ -466,23 +466,21 @@ export class TarjetasSociedadesComponent implements OnInit {
       });
   }
 
-  get filterColumnsConfig(): FilterColumnConfig[] {
-    return [
-      { key: 'no_expd', label: 'Expediente', tipo: 'number' },
-      { key: 'razon_social', label: 'Razón social', tipo: 'string' },
-      { key: 'nit', label: 'NIT', tipo: 'string' },
-      { key: 'no_tarjeta', label: 'Número de tarjeta', tipo: 'string' },
-      { key: 'tipo_sociedad', label: 'Tipo de sociedad', tipo: 'string' },
-      { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Modificación'] },
-      { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
-      { key: 'correo', label: 'Correo', tipo: 'string' },
-      { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Emitida'] },
-      { key: 'estado_sociedad', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
-      { key: 'resolucion', label: 'Resolución', tipo: 'string' },
-      { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
-      { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' }
-    ];
-  }
+  readonly filterColumnsConfig: FilterColumnConfig[] = [
+    { key: 'no_expd', label: 'Expediente', tipo: 'number' },
+    { key: 'razon_social', label: 'Razón social', tipo: 'string' },
+    { key: 'nit', label: 'NIT', tipo: 'string' },
+    { key: 'no_tarjeta', label: 'Número de tarjeta', tipo: 'string' },
+    { key: 'tipo_sociedad', label: 'Tipo de sociedad', tipo: 'string' },
+    { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Modificación'] },
+    { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
+    { key: 'correo', label: 'Correo', tipo: 'string' },
+    { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Emitida'] },
+    { key: 'estado_sociedad', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
+    { key: 'resolucion', label: 'Resolución', tipo: 'string' },
+    { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
+    { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' }
+  ];
 
   onApplyMultiFilters(filters: ActiveFilter[]): void {
     this.multiFilters = filters;

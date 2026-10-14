@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -32,11 +32,11 @@ export interface ActiveFilter {
             <label class="form-label text-secondary small fw-bold mb-1">Columna</label>
             <select 
               class="form-select form-select-sm" 
-              [(ngModel)]="selectedColumnKey" 
-              (ngModelChange)="onColumnChange()"
+              [ngModel]="selectedColumnKey" 
+              (ngModelChange)="onColumnChange($event)"
             >
               <option value="">Seleccione una columna</option>
-              <option *ngFor="let col of selectableColumns" [value]="col.key">
+              <option *ngFor="let col of selectableColumns; trackBy: trackByColumnKey" [value]="col.key">
                 {{ col.label }}
               </option>
             </select>
@@ -73,7 +73,7 @@ export interface ActiveFilter {
               [(ngModel)]="selectedValue"
             >
               <option value="">Seleccione un valor</option>
-              <option *ngFor="let opt of currentOptions" [value]="opt">{{ opt }}</option>
+              <option *ngFor="let opt of currentOptions; trackBy: trackByOption" [value]="opt">{{ opt }}</option>
             </select>
 
             <!-- Caso número (expediente, tarjeta, etc.) -->
@@ -230,7 +230,7 @@ export interface ActiveFilter {
     }
   `]
 })
-export class FilterBuilderComponent {
+export class FilterBuilderComponent implements OnInit, OnChanges {
   @Input() columns: FilterColumnConfig[] = [];
   @Output() applyFilters = new EventEmitter<ActiveFilter[]>();
   @Output() clearFilters = new EventEmitter<void>();
@@ -241,24 +241,46 @@ export class FilterBuilderComponent {
   dateFrom = '';
   dateTo = '';
 
+  selectableColumns: FilterColumnConfig[] = [];
   stagedFilters: ActiveFilter[] = [];
   private sequence = 0;
 
-  get selectableColumns(): FilterColumnConfig[] {
+  ngOnInit(): void {
+    this.updateSelectableColumns();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['columns']) {
+      this.updateSelectableColumns();
+    }
+  }
+
+  trackByColumnKey(index: number, col: FilterColumnConfig): string {
+    return col.key;
+  }
+
+  trackByOption(index: number, opt: string): string {
+    return opt;
+  }
+
+  updateSelectableColumns(): void {
     const usedKeys = this.stagedFilters.map(f => f.column);
-    return this.columns.filter(c => !usedKeys.includes(c.key) || c.key === this.selectedColumnKey);
+    this.selectableColumns = (this.columns || []).filter(
+      c => !usedKeys.includes(c.key) || c.key === this.selectedColumnKey
+    );
   }
 
   get selectedColumn(): FilterColumnConfig | undefined {
-    return this.columns.find(c => c.key === this.selectedColumnKey);
+    return (this.columns || []).find(c => c.key === this.selectedColumnKey);
   }
 
   get selectedColumnType(): string {
     if (!this.selectedColumnKey) return 'none';
     if (this.selectedColumn?.tipo) return this.selectedColumn.tipo;
-    if (this.selectedColumnKey.toLowerCase().includes('fecha')) return 'date';
-    if (this.selectedColumnKey.toLowerCase().includes('estado')) return 'select';
-    if (this.selectedColumnKey === 'no_expd' || this.selectedColumnKey === 'expediente') return 'number';
+    const key = (this.selectedColumnKey || '').toLowerCase();
+    if (key.includes('fecha')) return 'date';
+    if (key.includes('estado')) return 'select';
+    if (key === 'no_expd' || key === 'expediente') return 'number';
     return 'string';
   }
 
@@ -272,7 +294,7 @@ export class FilterBuilderComponent {
     if (this.selectedColumn?.options && this.selectedColumn.options.length > 0) {
       return this.selectedColumn.options;
     }
-    const key = this.selectedColumnKey.toLowerCase();
+    const key = (this.selectedColumnKey || '').toLowerCase();
     if (key.includes('estado_tarjeta') || key.includes('estadotarjeta')) {
       return ['Activa', 'Cancelada', 'Fallecido', 'Emitida'];
     }
@@ -296,11 +318,18 @@ export class FilterBuilderComponent {
     return Boolean(this.textValue && this.textValue.trim().length > 0);
   }
 
-  onColumnChange(): void {
+  onColumnChange(newKey?: string): void {
+    if (newKey !== undefined) {
+      if (this.selectedColumnKey === newKey) {
+        return;
+      }
+      this.selectedColumnKey = newKey;
+    }
     this.textValue = '';
     this.selectedValue = '';
     this.dateFrom = '';
     this.dateTo = '';
+    this.updateSelectableColumns();
   }
 
   addFilter(): void {
@@ -332,11 +361,12 @@ export class FilterBuilderComponent {
     });
 
     this.selectedColumnKey = '';
-    this.onColumnChange();
+    this.onColumnChange('');
   }
 
   removeFilter(id: number): void {
     this.stagedFilters = this.stagedFilters.filter(f => f.id !== id);
+    this.updateSelectableColumns();
     this.apply();
   }
 
@@ -346,8 +376,9 @@ export class FilterBuilderComponent {
 
   clear(): void {
     this.selectedColumnKey = '';
-    this.onColumnChange();
+    this.onColumnChange('');
     this.stagedFilters = [];
+    this.updateSelectableColumns();
     this.clearFilters.emit();
   }
 }
