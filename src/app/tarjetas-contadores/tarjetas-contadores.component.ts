@@ -463,27 +463,25 @@ export class TarjetasContadoresComponent implements OnInit {
       });
   }
 
-  get filterColumnsConfig(): FilterColumnConfig[] {
-    return [
-      { key: 'no_tarjeta', label: 'Tarjeta profesional', tipo: 'string' },
-      { key: 'nombre_completo', label: 'Nombre completo', tipo: 'string' },
-      { key: 'no_expd', label: 'Expediente', tipo: 'number' },
-      { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Sustitución'] },
-      { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
-      { key: 'no_documento', label: 'Documento', tipo: 'string' },
-      { key: 'correo', label: 'Correo', tipo: 'string' },
-      { key: 'universidad', label: 'Universidad', tipo: 'string' },
-      { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Fallecido', 'Emitida'] },
-      { key: 'estado_contador', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
-      { key: 'resolucion', label: 'Resolución', tipo: 'string' },
-      { key: 'fecha_estado', label: 'Fecha del estado', tipo: 'date' },
-      { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' },
-      { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
-      { key: 'acta_jcc', label: 'Acta JCC', tipo: 'string' },
-      { key: 'fecha_grado', label: 'Fecha de grado', tipo: 'date' },
-      { key: 'seccional', label: 'Seccional', tipo: 'string' }
-    ];
-  }
+  readonly filterColumnsConfig: FilterColumnConfig[] = [
+    { key: 'no_tarjeta', label: 'Tarjeta profesional', tipo: 'string' },
+    { key: 'nombre_completo', label: 'Nombre completo', tipo: 'string' },
+    { key: 'no_expd', label: 'Expediente', tipo: 'number' },
+    { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Sustitución'] },
+    { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
+    { key: 'no_documento', label: 'Documento', tipo: 'string' },
+    { key: 'correo', label: 'Correo', tipo: 'string' },
+    { key: 'universidad', label: 'Universidad', tipo: 'string' },
+    { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Fallecido', 'Emitida'] },
+    { key: 'estado_contador', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
+    { key: 'resolucion', label: 'Resolución', tipo: 'string' },
+    { key: 'fecha_estado', label: 'Fecha del estado', tipo: 'date' },
+    { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' },
+    { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
+    { key: 'acta_jcc', label: 'Acta JCC', tipo: 'string' },
+    { key: 'fecha_grado', label: 'Fecha de grado', tipo: 'date' },
+    { key: 'seccional', label: 'Seccional', tipo: 'string' }
+  ];
 
   onApplyMultiFilters(filters: ActiveFilter[]): void {
     this.multiFilters = filters;
