@@ -104,116 +104,13 @@ export interface ConfigValidadorSociedad {
                 </div>
               </div>
 
-              <!-- Ficha Oficial de Datos Verificados Ciudadanos -->
-              <div class="card border rounded-3 mt-4 overflow-hidden shadow-sm">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                  <h6 class="fw-bold mb-0 text-slate-800" style="font-size: 13.5px;">
-                    <span class="fa fa-list-alt text-primary me-2"></span>
-                    Datos Oficiales Verificados — {{ isSociedad ? 'Sociedad de Contadores' : 'Contador Público' }}
-                  </h6>
-                  <span class="badge bg-light text-dark border" style="font-size: 11px;">UAE Junta Central de Contadores</span>
+              <!-- Mensaje Informativo Oficial (UAE Junta Central de Contadores) -->
+              <div class="mt-4 p-3 p-md-4 rounded-3 bg-white text-dark border d-flex align-items-center gap-3 shadow-sm">
+                <span class="fa fa-info-circle text-dark fs-3 flex-shrink-0" style="font-size: 28px;"></span>
+                <div style="font-size: 13.5px; line-height: 1.5; color: #1e293b;">
+                  <div>Estos datos tienen carácter <strong>INFORMATIVO</strong>.</div>
+                  <div>Recuerde que si usted desea saber si el {{ isSociedad ? 'la Sociedad de Contadores Públicos' : 'Contador Público' }} se encuentra <strong>habilitado</strong> para la prestación de servicios contables, se puede realizar a través del <strong>Certificado de Vigencia y Antecedentes Disciplinarios</strong>.</div>
                 </div>
-                <div class="card-body p-3 p-md-4">
-                  <div class="row g-3">
-                    <!-- CAMPOS VISIBLES CONTADORES -->
-                    <ng-container *ngIf="!isSociedad">
-                      <div *ngIf="configContador.val_tarjeta_profesional" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Tarjeta profesional</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.no_tarjeta || '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_fecha_resolucion" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Fecha resolución de inscripción</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.fecha_resolucion || '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_resolucion" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Resolución de inscripción</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.resolucion || '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_nombre" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Nombre</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.nombre_completo || '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_cedula" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Cédula de ciudadanía</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.no_documento || '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_institucion" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Institución de educación superior</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.universidad || '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_expediente" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Número de expediente</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.no_expd ?? '-' }}</div>
-                      </div>
-                      <div *ngIf="configContador.val_estado" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Estado</label>
-                        <div>
-                          <span class="badge" [ngClass]="isVigente ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'">
-                            {{ (tarjeta.estado_tarjeta || tarjeta.estado || 'Activo') | uppercase }}
-                          </span>
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- CAMPOS VISIBLES SOCIEDADES -->
-                    <ng-container *ngIf="isSociedad">
-                      <div *ngIf="configSociedad.val_numero_registro" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Número de registro</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.inscripcion || '-' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_fecha_resolucion" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Fecha resolución inscripción</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.fecha_resolucion || '-' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_expediente" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Número de expediente</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.no_expd ?? '-' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_razon_social" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Razón social</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.razon_social || '-' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_nit" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">NIT</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.nit || '-' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_tipo_registro" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Tipo de registro</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.tipo_sociedad || tarjeta.tipo_asociado || 'Sociedad de Contadores' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_resolucion" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Resolución de inscripción</label>
-                        <div class="fw-bold text-dark" style="font-size: 13px;">{{ tarjeta.resolucion || '-' }}</div>
-                      </div>
-                      <div *ngIf="configSociedad.val_estado" class="col-12 col-sm-6">
-                        <label class="form-label text-muted mb-1" style="font-size: 11px; font-weight: 600;">Estado</label>
-                        <div>
-                          <span class="badge" [ngClass]="isVigente ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'">
-                            {{ (tarjeta.estado_tarjeta || tarjeta.estado || 'Activo') | uppercase }}
-                          </span>
-                        </div>
-                      </div>
-                    </ng-container>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Código de Autenticidad SHA-256 (Controlado por val_codigo_tarjeta) -->
-              <div *ngIf="codigoVisible" class="p-3 bg-light rounded-3 border mt-3 text-start">
-                <div class="d-flex align-items-center justify-content-between mb-1">
-                  <span class="text-muted fw-semibold" style="font-size: 12px;">Código de Autenticidad SHA-256</span>
-                  <span class="badge bg-secondary-subtle text-secondary" style="font-size: 11px;">Oficial</span>
-                </div>
-                <div class="font-monospace text-break text-muted bg-white p-2 rounded border" style="font-size: 11.5px;">
-                  {{ tarjeta.hash_sha256 || token }}
-                </div>
-              </div>
-
-              <!-- Pie Legal Oficial -->
-              <div class="mt-4 p-3 rounded-3 bg-light text-muted border text-center" style="font-size: 11.5px; line-height: 1.45;">
-                <span class="fa fa-shield text-primary me-1"></span>
-                Esta consulta certifica la autenticidad de la credencial registrada en los sistemas oficiales de la 
-                <strong>UAE Junta Central de Contadores</strong>. Generado en línea el {{ fechaConsultaActual }}.
               </div>
 
             </div>
