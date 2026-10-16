@@ -123,13 +123,13 @@
           <div class="row g-3">
             <div class="col-12">
               <label for="notificationTitle" class="form-label fw-semibold">Título de la alerta *</label>
-              <input class="form-control" [class.is-invalid]="!!errorTitulo" id="notificationTitle" [(ngModel)]="notificationTitle" (ngModelChange)="onTituloChange($event)" placeholder="Ej: Mantenimiento programado">
+              <input class="form-control" [class.is-invalid]="!!errorTitulo" id="notificationTitle" maxlength="255" [(ngModel)]="notificationTitle" (ngModelChange)="onTituloChange($event)" placeholder="Ej: Mantenimiento programado">
               <nx-field-error [error]="errorTitulo"></nx-field-error>
             </div>
 
             <div class="col-12">
               <label for="notificationMessage" class="form-label fw-semibold">Mensaje *</label>
-              <textarea class="form-control" [class.is-invalid]="!!errorMensaje" id="notificationMessage" [(ngModel)]="notificationMessage" (ngModelChange)="onMensajeChange($event)" rows="3" placeholder="Detalle del mensaje a transmitir..."></textarea>
+              <textarea class="form-control" [class.is-invalid]="!!errorMensaje" id="notificationMessage" maxlength="1000" [(ngModel)]="notificationMessage" (ngModelChange)="onMensajeChange($event)" rows="3" placeholder="Detalle del mensaje a transmitir..."></textarea>
               <nx-field-error [error]="errorMensaje"></nx-field-error>
             </div>
 
@@ -235,8 +235,8 @@
               <span class="fw-bold">Junta Central de Contadores</span>
               <span>Ahora</span>
             </div>
-            <strong class="d-block text-dark mb-1">{{ notificationTitle || 'Mantenimiento programado' }}</strong>
-            <p class="text-muted small mb-0">{{ notificationMessage || 'El sistema estará en mantenimiento temporal...' }}</p>
+            <strong class="d-block text-dark mb-1 text-break" style="word-break: break-word;">{{ notificationTitle || 'Mantenimiento programado' }}</strong>
+            <p class="text-muted small mb-0 text-break" style="word-break: break-word; white-space: pre-wrap;">{{ notificationMessage || 'El sistema estará en mantenimiento temporal...' }}</p>
           </div>
 
           <h6 class="fw-bold small text-secondary mb-2">Vista en dispositivo móvil (Modal)</h6>
@@ -244,8 +244,8 @@
             <div class="fs-2 text-warning mb-2">
               <span class="fa fa-bullhorn"></span>
             </div>
-            <h6 class="fw-bold text-dark mb-1">{{ notificationTitle || 'Mantenimiento programado' }}</h6>
-            <p class="text-muted small mb-3">{{ notificationMessage || 'El sistema estará en mantenimiento temporal...' }}</p>
+            <h6 class="fw-bold text-dark mb-1 text-break" style="word-break: break-word;">{{ notificationTitle || 'Mantenimiento programado' }}</h6>
+            <p class="text-muted small mb-3 text-break" style="word-break: break-word; white-space: pre-wrap;">{{ notificationMessage || 'El sistema estará en mantenimiento temporal...' }}</p>
             <button class="btn btn-primary btn-sm w-100">Entendido</button>
           </div>
         </div>
