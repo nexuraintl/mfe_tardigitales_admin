@@ -1,7 +1,8 @@
 <!-- Alertas del Sistema -->
-<nx-alert *ngIf="successMsg" type="success" [message]="successMsg" (onClose)="successMsg = ''"></nx-alert>
-<nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-<nx-alert *ngIf="warningMsg" type="warning" [message]="warningMsg" (onClose)="warningMsg = ''"></nx-alert>
+<nx-alert *ngIf="successMsg" type="success" [message]="successMsg" [autoScroll]="true" [duration]="5000" (onClose)="successMsg = ''"></nx-alert>
+<nx-alert [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
+<nx-alert *ngIf="warningMsg" type="warning" [message]="warningMsg" [autoScroll]="true" (onClose)="warningMsg = ''"></nx-alert>
+
 
   <div class="row g-4">
     <!-- Columna Principal de Formularios -->

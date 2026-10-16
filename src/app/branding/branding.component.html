@@ -1,10 +1,6 @@
 <!-- Alertas y Mensajes de Estado -->
-<nx-alert *ngIf="currentError" [error]="currentError"></nx-alert>
-
-<div *ngIf="mensajeExito" class="alert alert-success d-flex align-items-center mb-3 shadow-sm" role="alert">
-  <span class="fa fa-check-circle me-2 fs-5 text-success"></span>
-  <div>{{ mensajeExito }}</div>
-</div>
+<nx-alert *ngIf="currentError" [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000" (onClose)="mensajeExito = ''"></nx-alert>
 
 <div class="branding-layout">
   <!-- Columna Izquierda: Formulario de Configuración e Historial -->
@@ -55,8 +51,10 @@
               id="brandingLogo"
               accept="image/png,image/jpeg,image/svg+xml"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorLogo"
               (change)="onLogoSelected($event)"
             />
+            <nx-field-error [error]="errorLogo"></nx-field-error>
           </div>
 
           <!-- Campo: Patrón de Fondo -->
@@ -93,8 +91,10 @@
               id="brandingPatron"
               accept="image/png,image/jpeg,image/svg+xml"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorPatron"
               (change)="onPatronSelected($event)"
             />
+            <nx-field-error [error]="errorPatron"></nx-field-error>
           </div>
 
 
@@ -107,9 +107,12 @@
                 type="color"
                 id="brandingPrimary"
                 class="form-control form-control-color w-100"
+                [class.is-invalid]="!!errorColorFondo"
                 style="height: 42px; cursor: pointer;"
                 [(ngModel)]="colorFondo"
+                (ngModelChange)="errorColorFondo = ''"
               />
+              <nx-field-error [error]="errorColorFondo"></nx-field-error>
             </div>
 
             <div class="col-6">
@@ -120,9 +123,12 @@
                 type="color"
                 id="brandingSecondary"
                 class="form-control form-control-color w-100"
+                [class.is-invalid]="!!errorColorLetra"
                 style="height: 42px; cursor: pointer;"
                 [(ngModel)]="colorLetra"
+                (ngModelChange)="errorColorLetra = ''"
               />
+              <nx-field-error [error]="errorColorLetra"></nx-field-error>
             </div>
           </div>
 
@@ -165,8 +171,10 @@
               id="brandingLogoImpresion"
               accept="image/png,image/jpeg,image/svg+xml"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorLogoImpresion"
               (change)="onLogoImpresionSelected($event)"
             />
+            <nx-field-error [error]="errorLogoImpresion"></nx-field-error>
           </div>
 
           <!-- Campo: Patrón de Fondo para Impresión -->
@@ -203,8 +211,10 @@
               id="brandingPatronImpresion"
               accept="image/png,image/jpeg,image/svg+xml"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorPatronImpresion"
               (change)="onPatronImpresionSelected($event)"
             />
+            <nx-field-error [error]="errorPatronImpresion"></nx-field-error>
           </div>
 
           <!-- Campo: Color de Letra para Impresión -->
@@ -233,6 +243,7 @@
           </div>
 
         </div>
+
       </div>
 
       <div class="card-footer bg-light border-top p-3 text-end">

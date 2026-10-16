@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { NxFieldErrorComponent } from '../shared/components/field-error/field-error.component';
 
 export interface InstitucionalHistoryItem {
   id: number;
@@ -19,7 +20,7 @@ export interface InstitucionalHistoryItem {
 @Component({
   selector: 'app-branding-institucional',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent],
+  imports: [CommonModule, FormsModule, NxAlertComponent, NxFieldErrorComponent],
   templateUrl: './branding-institucional.component.html',
   styleUrls: ['./branding-institucional.component.css']
 })
@@ -37,12 +38,18 @@ export class BrandingInstitucionalComponent implements OnInit {
   currentError: AppError | null = null;
   mensajeExito: string = '';
 
+  // Validaciones inline
+  errorNombreDirector: string = '';
+  errorCargoDirector: string = '';
+  errorFirma: string = '';
+
   publishedVersion: number | null = null;
   selectedVersionNumber: number | null = null;
 
   // Form / Draft fields
   nombreDirector: string = 'SANDRA MILENA BARRIOS PULIDO';
   cargoDirector: string = 'DIRECTOR GENERAL';
+
   firmaFile: File | null = null;
   firmaPreviewUrl: string | null = null;
   firmaSourceText: string = '';
@@ -163,34 +170,37 @@ export class BrandingInstitucionalComponent implements OnInit {
       });
   }
 
+  onNombreChange(val: string): void {
+    this.nombreDirector = val;
+    if (this.errorNombreDirector && val && val.trim()) {
+      this.errorNombreDirector = '';
+    }
+  }
+
+  onCargoChange(val: string): void {
+    this.cargoDirector = val;
+    if (this.errorCargoDirector && val && val.trim()) {
+      this.errorCargoDirector = '';
+    }
+  }
+
   onFirmaSelected(event: any): void {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (file.size > 500 * 1024) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'El archivo de firma supera el tamaño máximo permitido de 500 KB.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorFirma = 'El archivo de firma supera el tamaño máximo permitido de 500 KB.';
       return;
     }
 
     if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'Seleccione un formato de imagen válido para la firma (PNG con fondo transparente recomendado, JPG o SVG).',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorFirma = 'Seleccione un formato de imagen válido para la firma (PNG con fondo transparente recomendado, JPG o SVG).';
       return;
     }
 
+    this.errorFirma = '';
     this.firmaFile = file;
     this.firmaSourceText = `Archivo: ${file.name}`;
     this.currentError = null;
@@ -207,12 +217,16 @@ export class BrandingInstitucionalComponent implements OnInit {
     this.firmaFile = null;
     this.firmaPreviewUrl = null;
     this.firmaSourceText = '';
+    this.errorFirma = '';
     const input = document.getElementById('brandingFirmaDirector') as HTMLInputElement;
     if (input) input.value = '';
     this.cdr.detectChanges();
   }
 
   seleccionarVersionHistorial(v: InstitucionalHistoryItem): void {
+    this.errorNombreDirector = '';
+    this.errorCargoDirector = '';
+    this.errorFirma = '';
     this.selectedVersionNumber = v.version;
     this.nombreDirector = v.nombre_director;
     this.cargoDirector = v.cargo_director || 'DIRECTOR GENERAL';
@@ -233,45 +247,42 @@ export class BrandingInstitucionalComponent implements OnInit {
   guardarNuevaVersion(): void {
     this.currentError = null;
     this.mensajeExito = '';
+    this.errorNombreDirector = '';
+    this.errorCargoDirector = '';
+    this.errorFirma = '';
+
+    let hasErrors = false;
+
+    if (!this.nombreDirector || !this.nombreDirector.trim()) {
+      this.errorNombreDirector = 'El nombre completo del director general es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (!this.cargoDirector || !this.cargoDirector.trim()) {
+      this.errorCargoDirector = 'El cargo institucional es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (!this.firmaPreviewUrl) {
+      this.errorFirma = 'La imagen de la firma del director general es obligatoria para la emisión.';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('.is-invalid, nx-field-error') as HTMLElement;
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 60);
+      return;
+    }
 
     if (!this.hasFormChanges) {
       this.currentError = {
         code: 'MS-3803',
-        title: 'Sin Cambios Detectados',
-        message: 'No se han detectado modificaciones en el nombre, cargo o firma del Director con respecto a la versión seleccionada.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.nombreDirector || !this.nombreDirector.trim()) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Nombre del Director Obligatorio',
-        message: 'El nombre completo del Director General es estrictamente obligatorio.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.cargoDirector || !this.cargoDirector.trim()) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Cargo Institucional Obligatorio',
-        message: 'El cargo oficial institucional es estrictamente obligatorio.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.firmaPreviewUrl) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Firma Oficial Obligatoria',
-        message: 'La imagen de la firma del Director General es obligatoria para la emisión de documentos.',
+        title: 'Sin cambios detectados',
+        message: 'No se han detectado modificaciones en el nombre, cargo o firma del director con respecto a la versión seleccionada.',
         httpStatus: 400,
         timestamp: new Date()
       };
@@ -283,6 +294,7 @@ export class BrandingInstitucionalComponent implements OnInit {
     const nextVersion = this.historyVersions.length
       ? Math.max(...this.historyVersions.map((v) => v.version)) + 1
       : 1;
+
 
     const payload = {
       nombre_director: this.nombreDirector.trim(),
