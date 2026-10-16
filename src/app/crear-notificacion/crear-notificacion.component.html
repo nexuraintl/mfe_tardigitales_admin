@@ -1,6 +1,7 @@
 <!-- Alertas del Sistema -->
+<nx-alert *ngIf="successMsg" type="success" [message]="successMsg" (onClose)="successMsg = ''"></nx-alert>
 <nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-  <nx-alert *ngIf="warningMsg" type="warning" [message]="warningMsg" (onClose)="warningMsg = ''"></nx-alert>
+<nx-alert *ngIf="warningMsg" type="warning" [message]="warningMsg" (onClose)="warningMsg = ''"></nx-alert>
 
   <div class="row g-4">
     <!-- Columna Principal de Formularios -->
@@ -17,15 +18,19 @@
           <div class="row g-3">
             <div class="col-md-4">
               <label for="startTime" class="form-label fw-semibold">Hora de inicio</label>
-              <input class="form-control" type="time" id="startTime" [(ngModel)]="startTime">
+              <input class="form-control" [class.is-invalid]="!!errorHoras" type="time" id="startTime" [(ngModel)]="startTime" (ngModelChange)="validarHoras()">
             </div>
             <div class="col-md-4">
               <label for="endTime" class="form-label fw-semibold">Hora de fin</label>
-              <input class="form-control" type="time" id="endTime" [(ngModel)]="endTime">
+              <input class="form-control" [class.is-invalid]="!!errorHoras" type="time" id="endTime" [(ngModel)]="endTime" (ngModelChange)="validarHoras()">
             </div>
             <div class="col-md-4">
               <label for="maxDaily" class="form-label fw-semibold">Máx. por día *</label>
-              <input class="form-control" type="number" id="maxDaily" min="1" max="99" [(ngModel)]="maxDaily">
+              <input class="form-control" [class.is-invalid]="!!errorMaxDaily" type="number" id="maxDaily" min="1" max="99" [(ngModel)]="maxDaily" (ngModelChange)="onMaxDailyChange($event)">
+              <nx-field-error [error]="errorMaxDaily"></nx-field-error>
+            </div>
+            <div *ngIf="errorHoras" class="col-12 mt-1">
+              <nx-field-error [error]="errorHoras"></nx-field-error>
             </div>
           </div>
         </div>
@@ -40,6 +45,7 @@
         </div>
         <div class="card-body">
           <p class="text-muted small mb-3">Seleccione los canales a través de los cuales se enviará la alerta.</p>
+          <nx-field-error *ngIf="errorCanales" [error]="errorCanales" class="mb-3"></nx-field-error>
 
           <div class="row g-3">
             <!-- Push -->
@@ -116,12 +122,14 @@
           <div class="row g-3">
             <div class="col-12">
               <label for="notificationTitle" class="form-label fw-semibold">Título de la alerta *</label>
-              <input class="form-control" id="notificationTitle" [(ngModel)]="notificationTitle" placeholder="Ej: Mantenimiento programado">
+              <input class="form-control" [class.is-invalid]="!!errorTitulo" id="notificationTitle" [(ngModel)]="notificationTitle" (ngModelChange)="onTituloChange($event)" placeholder="Ej: Mantenimiento programado">
+              <nx-field-error [error]="errorTitulo"></nx-field-error>
             </div>
 
             <div class="col-12">
               <label for="notificationMessage" class="form-label fw-semibold">Mensaje *</label>
-              <textarea class="form-control" id="notificationMessage" [(ngModel)]="notificationMessage" rows="3" placeholder="Detalle del mensaje a transmitir..."></textarea>
+              <textarea class="form-control" [class.is-invalid]="!!errorMensaje" id="notificationMessage" [(ngModel)]="notificationMessage" (ngModelChange)="onMensajeChange($event)" rows="3" placeholder="Detalle del mensaje a transmitir..."></textarea>
+              <nx-field-error [error]="errorMensaje"></nx-field-error>
             </div>
 
             <div class="col-md-6">
@@ -167,7 +175,8 @@
           <div class="row g-3" *ngIf="sendMode === 'scheduled'">
             <div class="col-md-4">
               <label for="sendDate" class="form-label fw-semibold">Fecha de envío</label>
-              <input class="form-control" type="date" id="sendDate" [(ngModel)]="sendDate">
+              <input class="form-control" [class.is-invalid]="!!errorFecha" type="date" id="sendDate" [min]="minDate" [(ngModel)]="sendDate" (ngModelChange)="validarFecha()">
+              <nx-field-error [error]="errorFecha"></nx-field-error>
             </div>
 
             <div class="col-md-4">
