@@ -1,7 +1,8 @@
 <!-- Alertas del Sistema -->
-<nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-<nx-alert *ngIf="mensajeAdvertencia" type="warning" [message]="mensajeAdvertencia" (onClose)="mensajeAdvertencia = ''"></nx-alert>
-<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" (onClose)="mensajeExito = ''"></nx-alert>
+<nx-alert [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
+<nx-alert *ngIf="mensajeAdvertencia" type="warning" [message]="mensajeAdvertencia" [autoScroll]="true" (onClose)="mensajeAdvertencia = ''"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000" (onClose)="mensajeExito = ''"></nx-alert>
+
 
 
 <!-- Tarjeta Principal de Configuración -->
