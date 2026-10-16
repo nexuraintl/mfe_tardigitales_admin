@@ -7,11 +7,12 @@ import { forkJoin, of } from 'rxjs';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { NxFieldErrorComponent } from '../shared/components/field-error/field-error.component';
 
 @Component({
   selector: 'app-crear-notificacion',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent],
+  imports: [CommonModule, FormsModule, NxAlertComponent, NxFieldErrorComponent],
   templateUrl: './crear-notificacion.component.html',
   styleUrl: './crear-notificacion.component.css'
 })
@@ -22,6 +23,15 @@ export class CrearNotificacionComponent {
   clientId: number = CLIENT_ID;
   currentError: AppError | null = null;
   warningMsg: string = '';
+  successMsg: string = '';
+
+  // Validaciones inline por campo
+  errorTitulo: string = '';
+  errorMensaje: string = '';
+  errorCanales: string = '';
+  errorMaxDaily: string = '';
+  errorHoras: string = '';
+  errorFecha: string = '';
 
   // Form Fields
   startTime: string = '07:00';
@@ -45,6 +55,40 @@ export class CrearNotificacionComponent {
 
   loading: boolean = false;
 
+  get minDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  validarHoras(): boolean {
+    if (this.startTime && this.endTime) {
+      if (this.startTime >= this.endTime) {
+        this.errorHoras = 'La hora de inicio debe ser menor que la hora de fin.';
+        return false;
+      }
+    }
+    this.errorHoras = '';
+    return true;
+  }
+
+  validarFecha(): boolean {
+    if (this.sendMode === 'scheduled') {
+      if (!this.sendDate) {
+        this.errorFecha = 'Ingrese la fecha de envío.';
+        return false;
+      }
+      if (this.sendDate < this.minDate) {
+        this.errorFecha = 'La fecha de envío no puede ser anterior a la fecha actual.';
+        return false;
+      }
+    }
+    this.errorFecha = '';
+    return true;
+  }
+
   constructor() {
     // Establecer fecha por defecto a mañana
     const tomorrow = new Date();
@@ -57,6 +101,31 @@ export class CrearNotificacionComponent {
     if (channel === 'push') this.pushActive = !this.pushActive;
     if (channel === 'standard') this.standardActive = !this.standardActive;
     if (channel === 'internal') this.internalActive = !this.internalActive;
+    if (this.pushActive || this.standardActive || this.internalActive) {
+      this.errorCanales = '';
+    }
+  }
+
+  onTituloChange(val: string): void {
+    this.notificationTitle = val;
+    if (val && val.trim()) {
+      this.errorTitulo = '';
+    }
+  }
+
+  onMensajeChange(val: string): void {
+    this.notificationMessage = val;
+    if (val && val.trim()) {
+      this.errorMensaje = '';
+    }
+  }
+
+  onMaxDailyChange(val: any): void {
+    this.maxDaily = val;
+    const num = Number(val);
+    if (!isNaN(num) && num >= 1 && num <= 99) {
+      this.errorMaxDaily = '';
+    }
   }
 
   // Helper para dar formato de fecha JCC (AAAA-MM-DD hh:mm a. m. / p. m.)
@@ -89,12 +158,27 @@ export class CrearNotificacionComponent {
   }
 
   guardarConfiguracion(): void {
-    this.warningMsg = '';
     this.currentError = null;
+    this.warningMsg = '';
+    this.errorTitulo = '';
+    this.errorMensaje = '';
+    this.errorCanales = '';
+    this.errorMaxDaily = '';
 
-    if (!this.notificationTitle || !this.notificationMessage) {
-      this.warningMsg = 'Por favor complete todos los campos marcados con asterisco (*).';
-      return;
+    let hasErrors = false;
+
+    if (!this.validarHoras()) {
+      hasErrors = true;
+    }
+
+    if (!this.validarFecha()) {
+      hasErrors = true;
+    }
+
+    const maxDailyNum = Number(this.maxDaily);
+    if (!this.maxDaily || isNaN(maxDailyNum) || maxDailyNum < 1 || maxDailyNum > 99) {
+      this.errorMaxDaily = 'El número máximo diario debe estar entre 1 y 99.';
+      hasErrors = true;
     }
 
     const canales = [];
@@ -103,7 +187,30 @@ export class CrearNotificacionComponent {
     if (this.internalActive) canales.push('Notificación interna');
 
     if (canales.length === 0) {
-      this.warningMsg = 'Debe seleccionar al menos un canal de envío.';
+      this.errorCanales = 'Debe seleccionar al menos un canal de envío.';
+      hasErrors = true;
+    }
+
+    if (!this.notificationTitle || !this.notificationTitle.trim()) {
+      this.errorTitulo = 'El título de la alerta es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (!this.notificationMessage || !this.notificationMessage.trim()) {
+      this.errorMensaje = 'El mensaje de la alerta es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('.is-invalid, .nx-field-error') as HTMLElement;
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof firstInvalid.focus === 'function') {
+            firstInvalid.focus();
+          }
+        }
+      }, 60);
       return;
     }
 
@@ -154,8 +261,10 @@ export class CrearNotificacionComponent {
     forkJoin(requests).subscribe({
       next: () => {
         this.loading = false;
-        // Redirigir al historial de notificaciones
-        this.router.navigate(['/historial']);
+        this.successMsg = 'Notificación configurada exitosamente. Redirigiendo al historial...';
+        setTimeout(() => {
+          this.router.navigate(['/historial'], { state: { successMsg: 'Notificación configurada exitosamente.' } });
+        }, 1200);
       },
       error: (err) => {
         console.error('Error al guardar notificaciones:', err);

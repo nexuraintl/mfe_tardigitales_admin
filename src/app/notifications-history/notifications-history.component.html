@@ -1,4 +1,5 @@
-<!-- Alerta de Error -->
+<!-- Alertas de Éxito y Error -->
+<nx-alert *ngIf="successMsg" type="success" [message]="successMsg" (onClose)="successMsg = ''"></nx-alert>
 <nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
 
 <!-- Tarjetas Estadísticas (Grid Bootstrap) -->

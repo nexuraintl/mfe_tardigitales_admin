@@ -113,6 +113,7 @@ export class TarjetasSociedadesComponent implements OnInit {
   datosConsulta: any = null;
   mensajeExito: string = '';
   mensajeError: string = '';
+  tipoAlerta: 'warning' | 'danger' | 'error' | 'success' | 'info' = 'warning';
 
   // Branding de Credencial para Vista Previa (Sociedades - tipoId 2)
   brandingColorFondo: string = '#134567';
@@ -804,14 +805,18 @@ export class TarjetasSociedadesComponent implements OnInit {
       this.errorTipoSolicitud = 'Seleccione el tipo de solicitud.';
       hasError = true;
     }
-    const identification = this.nuevaIdentificacion.trim();
+    const identification = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
     if (!identification) {
       this.errorIdentificacion = 'Ingrese el número de identificación.';
+      hasError = true;
+    } else if (identification.length < 3) {
+      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
       hasError = true;
     }
     if (hasError) {
       return;
     }
+    this.nuevaIdentificacion = identification;
     this.cargandoBusqueda = true;
 
     this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&tipo=${encodeURIComponent(this.tipoSolicitud)}&client_id=${this.clientId}`)
@@ -845,7 +850,8 @@ export class TarjetasSociedadesComponent implements OnInit {
             };
           } else {
             this.datosConsulta = null;
-            this.mensajeError = "No se encontraron registros de sociedad oficial para el NIT e información ingresados.";
+            this.tipoAlerta = 'warning';
+            this.mensajeError = "No se encontró ningún registro oficial para el NIT especificado en la JCC.";
           }
           this.cdr.detectChanges();
         },
@@ -859,6 +865,7 @@ export class TarjetasSociedadesComponent implements OnInit {
           userMsg = userMsg.replace(/^Error\s+\d+\s*-\s*[A-Z_]+:\s*/i, '');
           userMsg = userMsg.split('Tabla afectada:')[0].trim();
           userMsg = userMsg.split('Detalle técnico:')[0].trim();
+          this.tipoAlerta = 'danger';
           this.mensajeError = userMsg || 'No se pudo consultar el registro de la sociedad.';
           this.cdr.detectChanges();
         }
