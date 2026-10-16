@@ -16,8 +16,8 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
         <div class="modal-content shadow border-0 rounded-3 overflow-hidden">
           <!-- Cabecera del Modal -->
           <div class="modal-header bg-white border-bottom py-3 px-4">
-            <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle de Registro</h5>
-            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" title="Cerrar"></button>
+            <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle de registro</h5>
+            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
           </div>
 
           <!-- Cuerpo del Modal -->
@@ -41,7 +41,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                   </span>
                 </div>
                 <div class="small text-secondary mb-1">
-                  <span class="fw-semibold text-dark me-2">{{ isSociedades ? 'Nit:' : 'Documento:' }}</span>
+                  <span class="fw-semibold text-dark me-2">{{ isSociedades ? 'NIT:' : 'Documento:' }}</span>
                   <span>{{ isSociedades ? nitVal : documentoContadorVal }}</span>
                 </div>
                 <div class="small text-muted" style="font-size: 11px;">
@@ -54,7 +54,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
             <!-- PANEL UNIFICADO DE DATOS E INFORMACIÓN -->
             <div class="p-3 rounded border bg-white">
               <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom fs-6" style="font-size: 13px !important;">
-                Información General
+                Información general
               </h6>
 
               <!-- CAMPOS CONTADORES -->
@@ -126,7 +126,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Nit</label>
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">NIT</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ nitVal }}</div>
                   </div>
 
@@ -175,11 +175,11 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
         <div class="modal-content shadow border-0">
           <div class="modal-header bg-white border-bottom py-2.5 px-4 d-flex justify-content-between align-items-center">
             <div>
-              <h5 class="modal-title fw-bold text-dark mb-0">Visualización de Tarjeta Profesional</h5>
-              <small class="text-muted">Diseño oficial para {{ isSociedades ? 'Sociedades' : 'Contadores' }}</small>
+              <h5 class="modal-title fw-bold text-dark mb-0">Visualización de tarjeta profesional</h5>
+              <small class="text-muted">Diseño oficial para {{ isSociedades ? 'sociedades' : 'contadores' }}</small>
             </div>
             
-            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" title="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
           </div>
           
           <div class="modal-body p-4 d-flex justify-content-center bg-light">
