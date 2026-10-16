@@ -17,7 +17,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
           <!-- Cabecera del Modal -->
           <div class="modal-header bg-white border-bottom py-3 px-4">
             <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle de Registro</h5>
-            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" title="Cerrar"></button>
           </div>
 
           <!-- Cuerpo del Modal -->
@@ -179,7 +179,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
               <small class="text-muted">Diseño oficial para {{ isSociedades ? 'Sociedades' : 'Contadores' }}</small>
             </div>
             
-            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" title="Cerrar"></button>
           </div>
           
           <div class="modal-body p-4 d-flex justify-content-center bg-light">

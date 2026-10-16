@@ -21,7 +21,7 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
             <p class="text-muted small mb-3">Ingrese el NIT de la sociedad para consultar el registro oficial y generar la vista previa de la tarjeta.</p>
             <div class="mb-3">
               <label for="societyIssueType" class="form-label fw-semibold text-secondary small mb-1">
-                Tipo de solicitud <span class="text-danger">*</span>
+                Tipo de solicitud <span class="text-secondary">*</span>
               </label>
               <select id="societyIssueType" class="form-select" [class.is-invalid]="!!errorTipoSolicitud" aria-label="Tipo de solicitud" [ngModel]="tipoSolicitud" (ngModelChange)="onTipoChange($event)">
                 <option value="">Seleccionar tipo</option>
@@ -34,7 +34,7 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
             </div>
             <div class="mb-3">
               <label for="societyIssueNit" class="form-label fw-semibold text-secondary small mb-1">
-                Número de identificación <span class="text-danger">*</span>
+                Número de identificación <span class="text-secondary">*</span>
               </label>
               <input type="text" id="societyIssueNit" inputmode="numeric" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 1152226268" [ngModel]="nuevaIdentificacion" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="consultarSociedad.emit()">
               <div *ngIf="errorIdentificacion" class="text-danger small mt-1">{{ errorIdentificacion }}</div>
