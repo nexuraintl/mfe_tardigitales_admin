@@ -49,3 +49,40 @@ export function getEstadoTarjetaBadgeClass(estado?: string | null): string {
   }
   return 'bg-warning-subtle text-warning border border-warning-subtle';
 }
+
+/**
+ * Lista canónica de acrónimos y siglas oficiales del sistema JCC / Platform.
+ * Siempre deben mostrarse en mayúscula sostenida en toda la solución.
+ */
+export const CANONICAL_ACRONYMS: readonly string[] = [
+  'NIT',
+  'JCC',
+  'IES',
+  'QR',
+  'PDF',
+  'CC',
+  'CE',
+  'TI',
+  'ID',
+  'CSV',
+  'API',
+  'URL',
+  'SHA256'
+];
+
+const ACRONYM_REGEX = new RegExp(`\\b(${CANONICAL_ACRONYMS.join('|')})\\b`, 'gi');
+
+/**
+ * Normaliza cualquier texto, título, etiqueta o encabezado de columna:
+ * - Asegura que siglas y acrónimos oficiales (como NIT, JCC, QR, PDF, etc.)
+ *   aparezcan siempre en mayúscula sostenida de forma canónica.
+ * - Respeta acentos y términos compuestos.
+ */
+export function formatCanonicalLabel(text?: string | null): string {
+  if (!text) return '';
+  const trimmed = String(text).trim();
+  if (!trimmed) return '';
+
+  return trimmed.replace(ACRONYM_REGEX, (match) => match.toUpperCase());
+}
+

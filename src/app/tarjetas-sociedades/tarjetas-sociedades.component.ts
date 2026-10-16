@@ -7,6 +7,7 @@ import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
+import { formatCanonicalLabel } from '../core/constants/tarjetas.constants';
 
 import { TablaSociedadesComponent } from './components/tabla-sociedades/tabla-sociedades.component';
 import { FormEmisionSociedadesComponent } from './components/form-emision-sociedades/form-emision-sociedades.component';
@@ -326,8 +327,10 @@ export class TarjetasSociedadesComponent implements OnInit {
         next: (res) => {
           if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
             let cols = res.data.map((c: any) => {
-              let label = c.label;
-              if (c.key === 'tipo_sociedad' || c.key === 'tipo_registro') {
+              let label = formatCanonicalLabel(c.label);
+              if (c.key === 'nit') {
+                label = 'NIT';
+              } else if (c.key === 'tipo_sociedad' || c.key === 'tipo_registro') {
                 label = 'Tipo de registro';
               } else if (c.key === 'fecha_inscripcion' || c.key === 'fecha_radicacion') {
                 label = 'Fecha de radicación';
@@ -369,6 +372,8 @@ export class TarjetasSociedadesComponent implements OnInit {
         if (Array.isArray(parsed)) {
           const map = new Map(parsed.map(p => [p.key, p.visible]));
           this.availableColumns.forEach(col => {
+            col.label = formatCanonicalLabel(col.label);
+            if (col.key === 'nit') col.label = 'NIT';
             if (map.has(col.key)) {
               col.visible = !!map.get(col.key);
             }

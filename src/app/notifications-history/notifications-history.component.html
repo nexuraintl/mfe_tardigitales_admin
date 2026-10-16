@@ -11,7 +11,7 @@
             <span class="fa fa-envelope-o"></span>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Total registradas</div>
+            <div class="text-muted small fw-semibold">Total registradas</div>
             <div class="h3 fw-bold text-dark mb-0" id="historyTotal">{{ totalCount }}</div>
           </div>
         </div>
@@ -26,7 +26,7 @@
             <span class="fa fa-check-circle-o"></span>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Entregadas</div>
+            <div class="text-muted small fw-semibold">Entregadas</div>
             <div class="h3 fw-bold text-success mb-0" id="historyDelivered">{{ deliveredCount }}</div>
           </div>
         </div>
@@ -41,7 +41,7 @@
             <span class="fa fa-clock-o"></span>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Programadas</div>
+            <div class="text-muted small fw-semibold">Programadas</div>
             <div class="h3 fw-bold text-warning mb-0" id="historyScheduled">{{ scheduledCount }}</div>
           </div>
         </div>
@@ -56,7 +56,7 @@
             <span class="fa fa-exclamation-triangle"></span>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Fallidas</div>
+            <div class="text-muted small fw-semibold">Fallidas</div>
             <div class="h3 fw-bold text-danger mb-0" id="historyFailed">{{ failedCount }}</div>
           </div>
         </div>
@@ -278,7 +278,6 @@
                 class="btn btn-outline-primary btn-sm" 
                 data-nx-tooltip="Ver detalle"
                 aria-label="Ver detalle"
-                title="Ver detalle"
                 (click)="verDetalle(item)"
               >
                 <span class="fa fa-eye"></span>
@@ -346,21 +345,21 @@
       
       <div class="modal-header bg-light border-bottom">
         <div>
-          <h5 class="modal-title fw-bold text-dark">Detalle de Notificación</h5>
-          <small class="text-muted">ID de Registro: #{{ selectedNotification.id }}</small>
+          <h5 class="modal-title fw-bold text-dark">Detalle de notificación</h5>
+          <small class="text-muted">ID de registro: #{{ selectedNotification.id }}</small>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar" title="Cerrar" data-nx-tooltip="Cerrar"></button>
+        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
       </div>
       
       <div class="modal-body p-4">
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Título</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Título</label>
             <div class="fw-bold text-dark fs-6">{{ selectedNotification.titulo }}</div>
           </div>
           
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Estado</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Estado</label>
             <div>
               <span 
                 class="badge fs-6" 
@@ -377,33 +376,33 @@
           </div>
 
           <div class="col-md-4">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Canal</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Canal</label>
             <div class="fw-semibold">{{ selectedNotification.canal }}</div>
           </div>
 
           <div class="col-md-4">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Audiencia</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Audiencia</label>
             <div class="fw-semibold">{{ selectedNotification.audiencia }}</div>
           </div>
 
           <div class="col-md-4">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Destinatarios</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Destinatarios</label>
             <div class="fw-semibold">{{ selectedNotification.destinatarios.toLocaleString('es-CO') }} usuarios</div>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Fecha de Envío</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Fecha de envío</label>
             <div class="fw-semibold text-dark">{{ selectedNotification.fecha }}</div>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Creado por</label>
+            <label class="form-label text-muted small fw-semibold mb-1">Creado por</label>
             <div class="fw-semibold text-dark">{{ selectedNotification.creadoPor }}</div>
           </div>
         </div>
         
         <div class="p-3 bg-light rounded-3 border">
-          <label class="form-label text-muted small fw-bold text-uppercase mb-1">Mensaje Enviado</label>
+          <label class="form-label text-muted small fw-semibold mb-1">Mensaje enviado</label>
           <p class="mb-0 text-dark">{{ selectedNotification.mensaje }}</p>
         </div>
       </div>
