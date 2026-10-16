@@ -172,14 +172,18 @@ export class BrandingInstitucionalComponent implements OnInit {
 
   onNombreChange(val: string): void {
     this.nombreDirector = val;
-    if (this.errorNombreDirector && val && val.trim()) {
+    if (val && val.length > 255) {
+      this.errorNombreDirector = 'El nombre del director general no debe superar los 255 caracteres.';
+    } else if (this.errorNombreDirector && val && val.trim()) {
       this.errorNombreDirector = '';
     }
   }
 
   onCargoChange(val: string): void {
     this.cargoDirector = val;
-    if (this.errorCargoDirector && val && val.trim()) {
+    if (val && val.length > 100) {
+      this.errorCargoDirector = 'El cargo institucional no debe superar los 100 caracteres.';
+    } else if (this.errorCargoDirector && val && val.trim()) {
       this.errorCargoDirector = '';
     }
   }
@@ -256,10 +260,16 @@ export class BrandingInstitucionalComponent implements OnInit {
     if (!this.nombreDirector || !this.nombreDirector.trim()) {
       this.errorNombreDirector = 'El nombre completo del director general es obligatorio.';
       hasErrors = true;
+    } else if (this.nombreDirector.length > 255) {
+      this.errorNombreDirector = 'El nombre del director general no debe superar los 255 caracteres.';
+      hasErrors = true;
     }
 
     if (!this.cargoDirector || !this.cargoDirector.trim()) {
       this.errorCargoDirector = 'El cargo institucional es obligatorio.';
+      hasErrors = true;
+    } else if (this.cargoDirector.length > 100) {
+      this.errorCargoDirector = 'El cargo institucional no debe superar los 100 caracteres.';
       hasErrors = true;
     }
 

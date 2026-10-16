@@ -353,22 +353,24 @@
       </div>
       
       <div class="modal-body p-4">
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label text-muted small fw-semibold mb-1">Título</label>
-            <div class="fw-bold text-dark fs-6">{{ selectedNotification.titulo }}</div>
-          </div>
-          
-          <div class="col-md-6">
+        <!-- Título de la Alerta -->
+        <div class="mb-4 pb-3 border-bottom">
+          <label class="form-label text-muted small fw-semibold mb-1">Título de la alerta</label>
+          <h5 class="fw-bold text-dark mb-0 text-break" style="word-break: break-word;">{{ selectedNotification.titulo }}</h5>
+        </div>
+
+        <!-- Cuadrícula Uniforme de Metadatos (3 columnas alineadas) -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-sm-6 col-md-4">
             <label class="form-label text-muted small fw-semibold mb-1">Estado</label>
             <div>
               <span 
-                class="badge fs-6" 
+                class="badge" 
                 [ngClass]="{
-                  'bg-success': selectedNotification.estado === 'Entregada',
-                  'bg-warning text-dark': selectedNotification.estado === 'Programada',
-                  'bg-danger': selectedNotification.estado === 'Fallida',
-                  'bg-secondary': selectedNotification.estado === 'En proceso'
+                  'bg-success-subtle text-success border border-success-subtle': selectedNotification.estado === 'Entregada',
+                  'bg-warning-subtle text-warning-emphasis border border-warning-subtle': selectedNotification.estado === 'Programada',
+                  'bg-danger-subtle text-danger border border-danger-subtle': selectedNotification.estado === 'Fallida',
+                  'bg-secondary-subtle text-secondary border border-secondary-subtle': selectedNotification.estado === 'En proceso'
                 }"
               >
                 {{ selectedNotification.estado }}
@@ -376,35 +378,36 @@
             </div>
           </div>
 
-          <div class="col-md-4">
-            <label class="form-label text-muted small fw-semibold mb-1">Canal</label>
-            <div class="fw-semibold">{{ selectedNotification.canal }}</div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Canal de envío</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.canal }}</div>
           </div>
 
-          <div class="col-md-4">
-            <label class="form-label text-muted small fw-semibold mb-1">Audiencia</label>
-            <div class="fw-semibold">{{ selectedNotification.audiencia }}</div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Audiencia objetivo</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.audiencia }}</div>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-12 col-sm-6 col-md-4">
             <label class="form-label text-muted small fw-semibold mb-1">Destinatarios</label>
-            <div class="fw-semibold">{{ selectedNotification.destinatarios.toLocaleString('es-CO') }} usuarios</div>
+            <div class="fw-semibold text-dark">{{ selectedNotification.destinatarios.toLocaleString('es-CO') }} usuarios</div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-12 col-sm-6 col-md-4">
             <label class="form-label text-muted small fw-semibold mb-1">Fecha de envío</label>
             <div class="fw-semibold text-dark">{{ selectedNotification.fecha }}</div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-12 col-sm-6 col-md-4">
             <label class="form-label text-muted small fw-semibold mb-1">Creado por</label>
             <div class="fw-semibold text-dark">{{ selectedNotification.creadoPor }}</div>
           </div>
         </div>
         
+        <!-- Mensaje Transmitido -->
         <div class="p-3 bg-light rounded-3 border">
-          <label class="form-label text-muted small fw-semibold mb-1">Mensaje enviado</label>
-          <p class="mb-0 text-dark">{{ selectedNotification.mensaje }}</p>
+          <label class="form-label text-muted small fw-semibold mb-1">Mensaje transmitido</label>
+          <p class="mb-0 text-dark text-break" style="word-break: break-word; white-space: pre-wrap;">{{ selectedNotification.mensaje }}</p>
         </div>
       </div>
       

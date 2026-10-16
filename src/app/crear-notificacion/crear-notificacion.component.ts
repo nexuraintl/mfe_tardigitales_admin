@@ -108,14 +108,18 @@ export class CrearNotificacionComponent {
 
   onTituloChange(val: string): void {
     this.notificationTitle = val;
-    if (val && val.trim()) {
+    if (val && val.length > 255) {
+      this.errorTitulo = 'El título de la alerta no debe superar los 255 caracteres.';
+    } else if (this.errorTitulo && val && val.trim()) {
       this.errorTitulo = '';
     }
   }
 
   onMensajeChange(val: string): void {
     this.notificationMessage = val;
-    if (val && val.trim()) {
+    if (val && val.length > 1000) {
+      this.errorMensaje = 'El mensaje de la alerta no debe superar los 1000 caracteres.';
+    } else if (this.errorMensaje && val && val.trim()) {
       this.errorMensaje = '';
     }
   }
@@ -194,10 +198,16 @@ export class CrearNotificacionComponent {
     if (!this.notificationTitle || !this.notificationTitle.trim()) {
       this.errorTitulo = 'El título de la alerta es obligatorio.';
       hasErrors = true;
+    } else if (this.notificationTitle.length > 255) {
+      this.errorTitulo = 'El título de la alerta no debe superar los 255 caracteres.';
+      hasErrors = true;
     }
 
     if (!this.notificationMessage || !this.notificationMessage.trim()) {
       this.errorMensaje = 'El mensaje de la alerta es obligatorio.';
+      hasErrors = true;
+    } else if (this.notificationMessage.length > 1000) {
+      this.errorMensaje = 'El mensaje de la alerta no debe superar los 1000 caracteres.';
       hasErrors = true;
     }
 
