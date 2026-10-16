@@ -225,10 +225,10 @@
       
       <div class="modal-header bg-light border-bottom">
         <div>
-          <h5 class="modal-title fw-bold text-dark">{{ isEditing ? 'Editar Trámite' : 'Registrar Nuevo Trámite' }}</h5>
+          <h5 class="modal-title fw-bold text-dark">{{ isEditing ? 'Editar trámite' : 'Registrar nuevo trámite' }}</h5>
           <small class="text-muted">{{ isEditing ? 'Modifique los campos correspondientes.' : 'Complete el formulario para registrar el trámite oficial.' }}</small>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
       </div>
       
       <div class="modal-body p-4">
@@ -332,8 +332,8 @@
   >
     <div class="modal-content shadow border-0">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title fw-bold text-white mb-0">Eliminar Registro</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="cerrarConfirmarEliminar()" aria-label="Cerrar"></button>
+        <h5 class="modal-title fw-bold text-white mb-0">Eliminar registro</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarConfirmarEliminar()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
       </div>
       <div class="modal-body p-4">
         <p class="mb-0 text-dark">¿Estás seguro de que deseas eliminar permanentemente este trámite? Esta acción no se puede deshacer.</p>
