@@ -29,6 +29,7 @@
               class="form-control form-control-sm"
               [class.is-invalid]="!!errorNombreDirector"
               placeholder="Ej: SANDRA MILENA BARRIOS PULIDO"
+              maxlength="255"
               [ngModel]="nombreDirector"
               (ngModelChange)="onNombreChange($event)"
             />
@@ -46,6 +47,7 @@
               class="form-control form-control-sm"
               [class.is-invalid]="!!errorCargoDirector"
               placeholder="Ej: DIRECTOR GENERAL"
+              maxlength="100"
               [ngModel]="cargoDirector"
               (ngModelChange)="onCargoChange($event)"
             />
@@ -206,10 +208,10 @@
               </span>
             </div>
             <div class="signature-line mb-3"></div>
-            <div class="fw-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">
+            <div class="fw-bold text-dark text-uppercase text-break" style="font-size: 13px; letter-spacing: 0.5px; word-break: break-word;">
               {{ nombreDirector || 'NOMBRE DEL DIRECTOR GENERAL' }}
             </div>
-            <div class="text-secondary small fw-semibold text-uppercase mt-1" style="font-size: 11px;">
+            <div class="text-secondary small fw-semibold text-uppercase mt-1 text-break" style="font-size: 11px; word-break: break-word;">
               {{ cargoDirector || 'DIRECTOR GENERAL' }}
             </div>
             <div class="text-muted text-uppercase mt-1" style="font-size: 10px; letter-spacing: 0.3px;">
