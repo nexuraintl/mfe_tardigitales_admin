@@ -7,6 +7,7 @@ import { filter, Subscription } from 'rxjs';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { NxFieldErrorComponent } from '../shared/components/field-error/field-error.component';
 import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../shared/components/tarjeta-credencial/tarjeta-credencial.component';
 
@@ -30,7 +31,7 @@ export interface BrandingHistoryItem {
 @Component({
   selector: 'app-branding',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent, TarjetaCredencialComponent],
+  imports: [CommonModule, FormsModule, NxAlertComponent, TarjetaCredencialComponent, NxFieldErrorComponent],
   templateUrl: './branding.component.html',
   styleUrls: ['./branding.component.css']
 })
@@ -55,8 +56,17 @@ export class BrandingComponent implements OnInit, OnDestroy {
   currentError: AppError | null = null;
   mensajeExito: string = '';
 
+  // Validaciones inline
+  errorLogo: string = '';
+  errorPatron: string = '';
+  errorColorFondo: string = '';
+  errorColorLetra: string = '';
+  errorLogoImpresion: string = '';
+  errorPatronImpresion: string = '';
+
   publishedVersion: number | null = null;
   selectedVersionNumber: number | null = null;
+
 
   // Form / Draft fields
   modoPreview: 'digital' | 'impresion' = 'digital';
@@ -400,28 +410,17 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
     if (file.size > 300 * 1024) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'El archivo de logo supera el tamaño máximo permitido de 300 KB.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorLogo = 'El archivo de logo supera el tamaño máximo permitido de 300 KB.';
       return;
     }
 
     if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'Seleccione un formato de imagen válido para el logo (PNG, JPG o SVG).',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorLogo = 'Seleccione un formato de imagen válido para el logo (PNG, JPG o SVG).';
       return;
     }
 
+    this.errorLogo = '';
     this.logoFile = file;
     this.logoSourceText = `Archivo: ${file.name}`;
     this.currentError = null;
@@ -438,6 +437,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.logoFile = null;
     this.logoPreviewUrl = null;
     this.logoSourceText = '';
+    this.errorLogo = '';
     const input = document.getElementById('brandingLogo') as HTMLInputElement;
     if (input) input.value = '';
     this.cdr.detectChanges();
@@ -449,28 +449,17 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
     if (file.size > 3 * 1024 * 1024) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'El archivo de patrón supera el tamaño máximo permitido de 3 MB.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorPatron = 'El archivo de patrón supera el tamaño máximo permitido de 3 MB.';
       return;
     }
 
     if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'Seleccione un formato de imagen válido para el patrón de fondo (PNG, JPG o SVG).',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorPatron = 'Seleccione un formato de imagen válido para el patrón de fondo (PNG, JPG o SVG).';
       return;
     }
 
+    this.errorPatron = '';
     this.patronFile = file;
     this.patronSourceText = `Archivo: ${file.name}`;
     this.currentError = null;
@@ -487,6 +476,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.patronFile = null;
     this.patronPreviewUrl = null;
     this.patronSourceText = '';
+    this.errorPatron = '';
     const input = document.getElementById('brandingPatron') as HTMLInputElement;
     if (input) input.value = '';
     this.cdr.detectChanges();
@@ -498,28 +488,17 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
     if (file.size > 300 * 1024) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'El archivo de logo de impresión supera el tamaño máximo permitido de 300 KB.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorLogoImpresion = 'El archivo de logo de impresión supera el tamaño máximo permitido de 300 KB.';
       return;
     }
 
     if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'Seleccione un formato de imagen válido para el logo de impresión (PNG, JPG o SVG).',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorLogoImpresion = 'Seleccione un formato de imagen válido para el logo de impresión (PNG, JPG o SVG).';
       return;
     }
 
+    this.errorLogoImpresion = '';
     this.logoImpresionFile = file;
     this.logoImpresionSourceText = `Archivo: ${file.name}`;
     this.currentError = null;
@@ -536,6 +515,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.logoImpresionFile = null;
     this.logoImpresionPreviewUrl = null;
     this.logoImpresionSourceText = '';
+    this.errorLogoImpresion = '';
     const input = document.getElementById('brandingLogoImpresion') as HTMLInputElement;
     if (input) input.value = '';
     this.cdr.detectChanges();
@@ -547,28 +527,17 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
     if (file.size > 3 * 1024 * 1024) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'El archivo de patrón de impresión supera el tamaño máximo permitido de 3 MB.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorPatronImpresion = 'El archivo de patrón de impresión supera el tamaño máximo permitido de 3 MB.';
       return;
     }
 
     if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
       event.target.value = '';
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Error de Validación',
-        message: 'Seleccione un formato de imagen válido para el patrón de fondo de impresión (PNG, JPG o SVG).',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
+      this.errorPatronImpresion = 'Seleccione un formato de imagen válido para el patrón de fondo de impresión (PNG, JPG o SVG).';
       return;
     }
 
+    this.errorPatronImpresion = '';
     this.patronImpresionFile = file;
     this.patronImpresionSourceText = `Archivo: ${file.name}`;
     this.currentError = null;
@@ -585,6 +554,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.patronImpresionFile = null;
     this.patronImpresionPreviewUrl = null;
     this.patronImpresionSourceText = '';
+    this.errorPatronImpresion = '';
     const input = document.getElementById('brandingPatronImpresion') as HTMLInputElement;
     if (input) input.value = '';
     this.cdr.detectChanges();
@@ -606,56 +576,48 @@ export class BrandingComponent implements OnInit, OnDestroy {
   guardarNuevaVersion(): void {
     this.currentError = null;
     this.mensajeExito = '';
+    this.errorLogo = '';
+    this.errorPatron = '';
+    this.errorColorFondo = '';
+    this.errorColorLetra = '';
+
+    let hasErrors = false;
+
+    if (!this.logoFile && !this.logoPreviewUrl) {
+      this.errorLogo = 'El logo institucional es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (!this.patronFile && !this.patronPreviewUrl) {
+      this.errorPatron = 'La imagen de patrón de fondo es obligatoria.';
+      hasErrors = true;
+    }
+
+    if (!this.colorFondo) {
+      this.errorColorFondo = 'El color de fondo es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (!this.colorLetra) {
+      this.errorColorLetra = 'El color de letra es obligatorio.';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('.is-invalid, nx-field-error') as HTMLElement;
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 60);
+      return;
+    }
 
     if (!this.hasFormChanges) {
       this.currentError = {
         code: 'MS-3803',
-        title: 'Sin Cambios Detectados',
+        title: 'Sin cambios detectados',
         message: 'No se han modificado los parámetros con respecto a la versión seleccionada.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.logoFile && !this.logoPreviewUrl) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Logo Obligatorio',
-        message: 'El logo institucional es obligatorio. Debe seleccionar un archivo de imagen o elegir una versión del historial que contenga logo.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.patronFile && !this.patronPreviewUrl) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Patrón de Fondo Obligatorio',
-        message: 'La imagen de patrón de fondo es obligatoria. Debe seleccionar un archivo de imagen o elegir una versión del historial que contenga patrón.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.colorFondo) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Color de Fondo Obligatorio',
-        message: 'El color de fondo es obligatorio.',
-        httpStatus: 400,
-        timestamp: new Date()
-      };
-      return;
-    }
-
-    if (!this.colorLetra) {
-      this.currentError = {
-        code: 'MS-3803',
-        title: 'Color de Letra Obligatorio',
-        message: 'El color de letra es obligatorio.',
         httpStatus: 400,
         timestamp: new Date()
       };
@@ -667,6 +629,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
     const nextVersion = this.historyVersions.length
       ? Math.max(...this.historyVersions.map((v) => v.version)) + 1
       : 1;
+
 
     const formData = new FormData();
     formData.append('idCliente', this.clientId.toString());
@@ -757,10 +720,18 @@ export class BrandingComponent implements OnInit, OnDestroy {
   }
 
   seleccionarVersionHistorial(v: BrandingHistoryItem): void {
+    this.errorLogo = '';
+    this.errorPatron = '';
+    this.errorColorFondo = '';
+    this.errorColorLetra = '';
+    this.errorLogoImpresion = '';
+    this.errorPatronImpresion = '';
+
     this.selectedVersionNumber = v.version;
     if (v.color_fondo) this.colorFondo = v.color_fondo;
     if (v.color_letra) this.colorLetra = v.color_letra;
     this.colorLetraImpresion = v.color_letra_impresion || '#0f172a';
+
     
     if (v.logo !== undefined) {
       this.logoFile = null;
