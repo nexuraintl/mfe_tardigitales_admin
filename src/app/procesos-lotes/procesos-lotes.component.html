@@ -82,7 +82,7 @@
     <!-- Total Lotes -->
     <div class="col-sm-6 col-lg-3">
       <div class="card shadow-sm h-100 p-3">
-        <div class="field-label text-uppercase mb-2">Total Lotes</div>
+        <div class="field-label mb-2">Total lotes</div>
         <div class="field-value fs-4 fw-bold text-dark">
           {{ metricas?.metricas_lotes?.total_lotes ?? 0 }}
         </div>
@@ -95,7 +95,7 @@
     <!-- Registros Exitosos -->
     <div class="col-sm-6 col-lg-3">
       <div class="card shadow-sm h-100 p-3">
-        <div class="field-label text-uppercase mb-2">Registros Exitosos</div>
+        <div class="field-label mb-2">Registros exitosos</div>
         <div class="field-value fs-4 fw-bold text-success">
           {{ metricas?.metricas_items?.exitosos ?? 0 }}
         </div>
@@ -108,7 +108,7 @@
     <!-- Fallidos -->
     <div class="col-sm-6 col-lg-3">
       <div class="card shadow-sm h-100 p-3">
-        <div class="field-label text-uppercase mb-2">Registros Fallidos</div>
+        <div class="field-label mb-2">Registros fallidos</div>
         <div class="field-value fs-4 fw-bold text-danger">
           {{ metricas?.metricas_items?.fallidos ?? 0 }}
         </div>
@@ -121,7 +121,7 @@
     <!-- Pendientes en Cola -->
     <div class="col-sm-6 col-lg-3">
       <div class="card shadow-sm h-100 p-3">
-        <div class="field-label text-uppercase mb-2">En Cola (Pendientes)</div>
+        <div class="field-label mb-2">En cola (pendientes)</div>
         <div class="field-value fs-4 fw-bold text-dark">
           {{ metricas?.metricas_items?.pendientes ?? 0 }}
         </div>
@@ -710,7 +710,7 @@
             <span>Trámite: <strong>{{ selectedLote?.tipo_tramite || 'primeraVez' }}</strong></span>
           </small>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarModalDetalle()"></button>
+        <button type="button" class="btn-close" (click)="cerrarModalDetalle()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
       </div>
 
       <div class="modal-body p-3">

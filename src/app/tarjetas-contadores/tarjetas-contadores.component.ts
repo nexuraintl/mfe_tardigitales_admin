@@ -7,6 +7,7 @@ import { ErrorHandlerService, AppError } from '../core/services/error-handler.se
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
+import { formatCanonicalLabel } from '../core/constants/tarjetas.constants';
 
 import { TablaContadoresComponent } from './components/tabla-contadores/tabla-contadores.component';
 import { FormEmisionContadoresComponent } from './components/form-emision-contadores/form-emision-contadores.component';
@@ -331,8 +332,10 @@ export class TarjetasContadoresComponent implements OnInit {
         next: (res) => {
           if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
             this.dbColumns = res.data.map((c: any) => {
-              let label = c.label;
-              if (c.key === 'fecha_registro' || c.key === 'fecha_radicacion') {
+              let label = formatCanonicalLabel(c.label);
+              if (c.key === 'nit') {
+                label = 'NIT';
+              } else if (c.key === 'fecha_registro' || c.key === 'fecha_radicacion') {
                 label = 'Fecha de radicación';
               }
               return {
@@ -362,6 +365,8 @@ export class TarjetasContadoresComponent implements OnInit {
         if (Array.isArray(parsed)) {
           const map = new Map(parsed.map(p => [p.key, p.visible]));
           this.availableColumns.forEach(col => {
+            col.label = formatCanonicalLabel(col.label);
+            if (col.key === 'nit') col.label = 'NIT';
             if (map.has(col.key)) {
               col.visible = !!map.get(col.key);
             }

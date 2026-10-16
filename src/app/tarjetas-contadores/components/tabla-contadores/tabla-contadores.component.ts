@@ -5,7 +5,7 @@ import { TableColumn, TarjetaContador } from '../../tarjetas-contadores.componen
 import { NxAlertComponent } from '../../../shared/components/alert/alert.component';
 import { FilterBuilderComponent, FilterColumnConfig, ActiveFilter } from '../../../shared/components/filter-builder/filter-builder.component';
 import { AppError } from '../../../core/services/error-handler.service';
-import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/constants/tarjetas.constants';
+import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel } from '../../../core/constants/tarjetas.constants';
 
 @Component({
   selector: 'app-tabla-contadores',
@@ -88,7 +88,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
               <div class="columns-selector-list">
                 <label *ngFor="let col of availableColumns" class="columns-selector-option">
                   <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col)">
-                  <span>{{ col.label }}</span>
+                  <span>{{ formatLabel(col.label) }}</span>
                 </label>
               </div>
             </div>
@@ -110,7 +110,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/c
             <tr>
               <ng-container *ngFor="let col of availableColumns">
                 <th *ngIf="col.visible" scope="col" class="nx-sortable" (click)="sort.emit(col.key)">
-                  {{ col.label }}
+                  {{ formatLabel(col.label) }}
                   <span class="fa nx-sort-icon" [ngClass]="{
                     'fa-sort': sortColumn !== col.key,
                     'fa-sort-asc': sortColumn === col.key && sortDirection === 'asc',
@@ -261,6 +261,10 @@ export class TablaContadoresComponent {
 
   @Input() mensajeExito: string = '';
   @Output() mensajeExitoChange = new EventEmitter<string>();
+
+  formatLabel(label?: string | null): string {
+    return formatCanonicalLabel(label);
+  }
 
   @Input() availableColumns: TableColumn[] = [];
   @Input() filterColumns: FilterColumnConfig[] = [];

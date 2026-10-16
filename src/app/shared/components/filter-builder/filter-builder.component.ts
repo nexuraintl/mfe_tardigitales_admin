@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { formatCanonicalLabel } from '../../../core/constants/tarjetas.constants';
 
 export interface FilterColumnConfig {
   key: string;
@@ -37,7 +38,7 @@ export interface ActiveFilter {
             >
               <option value="">Seleccione una columna</option>
               <option *ngFor="let col of selectableColumns; trackBy: trackByColumnKey" [value]="col.key">
-                {{ col.label }}
+                {{ formatLabel(col.label) }}
               </option>
             </select>
           </div>
@@ -131,9 +132,9 @@ export interface ActiveFilter {
           type="button" 
           class="certificate-filter-chip" 
           (click)="removeFilter(f.id)" 
-          [title]="'Quitar filtro ' + f.columnLabel"
+          [title]="'Quitar filtro ' + formatLabel(f.columnLabel)"
         >
-          <b>{{ f.columnLabel }}:</b> {{ f.displayValue }} <i aria-hidden="true">&times;</i>
+          <b>{{ formatLabel(f.columnLabel) }}:</b> {{ f.displayValue }} <i aria-hidden="true">&times;</i>
         </button>
       </div>
     </div>
@@ -245,6 +246,10 @@ export class FilterBuilderComponent implements OnInit, OnChanges {
   stagedFilters: ActiveFilter[] = [];
   private sequence = 0;
 
+  formatLabel(label?: string | null): string {
+    return formatCanonicalLabel(label);
+  }
+
   ngOnInit(): void {
     this.updateSelectableColumns();
   }
@@ -286,8 +291,8 @@ export class FilterBuilderComponent implements OnInit, OnChanges {
 
   get valueLabel(): string {
     if (!this.selectedColumn) return 'Valor';
-    if (this.selectedColumnType === 'date') return `Rango de ${this.selectedColumn.label.toLowerCase()}`;
-    return this.selectedColumn.label;
+    if (this.selectedColumnType === 'date') return `Rango de ${formatCanonicalLabel(this.selectedColumn.label)}`;
+    return formatCanonicalLabel(this.selectedColumn.label);
   }
 
   get currentOptions(): string[] {
@@ -355,7 +360,7 @@ export class FilterBuilderComponent implements OnInit, OnChanges {
     this.stagedFilters.push({
       id: this.sequence,
       column: this.selectedColumn.key,
-      columnLabel: this.selectedColumn.label,
+      columnLabel: formatCanonicalLabel(this.selectedColumn.label),
       value: value.toLowerCase(),
       displayValue: displayValue,
       dateFrom: this.dateFrom,

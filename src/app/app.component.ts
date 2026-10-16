@@ -60,11 +60,11 @@ export class App implements OnInit {
     '/branding': 'Branding de credenciales',
     '/branding-contadores': 'Branding de credenciales — Contadores',
     '/branding-sociedades': 'Branding de credenciales — Sociedades',
-    '/branding-institucional': 'Branding — Firma Institucional',
+    '/branding-institucional': 'Branding — Firma institucional',
     '/auditoria': 'Auditoría API',
-    '/procesos-lotes': 'Gestión de Colas y Procesos en Lote',
+    '/procesos-lotes': 'Gestión de colas y procesos en lote',
     '/usuarios': 'Usuarios',
-    '/verificar': 'Verificación Pública de Credencial'
+    '/verificar': 'Verificación pública de credencial'
   };
 
   get isPublicRoute(): boolean {
@@ -150,7 +150,7 @@ export class App implements OnInit {
           children: [
             { label: 'Contadores', icon: 'fa fa-user', path: '/branding-contadores' },
             { label: 'Sociedades', icon: 'fa fa-building-o', path: '/branding-sociedades' },
-            { label: 'Firma Institucional', icon: 'fa fa-pencil-square-o', path: '/branding-institucional' }
+            { label: 'Firma institucional', icon: 'fa fa-pencil-square-o', path: '/branding-institucional' }
           ]
         },
         {

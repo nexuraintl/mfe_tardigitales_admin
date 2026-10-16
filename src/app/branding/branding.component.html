@@ -13,7 +13,7 @@
     <section class="card shadow-sm border-0">
       <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="card-title fw-bold mb-0 text-dark">
-          Configuración de Branding
+          Configuración de branding
         </h5>
         <small class="text-muted">
           Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar' }}</strong>
@@ -37,9 +37,6 @@
                   <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ logoSourceText || 'Logo seleccionado' }}
                   </span>
-                  <div class="text-muted small text-truncate" style="font-size: 11px;">
-                    Se incluirá en la nueva versión
-                  </div>
                 </div>
               </div>
               <button
@@ -78,9 +75,6 @@
                   <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ patronSourceText || 'Patrón seleccionado' }}
                   </span>
-                  <div class="text-muted small text-truncate" style="font-size: 11px;">
-                    Se aplicará de fondo en la tarjeta
-                  </div>
                 </div>
               </div>
               <button
@@ -134,8 +128,7 @@
 
           <!-- Separador y Bloque: Versión de Impresión / PDF -->
           <div class="border-top pt-3 mt-4 mb-3">
-            <h6 class="fw-bold text-dark mb-1">Versión de Impresión / PDF</h6>
-            <p class="text-muted small mb-3">Configuración de apariencia oficial para la credencial impresa y exportada a PDF.</p>
+            <h6 class="fw-bold text-dark mb-1">Versión de impresión / PDF</h6>
           </div>
 
           <!-- Campo: Logo para Impresión -->
@@ -154,9 +147,6 @@
                   <span class="badge bg-info-subtle text-info border border-info border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ logoImpresionSourceText || 'Logo de impresión seleccionado' }}
                   </span>
-                  <div class="text-muted small text-truncate" style="font-size: 11px;">
-                    Se aplicará en el formato impreso
-                  </div>
                 </div>
               </div>
               <button
@@ -195,9 +185,6 @@
                   <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ patronImpresionSourceText || 'Patrón de impresión seleccionado' }}
                   </span>
-                  <div class="text-muted small text-truncate" style="font-size: 11px;">
-                    Se aplicará de fondo en el formato impreso
-                  </div>
                 </div>
               </div>
               <button
@@ -267,7 +254,7 @@
     <section class="card shadow-sm border-0">
       <div class="card-header bg-white py-3 border-bottom">
         <h5 class="card-title fw-bold mb-0 text-dark">
-          Historial de Versiones
+          Historial de versiones
         </h5>
       </div>
 
@@ -337,7 +324,7 @@
     <section class="card shadow-sm border-0">
       <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
         <h5 class="card-title fw-bold mb-0 text-dark">
-          Vista Previa
+          Vista previa
         </h5>
         <div class="btn-group btn-group-sm" role="group" aria-label="Modo de previsualización">
           <button
@@ -376,10 +363,6 @@
             [datos]="previewDatos"
             [branding]="previewBranding"
           ></app-tarjeta-credencial>
-
-          <p class="branding-preview-note mt-3 mb-0">
-            Vista previa oficial {{ modoPreview === 'impresion' ? 'para impresión / PDF' : 'digital' }} para {{ label.toLowerCase() }}.
-          </p>
         </div>
       </div>
     </section>

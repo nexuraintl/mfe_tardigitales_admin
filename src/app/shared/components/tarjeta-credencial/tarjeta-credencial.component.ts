@@ -241,7 +241,7 @@ export class TarjetaCredencialComponent {
 
   // ===== BLOQUE MEDIO DERECHA (Item 1: Registro / Tarjeta) =====
   get labelRegistro(): string {
-    return this.tipo === 'sociedad' ? 'Número de Registro' : 'Tarjeta profesional';
+    return this.tipo === 'sociedad' ? 'Número de registro' : 'Tarjeta profesional';
   }
 
   get valorRegistro(): string {
@@ -250,7 +250,7 @@ export class TarjetaCredencialComponent {
 
   // ===== BLOQUE MEDIO DERECHA (Item 2: Fecha de Inscripción) =====
   get labelFecha(): string {
-    return 'Fecha Res. Inscripción';
+    return 'Fecha res. inscripción';
   }
 
   get valorFecha(): string {
@@ -259,7 +259,7 @@ export class TarjetaCredencialComponent {
 
   // ===== BLOQUE MEDIO DERECHA (Item 3: Resolución en Contador / Expediente en Sociedad) =====
   get labelMedio3(): string {
-    return this.tipo === 'sociedad' ? 'Número de Expediente' : 'Resolución Inscripción';
+    return this.tipo === 'sociedad' ? 'Número de expediente' : 'Resolución de inscripción';
   }
 
   get valorMedio3(): string | number {
@@ -290,7 +290,7 @@ export class TarjetaCredencialComponent {
 
   // ===== PIE INFERIOR (Fila 2 Izq: Institución / Tipo de Registro) =====
   get labelExtra(): string {
-    return this.tipo === 'sociedad' ? 'Tipo de registro' : 'Institución de Educación Superior';
+    return this.tipo === 'sociedad' ? 'Tipo de registro' : 'Institución de educación superior';
   }
 
   get valorExtra(): string {
@@ -299,7 +299,7 @@ export class TarjetaCredencialComponent {
 
   // ===== PIE INFERIOR (Fila 2 Der: Expediente en Contador / Res. Inscripción en Sociedad) =====
   get labelPie2Der(): string {
-    return this.tipo === 'sociedad' ? 'Res. Inscripción' : 'N. Expediente';
+    return this.tipo === 'sociedad' ? 'Res. inscripción' : 'No. expediente';
   }
 
   get valorPie2Der(): string | number {
@@ -310,7 +310,7 @@ export class TarjetaCredencialComponent {
 
   // Getters auxiliares para retrocompatibilidad
   get labelResolucion(): string {
-    return 'Res. Inscripción';
+    return 'Res. inscripción';
   }
 
   get valorResolucion(): string {
@@ -318,7 +318,7 @@ export class TarjetaCredencialComponent {
   }
 
   get labelExpediente(): string {
-    return 'N. Expediente';
+    return 'No. expediente';
   }
 
   get valorExpediente(): string | number {
