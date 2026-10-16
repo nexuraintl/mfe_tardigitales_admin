@@ -1,10 +1,6 @@
 <!-- Alertas y Mensajes de Estado -->
-<nx-alert *ngIf="currentError" [error]="currentError"></nx-alert>
-
-<div *ngIf="mensajeExito" class="alert alert-success d-flex align-items-center mb-3 shadow-sm" role="alert">
-  <span class="fa fa-check-circle me-2 fs-5 text-success"></span>
-  <div>{{ mensajeExito }}</div>
-</div>
+<nx-alert *ngIf="currentError" [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000" (onClose)="mensajeExito = ''"></nx-alert>
 
 <div class="branding-layout">
   <!-- Columna Izquierda: Formulario de Configuración e Historial -->
@@ -31,9 +27,12 @@
               type="text"
               id="brandingNombreDirector"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorNombreDirector"
               placeholder="Ej: SANDRA MILENA BARRIOS PULIDO"
-              [(ngModel)]="nombreDirector"
+              [ngModel]="nombreDirector"
+              (ngModelChange)="onNombreChange($event)"
             />
+            <nx-field-error [error]="errorNombreDirector"></nx-field-error>
           </div>
 
           <!-- Campo: Cargo Institucional -->
@@ -45,9 +44,12 @@
               type="text"
               id="brandingCargoDirector"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorCargoDirector"
               placeholder="Ej: DIRECTOR GENERAL"
-              [(ngModel)]="cargoDirector"
+              [ngModel]="cargoDirector"
+              (ngModelChange)="onCargoChange($event)"
             />
+            <nx-field-error [error]="errorCargoDirector"></nx-field-error>
           </div>
 
           <!-- Campo: Firma del Director General -->
@@ -84,8 +86,10 @@
               id="brandingFirmaDirector"
               accept="image/png,image/jpeg,image/svg+xml"
               class="form-control form-control-sm"
+              [class.is-invalid]="!!errorFirma"
               (change)="onFirmaSelected($event)"
             />
+            <nx-field-error [error]="errorFirma"></nx-field-error>
           </div>
         </div>
       </div>
