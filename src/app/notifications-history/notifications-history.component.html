@@ -278,6 +278,7 @@
                 class="btn btn-outline-primary btn-sm" 
                 data-nx-tooltip="Ver detalle"
                 aria-label="Ver detalle"
+                title="Ver detalle"
                 (click)="verDetalle(item)"
               >
                 <span class="fa fa-eye"></span>
@@ -348,7 +349,7 @@
           <h5 class="modal-title fw-bold text-dark">Detalle de Notificación</h5>
           <small class="text-muted">ID de Registro: #{{ selectedNotification.id }}</small>
         </div>
-        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar" title="Cerrar" data-nx-tooltip="Cerrar"></button>
       </div>
       
       <div class="modal-body p-4">

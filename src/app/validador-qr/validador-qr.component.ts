@@ -299,6 +299,9 @@ export class ValidadorQrComponent implements OnInit {
         this.mensajeExito = `Configuración del validador para ${entidad} guardada correctamente.`;
         this.loading = false;
         this.cdr.detectChanges();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const contentArea = document.querySelector('.content-area');
+        if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (err) => {
         console.error('Error al guardar config de validador:', err);

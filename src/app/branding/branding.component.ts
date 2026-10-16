@@ -739,6 +739,9 @@ export class BrandingComponent implements OnInit, OnDestroy {
           this.mensajeExito = `Versión v${nextVersion} guardada correctamente para ${this.label}. Aún no está publicada.`;
           this.cargarHistorial(nextVersion);
           this.cdr.detectChanges();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          const contentArea = document.querySelector('.content-area');
+          if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
         },
         error: (err) => {
           console.error('Error al guardar versión de branding:', err);
@@ -819,6 +822,9 @@ export class BrandingComponent implements OnInit, OnDestroy {
           this.mensajeExito = `Versión v${this.selectedVersionNumber} publicada correctamente para ${this.label}.`;
           this.cargarHistorial(this.selectedVersionNumber || undefined);
           this.cdr.detectChanges();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          const contentArea = document.querySelector('.content-area');
+          if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
         },
         error: (err) => {
           console.error('Error al publicar versión:', err);
