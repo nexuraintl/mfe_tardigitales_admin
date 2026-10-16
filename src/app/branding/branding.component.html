@@ -23,29 +23,28 @@
       <div class="card-body p-4">
         <div class="branding-fields">
           <div class="branding-field full mb-3">
-            <label for="brandingLogo" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-              <span>Logo institucional (PNG, JPG, SVG - Máx. 300 KB)</span>
-              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+            <label for="brandingLogo" class="form-label fw-semibold text-secondary small mb-1">
+              Logo institucional (PNG, JPG, SVG - Máx. 300 KB) <span class="text-secondary">*</span>
             </label>
 
             <!-- Previsualización sobria y moderna del logo seleccionado -->
-            <div *ngIf="logoPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
-              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px;">
-                <img [src]="logoPreviewUrl" alt="Vista previa del logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-1">
-                  <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25" style="font-size: 10px;">
+            <div *ngIf="logoPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+              <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px;">
+                  <img [src]="logoPreviewUrl" alt="Vista previa del logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                </div>
+                <div class="min-w-0 flex-grow-1">
+                  <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ logoSourceText || 'Logo seleccionado' }}
                   </span>
-                </div>
-                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
-                  Se incluirá en la nueva versión a guardar
+                  <div class="text-muted small text-truncate" style="font-size: 11px;">
+                    Se incluirá en la nueva versión
+                  </div>
                 </div>
               </div>
               <button
                 type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
                 title="Quitar logo"
                 style="font-size: 12px;"
                 (click)="quitarLogo()"
@@ -65,29 +64,28 @@
 
           <!-- Campo: Patrón de Fondo -->
           <div class="branding-field full mb-3">
-            <label for="brandingPatron" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-              <span>Imagen de patrón de fondo (PNG, JPG, SVG - Máx. 3 MB)</span>
-              <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+            <label for="brandingPatron" class="form-label fw-semibold text-secondary small mb-1">
+              Imagen de patrón de fondo (PNG, JPG, SVG - Máx. 3 MB) <span class="text-secondary">*</span>
             </label>
 
             <!-- Previsualización del patrón seleccionado -->
-            <div *ngIf="patronPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
-              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px; overflow: hidden;">
-                <img [src]="patronPreviewUrl" alt="Vista previa del patrón" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-1">
-                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25" style="font-size: 10px;">
+            <div *ngIf="patronPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+              <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px; overflow: hidden;">
+                  <img [src]="patronPreviewUrl" alt="Vista previa del patrón" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                </div>
+                <div class="min-w-0 flex-grow-1">
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ patronSourceText || 'Patrón seleccionado' }}
                   </span>
-                </div>
-                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
-                  Se aplicará de fondo en la tarjeta
+                  <div class="text-muted small text-truncate" style="font-size: 11px;">
+                    Se aplicará de fondo en la tarjeta
+                  </div>
                 </div>
               </div>
               <button
                 type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
                 title="Quitar patrón"
                 style="font-size: 12px;"
                 (click)="quitarPatron()"
@@ -108,9 +106,8 @@
 
           <div class="row g-3 mb-3">
             <div class="col-6">
-              <label for="brandingPrimary" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-                <span>Color de fondo</span>
-                <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+              <label for="brandingPrimary" class="form-label fw-semibold text-secondary small mb-1">
+                Color de fondo <span class="text-secondary">*</span>
               </label>
               <input
                 type="color"
@@ -122,9 +119,8 @@
             </div>
 
             <div class="col-6">
-              <label for="brandingSecondary" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-                <span>Color de letra (Digital)</span>
-                <span class="text-danger small" style="font-size: 11px;">* Obligatorio</span>
+              <label for="brandingSecondary" class="form-label fw-semibold text-secondary small mb-1">
+                Color de letra (Digital) <span class="text-secondary">*</span>
               </label>
               <input
                 type="color"
@@ -144,29 +140,28 @@
 
           <!-- Campo: Logo para Impresión -->
           <div class="branding-field full mb-3">
-            <label for="brandingLogoImpresion" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-              <span>Logo para impresión (PNG, JPG, SVG - Máx. 300 KB)</span>
-              <span class="text-muted small" style="font-size: 11px;">Opcional (fallback: logo digital)</span>
+            <label for="brandingLogoImpresion" class="form-label fw-semibold text-secondary small mb-1">
+              Logo para impresión (PNG, JPG, SVG - Máx. 300 KB) <span class="text-muted fw-normal" style="font-size: 11px;">(Opcional)</span>
             </label>
 
             <!-- Previsualización del logo de impresión -->
-            <div *ngIf="logoImpresionPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
-              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px;">
-                <img [src]="logoImpresionPreviewUrl" alt="Vista previa del logo de impresión" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-1">
-                  <span class="badge bg-info-subtle text-info border border-info border-opacity-25" style="font-size: 10px;">
+            <div *ngIf="logoImpresionPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+              <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px;">
+                  <img [src]="logoImpresionPreviewUrl" alt="Vista previa del logo de impresión" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                </div>
+                <div class="min-w-0 flex-grow-1">
+                  <span class="badge bg-info-subtle text-info border border-info border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ logoImpresionSourceText || 'Logo de impresión seleccionado' }}
                   </span>
-                </div>
-                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
-                  Se aplicará en el documento impreso o exportado a PDF
+                  <div class="text-muted small text-truncate" style="font-size: 11px;">
+                    Se aplicará en el formato impreso
+                  </div>
                 </div>
               </div>
               <button
                 type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
                 title="Quitar logo de impresión"
                 style="font-size: 12px;"
                 (click)="quitarLogoImpresion()"
@@ -186,29 +181,28 @@
 
           <!-- Campo: Patrón de Fondo para Impresión -->
           <div class="branding-field full mb-3">
-            <label for="brandingPatronImpresion" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-              <span>Patrón de fondo para impresión (PNG, JPG, SVG - Máx. 3 MB)</span>
-              <span class="text-muted small" style="font-size: 11px;">Opcional (fallback: patrón digital)</span>
+            <label for="brandingPatronImpresion" class="form-label fw-semibold text-secondary small mb-1">
+              Patrón de fondo para impresión (PNG, JPG, SVG - Máx. 3 MB) <span class="text-muted fw-normal" style="font-size: 11px;">(Opcional)</span>
             </label>
 
             <!-- Previsualización del patrón de impresión -->
-            <div *ngIf="patronImpresionPreviewUrl" class="d-flex align-items-center gap-3 p-2 bg-light border rounded-3 mb-2">
-              <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 40px; min-width: 60px; overflow: hidden;">
-                <img [src]="patronImpresionPreviewUrl" alt="Vista previa del patrón de impresión" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
-              </div>
-              <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-1">
-                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25" style="font-size: 10px;">
+            <div *ngIf="patronImpresionPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+              <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px; overflow: hidden;">
+                  <img [src]="patronImpresionPreviewUrl" alt="Vista previa del patrón de impresión" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                </div>
+                <div class="min-w-0 flex-grow-1">
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
                     {{ patronImpresionSourceText || 'Patrón de impresión seleccionado' }}
                   </span>
-                </div>
-                <div class="text-muted small text-truncate mt-1" style="font-size: 11px;">
-                  Se aplicará de fondo en el formato impreso
+                  <div class="text-muted small text-truncate" style="font-size: 11px;">
+                    Se aplicará de fondo en el formato impreso
+                  </div>
                 </div>
               </div>
               <button
                 type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2"
+                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
                 title="Quitar patrón de impresión"
                 style="font-size: 12px;"
                 (click)="quitarPatronImpresion()"
@@ -229,9 +223,8 @@
           <!-- Campo: Color de Letra para Impresión -->
           <div class="row g-3 mb-3">
             <div class="col-12">
-              <label for="brandingColorLetraImpresion" class="form-label fw-semibold text-secondary small mb-1 d-flex justify-content-between align-items-center">
-                <span>Color de texto (Impresión / PDF)</span>
-                <span class="text-muted small" style="font-size: 11px;">Por defecto oscuro para legibilidad</span>
+              <label for="brandingColorLetraImpresion" class="form-label fw-semibold text-secondary small mb-1">
+                Color de texto (Impresión / PDF) <span class="text-muted fw-normal" style="font-size: 11px;">(Opcional)</span>
               </label>
               <div class="d-flex align-items-center gap-3">
                 <input
