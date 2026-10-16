@@ -36,6 +36,7 @@ export class NotificationsHistoryComponent implements OnInit {
 
   notificaciones: NotificationItem[] = [];
   currentError: AppError | null = null;
+  successMsg: string = '';
   loading: boolean = false;
 
   // Filtros y Búsqueda
@@ -61,6 +62,10 @@ export class NotificationsHistoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const navState = history.state;
+    if (navState && navState.successMsg) {
+      this.successMsg = navState.successMsg;
+    }
     this.cargarNotificaciones();
   }
 

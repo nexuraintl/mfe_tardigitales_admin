@@ -2,12 +2,32 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../../../shared/components/tarjeta-credencial/tarjeta-credencial.component';
+import { NxAlertComponent } from '../../../shared/components/alert/alert.component';
+import { NxFieldErrorComponent } from '../../../shared/components/field-error/field-error.component';
 
 @Component({
   selector: 'app-form-emision-contadores',
   standalone: true,
-  imports: [CommonModule, FormsModule, TarjetaCredencialComponent],
+  imports: [CommonModule, FormsModule, TarjetaCredencialComponent, NxAlertComponent, NxFieldErrorComponent],
   template: `
+    <!-- Alertas del Sistema Superiores con Auto-Scroll -->
+    <nx-alert 
+      *ngIf="mensajeError" 
+      [type]="tipoAlerta || 'warning'" 
+      [message]="mensajeError" 
+      [duration]="0"
+      [autoScroll]="true"
+      (onClose)="cerrarError()"
+    ></nx-alert>
+    <nx-alert 
+      *ngIf="mensajeExito" 
+      type="success" 
+      [message]="mensajeExito" 
+      [duration]="5000"
+      [autoScroll]="true"
+      (onClose)="cerrarExito()"
+    ></nx-alert>
+
     <div class="branding-layout">
       <!-- Columna Izquierda: Consulta de Matrícula -->
       <div>
@@ -29,20 +49,19 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
                 <option value="duplicado">Duplicado</option>
                 <option value="sustitucion">Sustitución</option>
               </select>
-              <div *ngIf="errorTipoSolicitud" class="text-danger small mt-1">{{ errorTipoSolicitud }}</div>
+              <nx-field-error [error]="errorTipoSolicitud"></nx-field-error>
             </div>
             <div class="mb-3">
               <label for="individualIssueIdentification" class="form-label fw-semibold text-secondary small mb-1">
                 Número de identificación <span class="text-secondary">*</span>
               </label>
-              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 1152226268" [ngModel]="nuevaIdentificacion" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="consultarMatricula.emit()">
-              <div *ngIf="errorIdentificacion" class="text-danger small mt-1">{{ errorIdentificacion }}</div>
+              <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 1152226268" [ngModel]="nuevaIdentificacion" (keypress)="permitirSoloNumeros($event)" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="onBuscarClick()">
+              <nx-field-error [error]="errorIdentificacion"></nx-field-error>
             </div>
-            <button type="button" class="btn btn-primary w-100 fw-semibold" id="individualIssueSearch" (click)="consultarMatricula.emit()" [disabled]="cargandoBusqueda">
+            <button type="button" class="btn btn-primary w-100 fw-semibold" id="individualIssueSearch" (click)="onBuscarClick()" [disabled]="cargandoBusqueda || (nuevaIdentificacion.length > 0 && nuevaIdentificacion.length < 3)">
               <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar matrícula</span>
               <span *ngIf="cargandoBusqueda"><span class="spinner-border spinner-border-sm me-1"></span> Buscando...</span>
             </button>
-            <div *ngIf="mensajeError" class="alert alert-danger py-2 px-3 small mt-3 mb-0">{{ mensajeError }}</div>
           </div>
         </section>
       </div>
@@ -56,15 +75,15 @@ import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from 
             </h5>
           </div>
           <div class="card-body p-4">
-            <!-- Estado Inicial sin consulta realizada -->
-            <div *ngIf="!busquedaRealizada" class="text-center py-5 text-muted">
+            <!-- Estado sin vista previa cargada (inicial o sin datos encontrados) -->
+            <div *ngIf="!datosConsulta" class="text-center py-5 text-muted">
               <span class="fa fa-id-card-o fs-1 d-block mb-3 text-secondary opacity-50"></span>
               <p class="mb-1 fw-semibold text-dark">Sin vista previa cargada</p>
               <small class="text-muted">Ingrese una identificación a la izquierda y presione <strong>Consultar matrícula</strong>.</small>
             </div>
 
             <!-- Previsualización de Branding al consultar -->
-            <div *ngIf="busquedaRealizada && datosConsulta">
+            <div *ngIf="datosConsulta">
               <div class="branding-preview-card mb-4">
                 <app-tarjeta-credencial
                   tipo="contador"
@@ -111,20 +130,63 @@ export class FormEmisionContadoresComponent {
     }
   }
 
-  onIdentificacionChange(val: string): void {
-    this.nuevaIdentificacion = val;
-    this.nuevaIdentificacionChange.emit(val);
-    if (val && val.trim()) {
-      this.errorIdentificacion = '';
+  permitirSoloNumeros(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.altKey || event.metaKey || event.key.length > 1) {
+      return;
+    }
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
     }
   }
 
+  onIdentificacionChange(val: string): void {
+    const clean = (val || '').replace(/\D/g, '');
+    this.nuevaIdentificacion = clean;
+    this.nuevaIdentificacionChange.emit(clean);
+    if (clean.length > 0 && clean.length < 3) {
+      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
+    } else {
+      this.errorIdentificacion = '';
+    }
+    if (this.mensajeError) {
+      this.mensajeError = '';
+      this.mensajeErrorChange.emit('');
+    }
+  }
+
+  onBuscarClick(): void {
+    const clean = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
+    if (!clean) {
+      this.errorIdentificacion = 'Ingrese el número de identificación.';
+      return;
+    }
+    if (clean.length < 3) {
+      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
+      return;
+    }
+    this.errorIdentificacion = '';
+    this.consultarMatricula.emit();
+  }
+
+  @Input() tipoAlerta: 'warning' | 'danger' | 'error' | 'success' | 'info' = 'warning';
   @Input() cargandoBusqueda: boolean = false;
   @Input() busquedaRealizada: boolean = false;
   @Input() datosConsulta: any = null;
   @Input() mensajeError: string = '';
+  @Output() mensajeErrorChange = new EventEmitter<string>();
   @Input() mensajeExito: string = '';
+  @Output() mensajeExitoChange = new EventEmitter<string>();
   @Input() loading: boolean = false;
+
+  cerrarError(): void {
+    this.mensajeError = '';
+    this.mensajeErrorChange.emit('');
+  }
+
+  cerrarExito(): void {
+    this.mensajeExito = '';
+    this.mensajeExitoChange.emit('');
+  }
 
   @Input() brandingColorFondo: string = '#14275f';
   @Input() brandingColorLetra: string = '#ffffff';
