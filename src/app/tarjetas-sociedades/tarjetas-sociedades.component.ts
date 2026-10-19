@@ -807,10 +807,10 @@ export class TarjetasSociedadesComponent implements OnInit {
     }
     const identification = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
     if (!identification) {
-      this.errorIdentificacion = 'Ingrese el número de identificación.';
+      this.errorIdentificacion = 'Ingrese el NIT.';
       hasError = true;
     } else if (identification.length < 3) {
-      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
+      this.errorIdentificacion = 'El NIT debe contener al menos 3 dígitos.';
       hasError = true;
     }
     if (hasError) {
@@ -899,7 +899,7 @@ export class TarjetasSociedadesComponent implements OnInit {
         error: (err) => {
           console.error('Error al emitir tarjeta de sociedad:', err);
           const appErr = this.errorHandler.parseError(err, 'MS_3831_TARJETAS_CREATE', `${API_BASE}/tarjetas/sociedad/create`);
-          this.mensajeError = `${appErr.title}: ${appErr.message}`;
+          this.mensajeError = appErr.message;
           this.loading = false;
           this.cdr.detectChanges();
         }

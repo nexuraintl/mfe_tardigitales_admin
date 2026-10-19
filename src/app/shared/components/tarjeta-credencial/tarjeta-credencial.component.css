@@ -3,240 +3,207 @@
   width: 100%;
 }
 
-.credencial-container {
+.credencial-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-.branding-preview-stack {
-  display: grid;
-  width: 100%;
-  max-width: 380px;
-  min-width: 0;
-  gap: 14px;
-  margin: 0 auto;
+:root, .tarjeta {
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --radio-tarjeta: 24px;              /* Radius/2 */
+  --blanco: #ffffff;                  /* Neutral/100 */
+  --vacio: rgba(43, 64, 135, 0.10);   /* Primary alpha 10: foto/logo sin imagen */
+  --sombra-tarjeta: 0 4px 2px rgba(0, 0, 0, 0.25);
+
+  --logo-ancho: 146px;                /* AppMedidas.tarjetaLogo */
+  --logo-alto: 42px;
+  --columna-datos: 147px;             /* AppMedidas.tarjetaColumnaDatos (contador) */
+  --foto-alto: 175px;                 /* AppMedidas.tarjetaFotoMiTarjetaAlto */
+  --foto-proporcion: 3 / 4;           /* AppMedidas.tarjetaFotoProporcion: 131.25 x 175 */
+  --foto-radio: 15.771px;             /* AppMedidas.tarjetaFotoMiTarjetaRadio */
+  --logo-sociedad-alto: 175px;        /* AppMedidas.tarjetaLogoSociedadAlto */
+  --logo-sociedad-radio: 16px;        /* AppMedidas.tarjetaLogoSociedadRadio */
+  --icono-xs: 16px;                   /* AppIconSize.xs (copiar) */
 }
 
-/* ========================================================
-   TARJETA CREDENCIAL UNIFICADA (CONTADORES Y SOCIEDADES)
-   Mismo estilo, mismo logo, mismas fuentes y grosores
-   ======================================================== */
-.branding-id-card {
+/* ---------------- Caja y fondo ---------------- */
+
+.tarjeta {
   position: relative;
-  isolation: isolate;
-  display: flex;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  flex-direction: column;
+  max-width: 358px;
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
   overflow: hidden;
-  aspect-ratio: 366 / 430;
-  padding: 5.45%;
-  border-radius: 6.6%;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  isolation: isolate;
+  color: var(--blanco);
+  font-family: "Satoshi", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
-  color: var(--branding-card-text, #ffffff);
-  font-family: 'Satoshi', system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  user-select: none;
-  background: radial-gradient(
-    circle at 72% 28%,
-    var(--branding-card-background) 0%,
-    var(--branding-card-background-dark) 62%,
-    var(--branding-card-background-deep) 100%
-  );
 }
 
-/* Capa de Patrón de Fondo */
-.branding-id-card::before {
+/* Capas del fondo, en el orden de Figma: degradado angular, textura en
+   `overlay` y textura en `multiply`. Aisladas para que las mezclas solo
+   actúen sobre el degradado. */
+.tarjeta__fondo {
   position: absolute;
-  z-index: -2;
   inset: 0;
-  background-image: var(--branding-card-pattern);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: auto 100%;
-  mix-blend-mode: multiply;
-  opacity: 0.7;
-  transform: none;
-  content: "";
-  border-radius: inherit;
-  pointer-events: none;
+  isolation: isolate;
+  overflow: hidden;
+  z-index: 0;
 }
 
-/* Capa de Sombra / Contraste */
-.branding-id-card::after {
+/* Degradado angular (cónico), NO radial. Se define centrado en el origen
+   de la caja y transformado por la matriz afín de Figma */
+.tarjeta__degradado {
   position: absolute;
-  z-index: -1;
+  left: -200px;
+  top: -200px;
+  width: 400px;
+  height: 400px;
+  transform-origin: 50% 50%;
+}
+
+.tarjeta__textura {
+  position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0 55%, rgba(0, 0, 0, 0.22) 100%);
-  content: "";
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-/* Fila 1: Logo Institucional (Mismo lugar, misma altura) */
-.credencial-card-logo-row {
-  display: flex;
-  height: 10%;
-  align-items: flex-start;
-  margin-bottom: 4.5%;
-}
-
-.credencial-card-logo {
   width: 100%;
   height: 100%;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  object-fit: contain;
-  object-position: left top;
-}
-
-/* Fila 2: Foto/Logo + Datos Laterales */
-.credencial-card-main {
-  display: grid;
-  grid-template-columns: 55% 1fr;
-  gap: 6%;
-  align-items: end;
-  min-height: 43%;
-}
-
-.credencial-card-photo {
-  width: 100%;
-  aspect-ratio: 179 / 174;
-  border: 0;
-  border-radius: 13.5%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.22);
   object-fit: cover;
-  object-position: center 28%;
+  pointer-events: none;
 }
-
-.credencial-card-side {
-  display: grid;
-  gap: 13px;
-  align-content: center;
-  text-align: right;
-}
-
-.credencial-card-info {
-  min-width: 0;
-}
-
-.credencial-card-label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: clamp(9px, 1.5vw, 13px);
-  font-weight: 400;
-  line-height: 1.2;
-  opacity: 0.85;
-}
-
-.credencial-card-value {
-  display: block;
-  font-weight: 700;
-  line-height: 1.18;
-  overflow-wrap: anywhere;
-}
-
-.credencial-card-side .credencial-card-value {
-  font-size: clamp(13px, 2.7vw, 23px);
-  line-height: 1.08;
-}
-
-.credencial-card-side .credencial-card-info:nth-child(n+2) .credencial-card-value {
-  font-size: clamp(11px, 2.05vw, 18px);
-}
-
-.credencial-card-registration {
-  display: flex;
-  justify-content: flex-end;
-  gap: 7px;
-  align-items: center;
-  white-space: nowrap;
-}
-
-.credencial-card-copy {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0.9;
-  line-height: 1;
-  transition: transform 0.15s, opacity 0.15s;
-}
-
-.credencial-card-copy:hover {
-  transform: scale(1.15);
-  opacity: 1;
-}
-
-/* Fila 3: Grilla de Detalles Inferiores (4 Campos) */
-.credencial-card-details {
-  display: grid;
-  grid-template-columns: 58% 1fr;
-  gap: 8% 7%;
-  align-content: end;
-  flex: 1;
-  padding-top: 7%;
-}
-
-.credencial-card-details .credencial-card-info:nth-child(even) {
-  text-align: right;
-}
-
-.credencial-card-details .credencial-card-value {
-  font-size: clamp(11px, 2.05vw, 17px);
-}
-
-.credencial-card-details .credencial-card-label {
-  font-size: clamp(8px, 1.45vw, 12px);
-}
-
-.credencial-card-details .credencial-card-info:nth-child(3) .credencial-card-value {
-  font-size: clamp(10px, 1.8vw, 16px);
-}
-
-.credencial-copy-svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* ========================================================
-   MODO IMPRESIÓN (BLANCO Y NEGRO / PDF / ALTA LEGIBILIDAD)
-   - Sin color de fondo (blanco puro)
-   - Letra negra / gris muy oscuro (#0f172a / #334155)
-   - El resto de dimensiones, layout y HTML es EXACTAMENTE idéntico
-   ======================================================== */
-.branding-id-card.modo-impresion {
-  background: #ffffff !important;
-  color: var(--branding-card-text, #0f172a) !important;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-}
-
-.branding-id-card.modo-impresion::before {
+.tarjeta__textura--overlay  { mix-blend-mode: overlay; }
+.tarjeta__textura--patron {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
   mix-blend-mode: multiply;
-  opacity: 0.15;
+  pointer-events: none;
 }
 
-.branding-id-card.modo-impresion::after {
-  display: none !important;
+/* Contador: degradado azul, overlay 15 %, multiply 70 %. */
+.tarjeta--contador .tarjeta__degradado {
+  background: conic-gradient(from 90deg at 50% 50%,
+    #0A1026 0%, #060B1B 2.0575%, #00020A 5.2764%, #070D20 11.593%,
+    #0F1836 17.91%, #1E2D61 30.543%, #2C438D 43.176%, #3B58B9 55.809%,
+    #293E84 74.105%, #20316A 83.253%, #182550 92.401%, #0C132D 98.839%,
+    #0A1026 100%);
+}
+.tarjeta--contador .tarjeta__textura--overlay  { opacity: 0.15; }
+.tarjeta--contador .tarjeta__textura--patron   { opacity: 0.70; }
+
+/* Sociedad: degradado grafito, overlay 20 %, multiply 20 %. */
+.tarjeta--sociedad .tarjeta__degradado {
+  background: conic-gradient(from 90deg at 50% 50%,
+    #170F00 0%, #20180A 3.6358%, #282114 7.2716%, #3A3328 14.543%,
+    #4B453D 21.815%, #5C5851 29.087%, #7E7C79 43.63%, #A1A1A1 58.173%,
+    #7E7C79 68.63%, #5C5851 79.087%, #4B453D 84.315%, #3A3328 89.543%,
+    #282114 94.772%, #20180A 97.386%, #170F00 100%);
+}
+.tarjeta--sociedad .tarjeta__textura--overlay  { opacity: 0.20; }
+.tarjeta--sociedad .tarjeta__textura--patron   { opacity: 0.20; }
+
+/* ---------------- Contenido ---------------- */
+
+.tarjeta__contenido {
+  position: relative;
+  z-index: 1;
+  padding: var(--s6) var(--s4);       /* 24 arriba/abajo, 16 a los lados */
+  display: flex;
+  flex-direction: column;
 }
 
-.branding-id-card.modo-impresion .credencial-card-label {
-  color: var(--branding-card-text, #334155) !important;
-  opacity: 0.75;
+.logo-jcc {
+  display: block;
+  width: var(--logo-ancho);
+  height: var(--logo-alto);
 }
 
-.branding-id-card.modo-impresion .credencial-card-value {
-  color: var(--branding-card-text, #0f172a) !important;
+.separa-20 { height: var(--s5); flex: none; }
+.separa-12 { height: var(--s3); flex: none; }
+.separa-8  { height: var(--s2); flex: none; }
+
+/* Tipografía (todo en blanco). line-height 1.4 en body, 1.2 en H-4. */
+.etiqueta     { font-size: 12px; font-weight: 500; line-height: 1.4; }          /* B-4 Medium */
+.v-b3-bold    { font-size: 14px; font-weight: 700; line-height: 1.4; }          /* B-3 Bold */
+.v-b4-bold    { font-size: 12px; font-weight: 700; line-height: 1.4; }          /* B-4 Bold */
+.v-b4-medium  { font-size: 12px; font-weight: 500; line-height: 1.4; }          /* B-4 Medium */
+.v-h4         { font-size: 22px; font-weight: 700; line-height: 1.2; }          /* H-4 */
+
+/* Cada línea (etiqueta o valor) lleva padding vertical Spacing/1. */
+.linea { padding: var(--s1) 0; margin: 0; overflow-wrap: anywhere; }
+
+/* Dato = etiqueta + valor. `--fin` alinea a la derecha; `--aire` deja
+   Spacing/2 a la izquierda del valor (columna junto a la foto o logo). */
+.dato { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.dato--fin { align-items: flex-end; text-align: right; }
+.dato--aire .linea--valor { padding-left: var(--s2); }
+
+/* Número de tarjeta / registro: etiqueta, cifra H-4 y copiar de 16. */
+.numero { display: flex; flex-direction: column; align-items: flex-end; text-align: right; cursor: pointer; }
+.numero__fila { display: flex; align-items: center; gap: var(--s2); padding-left: var(--s2); max-width: 100%; }
+.numero__cifra { white-space: nowrap; min-width: 0; }
+.numero__copiar { width: var(--icono-xs); height: var(--icono-xs); flex: none; display: block; }
+
+/* ---------- Contador: foto 3:4 + columna de 147 ---------- */
+.contador__fila-foto { display: flex; align-items: stretch; }
+.contador__foto-celda { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; }
+.contador__foto {
+  height: var(--foto-alto);           /* 175 de alto como máximo */
+  max-height: var(--foto-alto);
+  max-width: 100%;
+  aspect-ratio: var(--foto-proporcion);  /* 3:4 -> 131.25 x 175 */
+  border-radius: var(--foto-radio);
+  overflow: hidden;
+  background: var(--vacio);
+  flex: none;
+}
+.contador__foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.contador__columna {
+  width: var(--columna-datos);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;          /* pegada abajo, alineada al pie de la foto */
+  align-items: flex-end;
 }
 
-.branding-id-card.modo-impresion .credencial-card-copy {
-  color: var(--branding-card-text, #64748b);
-  opacity: 0.6;
+/* Filas de dos datos del contador: rejilla de 11 columnas con separación
+   8; el dato izquierdo ocupa 7 columnas y el derecho se alinea al final
+   en la misma celda (puede montarse sobre el espacio libre del izquierdo,
+   como en Figma). */
+.fila-11 { display: grid; grid-template-columns: 1fr; }
+.fila-11 > * { grid-area: 1 / 1; }
+.fila-11 > .izq { width: calc((100% - 10 * var(--s2)) / 11 * 7 + 6 * var(--s2)); }
+.fila-11 > .der { justify-self: end; }
+
+/* ---------- Sociedad: logo a media fila + columna ---------- */
+.sociedad__fila-logo { display: flex; align-items: flex-start; }
+.sociedad__logo {
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--logo-sociedad-alto);
+  border-radius: var(--logo-sociedad-radio);
+  overflow: hidden;
+  background: var(--vacio);
 }
+.sociedad__logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sociedad__columna { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: flex-end; }
+
+/* Filas de dos datos de la sociedad: el izquierdo toma lo que deja el
+   derecho, alineados arriba. */
+.fila-flex { display: flex; align-items: flex-start; gap: var(--s2); }
+.fila-flex > .izq { flex: 1 1 auto; min-width: 0; }
+.fila-flex > .der { flex: none; }
 
 /* Ocultamiento manteniendo exactamente la estructura, dimensiones y posición */
 .campo-oculto {
@@ -245,3 +212,32 @@
   pointer-events: none !important;
 }
 
+/* ========================================================
+   MODO IMPRESIÓN (BLANCO Y NEGRO / PDF / ALTA LEGIBILIDAD)
+   ======================================================== */
+.tarjeta--impresion {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.tarjeta--impresion .tarjeta__fondo {
+  display: none !important;
+}
+
+.tarjeta--impresion .etiqueta {
+  color: #334155 !important;
+  opacity: 0.85;
+}
+
+.tarjeta--impresion .v-b3-bold,
+.tarjeta--impresion .v-b4-bold,
+.tarjeta--impresion .v-b4-medium,
+.tarjeta--impresion .v-h4 {
+  color: #0f172a !important;
+}
+
+.tarjeta--impresion .numero__copiar {
+  filter: invert(1) brightness(0.2);
+}
