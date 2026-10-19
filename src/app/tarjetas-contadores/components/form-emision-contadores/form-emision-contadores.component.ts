@@ -38,7 +38,7 @@ import { NxFieldErrorComponent } from '../../../shared/components/field-error/fi
             </h5>
           </div>
           <div class="card-body p-4">
-            <p class="text-muted small mb-3">Ingrese el número de identificación del contador para consultar el registro oficial y generar la vista previa de la tarjeta.</p>
+            <p class="text-muted small mb-3">Ingrese la cédula de ciudadanía del contador para consultar el registro oficial y generar la vista previa de la tarjeta.</p>
             <div class="mb-3">
               <label for="individualIssueType" class="form-label fw-semibold text-secondary small mb-1">
                 Tipo de solicitud <span class="text-secondary">*</span>
@@ -53,13 +53,13 @@ import { NxFieldErrorComponent } from '../../../shared/components/field-error/fi
             </div>
             <div class="mb-3">
               <label for="individualIssueIdentification" class="form-label fw-semibold text-secondary small mb-1">
-                Número de identificación <span class="text-secondary">*</span>
+                Cédula de ciudadanía <span class="text-secondary">*</span>
               </label>
               <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 1152226268" [ngModel]="nuevaIdentificacion" (keypress)="permitirSoloNumeros($event)" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="onBuscarClick()">
               <nx-field-error [error]="errorIdentificacion"></nx-field-error>
             </div>
             <button type="button" class="btn btn-primary w-100 fw-semibold" id="individualIssueSearch" (click)="onBuscarClick()" [disabled]="cargandoBusqueda || (nuevaIdentificacion.length > 0 && nuevaIdentificacion.length < 3)">
-              <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar matrícula</span>
+              <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar cédula</span>
               <span *ngIf="cargandoBusqueda"><span class="spinner-border spinner-border-sm me-1"></span> Buscando...</span>
             </button>
           </div>
@@ -79,7 +79,7 @@ import { NxFieldErrorComponent } from '../../../shared/components/field-error/fi
             <div *ngIf="!datosConsulta" class="text-center py-5 text-muted">
               <span class="fa fa-id-card-o fs-1 d-block mb-3 text-secondary opacity-50"></span>
               <p class="mb-1 fw-semibold text-dark">Sin vista previa cargada</p>
-              <small class="text-muted">Ingrese una identificación a la izquierda y presione <strong>Consultar matrícula</strong>.</small>
+              <small class="text-muted">Ingrese una cédula de ciudadanía a la izquierda y presione <strong>Consultar cédula</strong>.</small>
             </div>
 
             <!-- Previsualización de Branding al consultar -->
@@ -144,7 +144,7 @@ export class FormEmisionContadoresComponent {
     this.nuevaIdentificacion = clean;
     this.nuevaIdentificacionChange.emit(clean);
     if (clean.length > 0 && clean.length < 3) {
-      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
+      this.errorIdentificacion = 'La cédula de ciudadanía debe contener al menos 3 dígitos.';
     } else {
       this.errorIdentificacion = '';
     }
@@ -157,11 +157,11 @@ export class FormEmisionContadoresComponent {
   onBuscarClick(): void {
     const clean = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
     if (!clean) {
-      this.errorIdentificacion = 'Ingrese el número de identificación.';
+      this.errorIdentificacion = 'Ingrese la cédula de ciudadanía.';
       return;
     }
     if (clean.length < 3) {
-      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
+      this.errorIdentificacion = 'La cédula de ciudadanía debe contener al menos 3 dígitos.';
       return;
     }
     this.errorIdentificacion = '';

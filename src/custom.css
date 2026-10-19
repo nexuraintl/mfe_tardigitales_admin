@@ -590,6 +590,145 @@ code {
   white-space: nowrap !important;
 }
 
+/* ============================================================================
+   VALIDADOR QR: TARJETAS DE CAMPOS Y VISTA PREVIA COMPACTA SIN DESBORDE
+   ============================================================================ */
+.qr-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qr-field-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 11px 16px !important;
+  transition: all 0.2s ease;
+}
+
+.qr-field-card:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1 !important;
+}
+
+.qr-field-card .form-check-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.qr-field-card .form-check-input {
+  width: 2.3em !important;
+  height: 1.25em !important;
+  margin-top: 0 !important;
+  cursor: pointer;
+}
+
+.qr-preview-card-holder {
+  max-width: 358px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Skeleton Loader Latente para la Tarjeta Credencial */
+.tarjeta-skeleton-loader {
+  position: relative;
+  width: 100%;
+  max-width: 358px;
+  height: 425px;
+  border-radius: 24px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.tarjeta-skeleton-loader .skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeletonLatente 1.8s infinite ease-in-out;
+}
+
+@keyframes skeletonLatente {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.tarjeta-skeleton-loader .skeleton-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tarjeta-skeleton-loader .skeleton-block {
+  background-color: #e2e8f0;
+  border-radius: 6px;
+}
+
+.tarjeta-skeleton-loader .skeleton-logo {
+  width: 146px;
+  height: 42px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-skeleton-loader .skeleton-middle {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-skeleton-loader .skeleton-photo {
+  width: 131.25px;
+  height: 175px;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.tarjeta-skeleton-loader .skeleton-column {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.tarjeta-skeleton-loader .skeleton-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.tarjeta-skeleton-loader .skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tarjeta-skeleton-loader .skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+}
+
+.tarjeta-skeleton-loader .skeleton-line-lg {
+  height: 22px;
+  border-radius: 6px;
+}
+
+
 
 
 

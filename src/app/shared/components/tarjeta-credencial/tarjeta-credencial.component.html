@@ -1,94 +1,173 @@
-<div
-  class="credencial-container"
-  [class.layout-stack]="layout === 'stack'"
-  [class.layout-side]="layout === 'side-by-side'"
-  [class.layout-auto]="layout === 'auto'"
-  [class.modo-impresion]="isImpresion"
-  [class.modo-digital]="!isImpresion"
-  [style.--branding-card-background]="fondoTarjeta"
-  [style.--branding-card-background-dark]="fondoTarjetaOscuro"
-  [style.--branding-card-background-deep]="fondoTarjetaProfundo"
-  [style.--branding-card-text]="colorLetra"
-  [style.--branding-card-pattern]="patronFondo"
->
-  <div class="branding-preview-stack">
-    <!-- TARJETA CREDENCIAL UNIFICADA (CONTADORES Y SOCIEDADES) -->
-    <article
-      class="branding-id-card"
-      [class.modo-impresion]="isImpresion"
-      [class.modo-digital]="!isImpresion"
-      [attr.aria-label]="tipo === 'sociedad' ? 'Vista previa de la tarjeta profesional de la sociedad' : 'Vista previa de la tarjeta profesional del contador'"
-    >
-      <!-- Fila 1: Logo Institucional Oficial -->
-      <div class="credencial-card-logo-row">
-        <img
-          [src]="logoUrl"
-          id="brandingPreviewLogo"
-          class="credencial-card-logo branding-card-logo"
-          alt="Logo de la Junta Central de Contadores"
-          (error)="onLogoError($event)"
-        />
-      </div>
+<div class="credencial-wrapper" [class.modo-impresion]="isImpresion">
+  
+  <!-- ===================== TARJETA DEL CONTADOR ===================== -->
+  <article
+    #tarjetaRef
+    *ngIf="tipo === 'contador'"
+    class="tarjeta tarjeta--contador"
+    [class.tarjeta--impresion]="isImpresion"
+    data-tipo="contador"
+    aria-label="Tarjeta profesional de Andrés Felipe Torres Cárdenas"
+  >
+    <div class="tarjeta__fondo" aria-hidden="true">
+      <!-- 1. Color de fondo / degradado angular con punto de luz -->
+      <div #degradadoRef class="tarjeta__degradado" [style.background]="degradadoFondo" [style.transform]="transformDegradado"></div>
+      
+      <!-- 2. Grano oficial de la plantilla (textura_overlay.png en mezcla overlay) -->
+      <img *ngIf="!isImpresion" class="tarjeta__textura tarjeta__textura--overlay" [src]="texturaOverlay" alt="Grano oficial">
+      
+      <!-- 3. Patrón de fondo configurable por el usuario -->
+      <div *ngIf="!isImpresion && patronFondoUrl" class="tarjeta__textura tarjeta__textura--patron" [style.backgroundImage]="'url(' + patronFondoUrl + ')'"></div>
+    </div>
 
-      <!-- Fila 2: Foto/Logo + Datos Laterales -->
-      <div class="credencial-card-main">
-        <img
-          class="credencial-card-photo"
-          [class.campo-oculto]="!isFotoVisible"
-          [src]="fotoUrl"
-          [alt]="tipo === 'sociedad' ? 'Logo de la sociedad' : 'Fotografía del contador'"
-        />
-        <div class="credencial-card-side">
-          <div class="credencial-card-info" [class.campo-oculto]="!isRegistroVisible">
-            <span class="credencial-card-label">{{ labelRegistro }}</span>
-            <div class="credencial-card-registration">
-              <strong class="credencial-card-value">{{ valorRegistro }}</strong>
-              <span
-                class="credencial-card-copy"
-                (click)="copiarMatricula($event)"
-                role="button"
-                tabindex="0"
-                [title]="copiadoExitoso ? '¡Copiado!' : 'Copiar número'"
-                aria-label="Copiar número"
-              >
-                <svg *ngIf="!copiadoExitoso" class="credencial-copy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2.5" ry="2.5"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span *ngIf="copiadoExitoso" class="fa fa-check text-success" style="font-size: 13px;"></span>
-              </span>
+    <div class="tarjeta__contenido">
+      <img
+        class="logo-jcc"
+        [src]="logoUrl"
+        alt="Unidad Administrativa Especial Junta Central de Contadores"
+        (error)="onLogoError($event)"
+      >
+
+      <div class="separa-20"></div>
+
+      <!-- Foto 3:4 (máx. 175 de alto) + columna de datos de 147 -->
+      <div class="contador__fila-foto">
+        <div class="contador__foto-celda">
+          <div class="contador__foto" [class.campo-oculto]="!isFotoVisible">
+            <img [src]="fotoUrl" alt="Foto del titular">
+          </div>
+        </div>
+        <div class="contador__columna">
+          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" title="Copiar número de tarjeta" data-nx-tooltip="Copiar número de tarjeta" aria-label="Copiar número de tarjeta">
+            <p class="linea etiqueta">Tarjeta profesional</p>
+            <div class="linea numero__fila">
+              <span class="numero__cifra v-h4">{{ valorRegistro }}</span>
+              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" title="Copiar número de tarjeta" data-nx-tooltip="Copiar número de tarjeta">
             </div>
           </div>
-          <div class="credencial-card-info" [class.campo-oculto]="!isFechaVisible">
-            <span class="credencial-card-label">{{ labelFecha }}</span>
-            <strong class="credencial-card-value">{{ valorFecha }}</strong>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isFechaVisible">
+            <p class="linea etiqueta">Fecha resolución de inscripción</p>
+            <p class="linea linea--valor v-b4-bold">{{ valorFecha }}</p>
           </div>
-          <div class="credencial-card-info" [class.campo-oculto]="!isMedio3Visible">
-            <span class="credencial-card-label">{{ labelMedio3 }}</span>
-            <strong class="credencial-card-value">{{ valorMedio3 }}</strong>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isMedio3Visible">
+            <p class="linea etiqueta">Resolución de inscripción</p>
+            <p class="linea linea--valor v-b3-bold">{{ valorMedio3 }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Fila 3: Grilla de Detalles Inferiores (4 Campos) -->
-      <div class="credencial-card-details">
-        <div class="credencial-card-info" [class.campo-oculto]="!isTitularVisible">
-          <span class="credencial-card-label">{{ labelTitular }}</span>
-          <strong class="credencial-card-value">{{ valorTitular }}</strong>
+      <div class="separa-20"></div>
+
+      <div class="fila-11">
+        <div class="dato izq" [class.campo-oculto]="!isTitularVisible">
+          <p class="linea etiqueta">Nombre</p>
+          <p class="linea linea--valor v-b3-bold">{{ valorTitular }}</p>
         </div>
-        <div class="credencial-card-info" [class.campo-oculto]="!isDocumentoVisible">
-          <span class="credencial-card-label">{{ labelDocumento }}</span>
-          <strong class="credencial-card-value">{{ valorDocumento }}</strong>
-        </div>
-        <div class="credencial-card-info" [class.campo-oculto]="!isExtraVisible">
-          <span class="credencial-card-label">{{ labelExtra }}</span>
-          <strong class="credencial-card-value">{{ valorExtra }}</strong>
-        </div>
-        <div class="credencial-card-info" [class.campo-oculto]="!isPie2DerVisible">
-          <span class="credencial-card-label">{{ labelPie2Der }}</span>
-          <strong class="credencial-card-value">{{ valorPie2Der }}</strong>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isDocumentoVisible">
+          <p class="linea etiqueta">Cédula de ciudadanía</p>
+          <p class="linea linea--valor v-b3-bold">{{ valorDocumento }}</p>
         </div>
       </div>
-    </article>
-  </div>
+
+      <div class="separa-12"></div>
+
+      <div class="fila-11">
+        <div class="dato izq" [class.campo-oculto]="!isExtraVisible">
+          <p class="linea etiqueta">Institución de educación superior</p>
+          <p class="linea linea--valor v-b3-bold">{{ valorExtra }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isPie2DerVisible">
+          <p class="linea etiqueta">Número de expediente</p>
+          <p class="linea linea--valor v-b4-bold">{{ valorPie2Der }}</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ===================== TARJETA DE LA SOCIEDAD ===================== -->
+  <article
+    #tarjetaRef
+    *ngIf="tipo === 'sociedad'"
+    class="tarjeta tarjeta--sociedad"
+    [class.tarjeta--impresion]="isImpresion"
+    data-tipo="sociedad"
+    aria-label="Tarjeta de registro de Innovación Financiera y Tributaria S.A.S."
+  >
+    <div class="tarjeta__fondo" aria-hidden="true">
+      <!-- 1. Color de fondo / degradado angular con punto de luz -->
+      <div #degradadoRef class="tarjeta__degradado" [style.background]="degradadoFondo" [style.transform]="transformDegradado"></div>
+      
+      <!-- 2. Grano oficial de la plantilla (textura_overlay.png en mezcla overlay) -->
+      <img *ngIf="!isImpresion" class="tarjeta__textura tarjeta__textura--overlay" [src]="texturaOverlay" alt="Grano oficial">
+      
+      <!-- 3. Patrón de fondo configurable por el usuario -->
+      <div *ngIf="!isImpresion && patronFondoUrl" class="tarjeta__textura tarjeta__textura--patron" [style.backgroundImage]="'url(' + patronFondoUrl + ')'"></div>
+    </div>
+
+    <div class="tarjeta__contenido">
+      <img
+        class="logo-jcc"
+        [src]="logoUrl"
+        alt="Unidad Administrativa Especial Junta Central de Contadores"
+        (error)="onLogoError($event)"
+      >
+
+      <div class="separa-20"></div>
+
+      <!-- Logo de la sociedad (mitad izquierda, 175 de alto) + columna (mitad derecha) -->
+      <div class="sociedad__fila-logo">
+        <div class="sociedad__logo" [class.campo-oculto]="!isFotoVisible">
+          <img [src]="fotoUrl" alt="Logo de la sociedad">
+        </div>
+        <div class="sociedad__columna">
+          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" title="Copiar número de registro" data-nx-tooltip="Copiar número de registro" aria-label="Copiar número de registro">
+            <p class="linea etiqueta">Número de registro</p>
+            <div class="linea numero__fila">
+              <span class="numero__cifra v-h4">{{ valorRegistro }}</span>
+              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" title="Copiar número de registro" data-nx-tooltip="Copiar número de registro">
+            </div>
+          </div>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isFechaVisible">
+            <p class="linea etiqueta">Fecha resolución de inscripción</p>
+            <p class="linea linea--valor v-b4-medium">{{ valorFecha }}</p>
+          </div>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isMedio3Visible">
+            <p class="linea etiqueta">Resolución de inscripción</p>
+            <p class="linea linea--valor v-b4-bold">{{ valorMedio3 }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="separa-20"></div>
+
+      <div class="fila-flex">
+        <div class="dato izq" [class.campo-oculto]="!isTitularVisible">
+          <p class="linea etiqueta">Nombre</p>
+          <p class="linea linea--valor v-b4-medium">{{ valorTitular }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isDocumentoVisible">
+          <p class="linea etiqueta">NIT</p>
+          <p class="linea linea--valor v-b4-medium">{{ valorDocumento }}</p>
+        </div>
+      </div>
+
+      <div class="separa-12"></div>
+
+      <div class="fila-flex">
+        <div class="dato izq" [class.campo-oculto]="!isExtraVisible">
+          <p class="linea etiqueta">Tipo de registro</p>
+          <p class="linea linea--valor v-b4-medium">{{ valorExtra }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isPie2DerVisible">
+          <p class="linea etiqueta">Número de expediente</p>
+          <p class="linea linea--valor v-b4-bold">{{ valorPie2Der }}</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
 </div>

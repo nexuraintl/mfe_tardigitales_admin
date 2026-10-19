@@ -94,21 +94,48 @@ export class ErrorHandlerService {
       }
     }
 
-    const titleParts: string[] = [];
-    if (codigoError) {
-      titleParts.push(`Error ${codigoError}`);
+    // Diagnóstico técnico en consola: trazabilidad completa para desarrollo y auditoría sin exponer internals a la UI
+    if (detalleTecnico || tablaAfectada || (rawError && status >= 400)) {
+      console.groupCollapsed(`[Microservicio Error] ${endpoint || 'HTTP ' + status} (Código ${codigoError || status})`);
+      console.error('Mensaje original:', mensaje);
+      if (tablaAfectada) console.error('Tabla afectada:', tablaAfectada);
+      if (detalleTecnico) console.error('Detalle técnico:', detalleTecnico);
+      if (etapa) console.error('Etapa:', etapa);
+      if (endpoint) console.error('Endpoint:', endpoint);
+      console.error('Payload completo:', rawError || error);
+      console.groupEnd();
     }
-    if (etapa) {
-      titleParts.push(etapa);
-    }
-    const title = titleParts.join(' - ') || 'Error del Microservicio';
 
-    let fullMessage = mensaje;
-    if (tablaAfectada) {
-      fullMessage += `\n\nTabla afectada: ${tablaAfectada}`;
+    // Detección genérica de conflictos de integridad, registros duplicados o errores de base de datos
+    const isConstraintDuplicate = status === 409 ||
+      /duplicate key|already exists|unique constraint|llave duplicada|ya existe/i.test(mensaje) ||
+      /duplicate key|already exists|unique constraint|llave duplicada|ya existe/i.test(detalleTecnico);
+
+    const isForeignKeyConflict = /foreign key|llave for[aá]nea|violates foreign key/i.test(mensaje) ||
+      /foreign key|llave for[aá]nea/i.test(detalleTecnico);
+
+    let cleanMessage = mensaje;
+    if (isConstraintDuplicate) {
+      cleanMessage = 'El registro que intenta ingresar ya se encuentra registrado en el sistema.';
+    } else if (isForeignKeyConflict) {
+      cleanMessage = 'No fue posible completar la operación debido a una inconsistencia en los datos asociados.';
+    } else if (/syntax error|syntaxerror|relation .* does not exist|column .* does not exist/i.test(mensaje) || /syntax error/i.test(detalleTecnico)) {
+      cleanMessage = 'Ocurrió un error interno al procesar los datos en el servidor.';
     }
-    if (detalleTecnico) {
-      fullMessage += `\nDetalle técnico: ${detalleTecnico}`;
+
+    let title = 'No fue posible completar la solicitud';
+    if (status === 0) {
+      title = 'Error de conexión';
+    } else if (status === 401 || status === 403) {
+      title = 'Acceso no autorizado';
+    } else if (status === 404) {
+      title = 'Recurso no encontrado';
+    } else if (isConstraintDuplicate) {
+      title = 'Registro ya existente';
+    } else if (isForeignKeyConflict) {
+      title = 'Conflicto de integridad';
+    } else if (codigoError && etapa) {
+      title = `Error ${codigoError}`;
     }
 
     return {
@@ -116,7 +143,7 @@ export class ErrorHandlerService {
       codigo_error: typeof codigoError === 'number' ? codigoError : parseInt(String(codigoError), 10) || undefined,
       etapa: etapa,
       title: title,
-      message: fullMessage,
+      message: cleanMessage,
       mensaje_base: mensaje,
       detalle_tecnico: detalleTecnico,
       tabla_afectada: tablaAfectada,
