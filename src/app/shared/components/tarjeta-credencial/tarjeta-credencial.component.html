@@ -38,11 +38,11 @@
           </div>
         </div>
         <div class="contador__columna">
-          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" title="Copiar número de tarjeta" data-nx-tooltip="Copiar número de tarjeta" aria-label="Copiar número de tarjeta">
+          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" data-nx-tooltip="Copiar número de tarjeta" aria-label="Copiar número de tarjeta">
             <p class="linea etiqueta">Tarjeta profesional</p>
             <div class="linea numero__fila">
               <span class="numero__cifra v-h4">{{ valorRegistro }}</span>
-              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" title="Copiar número de tarjeta" data-nx-tooltip="Copiar número de tarjeta">
+              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" data-nx-tooltip="Copiar número de tarjeta">
             </div>
           </div>
           <div class="separa-8"></div>
@@ -122,11 +122,11 @@
           <img [src]="fotoUrl" alt="Logo de la sociedad">
         </div>
         <div class="sociedad__columna">
-          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" title="Copiar número de registro" data-nx-tooltip="Copiar número de registro" aria-label="Copiar número de registro">
+          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" data-nx-tooltip="Copiar número de registro" aria-label="Copiar número de registro">
             <p class="linea etiqueta">Número de registro</p>
             <div class="linea numero__fila">
               <span class="numero__cifra v-h4">{{ valorRegistro }}</span>
-              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" title="Copiar número de registro" data-nx-tooltip="Copiar número de registro">
+              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" data-nx-tooltip="Copiar número de registro">
             </div>
           </div>
           <div class="separa-8"></div>
