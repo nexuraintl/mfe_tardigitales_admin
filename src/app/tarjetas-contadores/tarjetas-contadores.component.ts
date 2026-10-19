@@ -336,6 +336,8 @@ export class TarjetasContadoresComponent implements OnInit {
               let label = formatCanonicalLabel(c.label);
               if (c.key === 'nit') {
                 label = 'NIT';
+              } else if (c.key === 'no_documento' || c.key === 'documento' || c.key === 'identificacion' || c.key === 'cedula') {
+                label = 'Cédula de ciudadanía';
               } else if (c.key === 'fecha_registro' || c.key === 'fecha_radicacion') {
                 label = 'Fecha de radicación';
               }
@@ -368,6 +370,9 @@ export class TarjetasContadoresComponent implements OnInit {
           this.availableColumns.forEach(col => {
             col.label = formatCanonicalLabel(col.label);
             if (col.key === 'nit') col.label = 'NIT';
+            if (col.key === 'no_documento' || col.key === 'documento' || col.key === 'identificacion' || col.key === 'cedula') {
+              col.label = 'Cédula de ciudadanía';
+            }
             if (map.has(col.key)) {
               col.visible = !!map.get(col.key);
             }
@@ -475,7 +480,7 @@ export class TarjetasContadoresComponent implements OnInit {
     { key: 'no_expd', label: 'Expediente', tipo: 'number' },
     { key: 'tipo_asociado', label: 'Tipo', tipo: 'select', options: ['Primera vez', 'Duplicado', 'Sustitución'] },
     { key: 'fecha_emision', label: 'Fecha emisión', tipo: 'date' },
-    { key: 'no_documento', label: 'Documento', tipo: 'string' },
+    { key: 'no_documento', label: 'Cédula de ciudadanía', tipo: 'string' },
     { key: 'correo', label: 'Correo', tipo: 'string' },
     { key: 'universidad', label: 'Universidad', tipo: 'string' },
     { key: 'estado_tarjeta', label: 'Estado tarjeta', tipo: 'select', options: ['Activa', 'Cancelada', 'Fallecido', 'Emitida'] },
@@ -807,10 +812,10 @@ export class TarjetasContadoresComponent implements OnInit {
     }
     const identification = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
     if (!identification) {
-      this.errorIdentificacion = 'Ingrese el número de identificación.';
+      this.errorIdentificacion = 'Ingrese la cédula de ciudadanía.';
       hasError = true;
     } else if (identification.length < 3) {
-      this.errorIdentificacion = 'El número de identificación debe contener al menos 3 dígitos.';
+      this.errorIdentificacion = 'La cédula de ciudadanía debe contener al menos 3 dígitos.';
       hasError = true;
     }
     if (hasError) {
@@ -900,7 +905,7 @@ export class TarjetasContadoresComponent implements OnInit {
         error: (err) => {
           console.error('Error al emitir tarjeta:', err);
           const appErr = this.errorHandler.parseError(err, 'MS_3831_TARJETAS_CREATE', `${API_BASE}/tarjetas/contador/create`);
-          this.mensajeError = `${appErr.title}: ${appErr.message}`;
+          this.mensajeError = appErr.message;
           this.loading = false;
           this.cdr.detectChanges();
         }

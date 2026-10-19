@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
@@ -22,7 +22,7 @@ export interface HeaderAction {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class App implements OnInit {
+export class App implements OnInit, AfterViewInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -184,6 +184,35 @@ export class App implements OnInit {
         this.updateViewActions(this.currentUrl);
         this.cdr.detectChanges();
       });
+  }
+
+  ngAfterViewInit(): void {
+    this.hideHeaderSearch();
+  }
+
+  private hideHeaderSearch(): void {
+    if (typeof window === 'undefined') return;
+
+    const applyHide = () => {
+      const headerEl = document.querySelector('nx-admin-header');
+      if (headerEl?.shadowRoot) {
+        if (!headerEl.shadowRoot.getElementById('nx-hide-search-style')) {
+          const style = document.createElement('style');
+          style.id = 'nx-hide-search-style';
+          style.textContent = '.nx-search-container { display: none !important; }';
+          headerEl.shadowRoot.appendChild(style);
+        }
+      }
+    };
+
+    applyHide();
+    if (typeof customElements !== 'undefined') {
+      customElements.whenDefined('nx-admin-header').then(() => {
+        applyHide();
+        setTimeout(applyHide, 100);
+        setTimeout(applyHide, 500);
+      });
+    }
   }
 
   onRouteActivate(componentInstance: any): void {

@@ -1,6 +1,5 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PHOTO_CARD_PATH } from '../../../core/constants/assets.constants';
 
 export interface CredencialDatos {
   no_tarjeta?: string;
@@ -38,7 +37,7 @@ export interface CredencialBranding {
   templateUrl: './tarjeta-credencial.component.html',
   styleUrls: ['./tarjeta-credencial.component.css']
 })
-export class TarjetaCredencialComponent {
+export class TarjetaCredencialComponent implements AfterViewInit, OnDestroy, OnChanges {
   /** 'contador' | 'sociedad' */
   @Input() tipo: 'contador' | 'sociedad' = 'contador';
 
@@ -54,18 +53,232 @@ export class TarjetaCredencialComponent {
   /** Datos del titular a renderizar */
   @Input() datos: CredencialDatos = {};
 
-  /** Configuración de branding visual */
+  /** Configuración de branding visual (logo, patrón, color_fondo) */
   @Input() branding: CredencialBranding = {};
 
   /** Configuración de visibilidad de campos (ej. Validador QR) */
   @Input() camposVisibles?: any;
 
-  /** Foto por defecto si no viene en datos */
-  defaultPhoto: string = PHOTO_CARD_PATH;
+  @ViewChild('tarjetaRef') tarjetaRef?: ElementRef<HTMLElement>;
+  @ViewChild('degradadoRef') degradadoRef?: ElementRef<HTMLElement>;
 
   copiadoExitoso: boolean = false;
   logoError: boolean = false;
+  private resizeObserver?: ResizeObserver;
 
+  // Grano oficial de la plantilla Flutter / Figma (textura_overlay.png en blend mode overlay)
+  readonly texturaOverlay = 'assets/tarjeta/texturas/textura_overlay.png';
+
+  ngAfterViewInit(): void {
+    this.iniciarObservadorRedimension();
+    setTimeout(() => this.actualizarDegradado(), 50);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['tipo'] || changes['branding']) {
+      setTimeout(() => this.actualizarDegradado(), 50);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  private iniciarObservadorRedimension(): void {
+    if (typeof ResizeObserver !== 'undefined' && this.tarjetaRef?.nativeElement) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.actualizarDegradado();
+      });
+      this.resizeObserver.observe(this.tarjetaRef.nativeElement);
+    }
+  }
+
+  actualizarDegradado(): void {
+    const el = this.tarjetaRef?.nativeElement;
+    const deg = this.degradadoRef?.nativeElement;
+    if (!el || !deg) return;
+
+    const m = this.tipo === 'sociedad'
+      ? { lienzo: [358, 415.28], a: 0, b: 20.764, c: -17.9, d: 0, e: 179, f: 207.64 }
+      : { lienzo: [358, 418], a: -2.9701, b: 34.49, c: -29.539, d: -10.078, e: 212.8, f: 209 };
+
+    const w = el.clientWidth || 358;
+    const h = el.clientHeight || m.lienzo[1];
+    const sx = w / m.lienzo[0];
+    const sy = h / m.lienzo[1];
+
+    deg.style.transform = `matrix(${sx * m.a}, ${sy * m.b}, ${sx * m.c}, ${sy * m.d}, ${sx * m.e}, ${sy * m.f})`;
+  }
+
+  get patronFondoUrl(): string | null {
+    if (this.branding?.patron_url) return this.branding.patron_url;
+    return this.tipo === 'sociedad'
+      ? 'assets/images/pattern_sociedades_opt.jpg'
+      : 'assets/images/pattern_jcc_opt.jpg';
+  }
+
+  get isImpresion(): boolean {
+    return this.modo === 'impresion';
+  }
+
+  get logoUrl(): string | null {
+    if (this.logoError) return null;
+    if (this.isImpresion) {
+      return this.branding?.logo_impresion_url || this.branding?.logo_url || 'assets/tarjeta/logos/logo_jcc_horizontal.svg';
+    }
+    return this.branding?.logo_url || 'assets/tarjeta/logos/logo_jcc_horizontal.svg';
+  }
+
+  onLogoError(event: Event): void {
+    this.logoError = true;
+  }
+
+  get fotoUrl(): string {
+    if (this.datos?.foto) return this.datos.foto;
+    return this.tipo === 'sociedad'
+      ? 'assets/tarjeta/logos/sociedad_logo_ejemplo.png'
+      : 'assets/tarjeta/logos/contador_foto_ejemplo.jpg';
+  }
+
+  get degradadoFondo(): string {
+    return this.generarDegradadoConico(this.branding?.color_fondo);
+  }
+
+  /**
+   * Convierte un código hexadecimal a componentes HSL
+   */
+  private hexToHsl(hex: string): { h: number; s: number; l: number } {
+    let clean = (hex || '').replace('#', '').trim();
+    if (clean.length === 3) {
+      clean = clean.split('').map(c => c + c).join('');
+    }
+    const num = parseInt(clean, 16);
+    if (isNaN(num) || clean.length !== 6) {
+      return this.tipo === 'sociedad'
+        ? { h: 38, s: 100, l: 4.5 }
+        : { h: 226, s: 58, l: 9.4 };
+    }
+    const r = ((num >> 16) & 255) / 255;
+    const g = ((num >> 8) & 255) / 255;
+    const b = (num & 255) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s: s * 100, l: l * 100 };
+  }
+
+  /**
+   * Convierte HSL a código hexadecimal #RRGGBB
+   */
+  private hslToHex(h: number, s: number, l: number): string {
+    h = (h % 360 + 360) % 360 / 360;
+    s = Math.max(0, Math.min(100, s)) / 100;
+    l = Math.max(0, Math.min(100, l)) / 100;
+
+    let r: number, g: number, b: number;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p: number, q: number, t: number) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    const toHex = (x: number) => {
+      const hex = Math.round(x * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+  }
+
+  /**
+   * Genera el conic-gradient oficial con la curva matemática de luminosidad
+   * de la plantilla Flutter / Figma modulada según el color_fondo configurado en branding.
+   */
+  generarDegradadoConico(hexColor?: string): string {
+    if (this.isImpresion) return '#ffffff';
+
+    const color = hexColor || (this.tipo === 'sociedad' ? '#170F00' : '#0A1026');
+    const { h, s, l } = this.hexToHsl(color);
+
+    if (this.tipo === 'contador') {
+      const lBase = Math.max(6.0, Math.min(l, 25.0));
+      const lPeak = Math.min(75.0, lBase + 38.4);
+      const stops: [number, number][] = [
+        [0.0, lBase],
+        [2.0575, lBase * 0.7],
+        [5.2764, Math.max(1.5, lBase * 0.21)],
+        [11.593, lBase * 0.81],
+        [17.91, lBase * 1.44],
+        [30.543, lBase + (lPeak - lBase) * 0.40],
+        [43.176, lBase + (lPeak - lBase) * 0.70],
+        [55.809, lPeak],
+        [74.105, lBase + (lPeak - lBase) * 0.64],
+        [83.253, lBase + (lPeak - lBase) * 0.46],
+        [92.401, lBase + (lPeak - lBase) * 0.29],
+        [98.839, lBase * 1.19],
+        [100.0, lBase]
+      ];
+      const cssStops = stops.map(([pct, lVal]) => `${this.hslToHex(h, s, lVal)} ${pct}%`).join(', ');
+      return `conic-gradient(from 90deg at 50% 50%, ${cssStops})`;
+    } else {
+      const lBase = Math.max(4.0, Math.min(l, 20.0));
+      const lPeak = Math.min(75.0, lBase + 58.6);
+      const stops: [number, number][] = [
+        [0.0, lBase],
+        [3.6358, lBase + (lPeak - lBase) * 0.06],
+        [7.2716, lBase + (lPeak - lBase) * 0.12],
+        [14.543, lBase + (lPeak - lBase) * 0.25],
+        [21.815, lBase + (lPeak - lBase) * 0.38],
+        [29.087, lBase + (lPeak - lBase) * 0.50],
+        [43.63, lBase + (lPeak - lBase) * 0.75],
+        [58.173, lPeak],
+        [68.63, lBase + (lPeak - lBase) * 0.75],
+        [79.087, lBase + (lPeak - lBase) * 0.50],
+        [84.315, lBase + (lPeak - lBase) * 0.38],
+        [89.543, lBase + (lPeak - lBase) * 0.25],
+        [94.772, lBase + (lPeak - lBase) * 0.12],
+        [97.386, lBase + (lPeak - lBase) * 0.06],
+        [100.0, lBase]
+      ];
+      const cssStops = stops.map(([pct, lVal]) => `${this.hslToHex(h, s, lVal)} ${pct}%`).join(', ');
+      return `conic-gradient(from 90deg at 50% 50%, ${cssStops})`;
+    }
+  }
+
+  get transformDegradado(): string {
+    return this.tipo === 'sociedad'
+      ? 'matrix(0, 20.764, -17.9, 0, 179, 207.64)'
+      : 'matrix(-2.9701, 34.49, -29.539, -10.078, 212.8, 209)';
+  }
+
+  // ================= VISIBILIDAD DE CAMPOS (VALIDADOR QR) =================
   get isFotoVisible(): boolean {
     if (!this.camposVisibles) return true;
     if (this.camposVisibles.foto !== undefined) return Boolean(this.camposVisibles.foto);
@@ -75,7 +288,6 @@ export class TarjetaCredencialComponent {
 
   get isRegistroVisible(): boolean {
     if (!this.camposVisibles) return true;
-    if (this.camposVisibles.registro !== undefined) return Boolean(this.camposVisibles.registro);
     if (this.tipo === 'sociedad') {
       if (this.camposVisibles.val_numero_registro !== undefined) return Boolean(this.camposVisibles.val_numero_registro);
       if (this.camposVisibles.val_matricula !== undefined) return Boolean(this.camposVisibles.val_matricula);
@@ -96,8 +308,8 @@ export class TarjetaCredencialComponent {
   get isMedio3Visible(): boolean {
     if (!this.camposVisibles) return true;
     if (this.tipo === 'sociedad') {
-      if (this.camposVisibles.expediente !== undefined) return Boolean(this.camposVisibles.expediente);
-      if (this.camposVisibles.val_expediente !== undefined) return Boolean(this.camposVisibles.val_expediente);
+      if (this.camposVisibles.resolucion !== undefined) return Boolean(this.camposVisibles.resolucion);
+      if (this.camposVisibles.val_resolucion !== undefined) return Boolean(this.camposVisibles.val_resolucion);
     } else {
       if (this.camposVisibles.resolucion !== undefined) return Boolean(this.camposVisibles.resolucion);
       if (this.camposVisibles.val_resolucion !== undefined) return Boolean(this.camposVisibles.val_resolucion);
@@ -107,7 +319,6 @@ export class TarjetaCredencialComponent {
 
   get isTitularVisible(): boolean {
     if (!this.camposVisibles) return true;
-    if (this.camposVisibles.titular !== undefined) return Boolean(this.camposVisibles.titular);
     if (this.tipo === 'sociedad') {
       if (this.camposVisibles.val_razon_social !== undefined) return Boolean(this.camposVisibles.val_razon_social);
       if (this.camposVisibles.val_nombre !== undefined) return Boolean(this.camposVisibles.val_nombre);
@@ -120,7 +331,6 @@ export class TarjetaCredencialComponent {
 
   get isDocumentoVisible(): boolean {
     if (!this.camposVisibles) return true;
-    if (this.camposVisibles.documento !== undefined) return Boolean(this.camposVisibles.documento);
     if (this.tipo === 'sociedad') {
       if (this.camposVisibles.val_nit !== undefined) return Boolean(this.camposVisibles.val_nit);
       if (this.camposVisibles.val_cedula !== undefined) return Boolean(this.camposVisibles.val_cedula);
@@ -133,7 +343,6 @@ export class TarjetaCredencialComponent {
 
   get isExtraVisible(): boolean {
     if (!this.camposVisibles) return true;
-    if (this.camposVisibles.extra !== undefined) return Boolean(this.camposVisibles.extra);
     if (this.tipo === 'sociedad') {
       if (this.camposVisibles.val_tipo_registro !== undefined) return Boolean(this.camposVisibles.val_tipo_registro);
     } else {
@@ -145,8 +354,8 @@ export class TarjetaCredencialComponent {
   get isPie2DerVisible(): boolean {
     if (!this.camposVisibles) return true;
     if (this.tipo === 'sociedad') {
-      if (this.camposVisibles.resolucion !== undefined) return Boolean(this.camposVisibles.resolucion);
-      if (this.camposVisibles.val_resolucion !== undefined) return Boolean(this.camposVisibles.val_resolucion);
+      if (this.camposVisibles.expediente !== undefined) return Boolean(this.camposVisibles.expediente);
+      if (this.camposVisibles.val_expediente !== undefined) return Boolean(this.camposVisibles.val_expediente);
     } else {
       if (this.camposVisibles.expediente !== undefined) return Boolean(this.camposVisibles.expediente);
       if (this.camposVisibles.val_expediente !== undefined) return Boolean(this.camposVisibles.val_expediente);
@@ -154,175 +363,39 @@ export class TarjetaCredencialComponent {
     return true;
   }
 
-  get isImpresion(): boolean {
-    return this.modo === 'impresion';
-  }
-
-  get fondoTarjeta(): string {
-    if (this.isImpresion) return '#ffffff';
-    return this.branding.color_fondo || (this.tipo === 'sociedad' ? '#170e00' : '#14275f');
-  }
-
-  get fondoTarjetaOscuro(): string {
-    if (this.isImpresion) return '#ffffff';
-    return this.oscurecerColor(this.fondoTarjeta, 14);
-  }
-
-  get fondoTarjetaProfundo(): string {
-    if (this.isImpresion) return '#ffffff';
-    return this.oscurecerColor(this.fondoTarjeta, 25);
-  }
-
-  private oscurecerColor(color: string, porcentaje: number): string {
-    if (!color) return '#000000';
-    let hex = color.trim();
-    if (!hex.startsWith('#')) return '#000000';
-    hex = hex.replace('#', '');
-    if (hex.length === 3) {
-      hex = hex.split('').map(c => c + c).join('');
-    }
-    if (hex.length !== 6) return '#000000';
-    const num = parseInt(hex, 16);
-    if (isNaN(num)) return '#000000';
-
-    const factor = Math.max(0, Math.min(1, (100 - porcentaje) / 100));
-    const r = Math.round((num >> 16) * factor);
-    const g = Math.round(((num >> 8) & 0x00ff) * factor);
-    const b = Math.round((num & 0x0000ff) * factor);
-
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-  }
-
-  get colorLetra(): string {
-    if (this.isImpresion) {
-      return this.branding.color_letra_impresion || '#0f172a';
-    }
-    return this.branding.color_letra || '#ffffff';
-  }
-
-  get fuenteTarjeta(): string {
-    return "'Satoshi', system-ui, -apple-system, sans-serif";
-  }
-
-  get patronFondo(): string | null {
-    if (this.isImpresion) {
-      if (this.branding.patron_impresion_url) {
-        return `url(${this.branding.patron_impresion_url})`;
-      }
-      return 'none';
-    }
-    if (this.branding.patron_url) {
-      return `url(${this.branding.patron_url})`;
-    }
-    const defaultPatron = this.tipo === 'sociedad'
-      ? 'assets/images/pattern_sociedades_opt.jpg'
-      : 'assets/images/pattern_jcc_opt.jpg';
-    return `url(${defaultPatron})`;
-  }
-
-  get logoUrl(): string | null {
-    if (this.logoError) return null;
-    if (this.isImpresion) {
-      return this.branding.logo_impresion_url || this.branding.logo_url || 'assets/images/logo_impresion_jcc.png';
-    }
-    return this.branding.logo_url || 'assets/images/logo-jcc.png';
-  }
-
-  onLogoError(event: Event): void {
-    this.logoError = true;
-  }
-
-  get fotoUrl(): string {
-    if (this.datos.foto) return this.datos.foto;
-    return this.tipo === 'sociedad'
-      ? 'assets/images/card-logo-sociedades.png'
-      : this.defaultPhoto;
-  }
-
-  // ===== BLOQUE MEDIO DERECHA (Item 1: Registro / Tarjeta) =====
-  get labelRegistro(): string {
-    return this.tipo === 'sociedad' ? 'Número de registro' : 'Tarjeta profesional';
-  }
-
+  // ================= VALORES QUEMADOS OFICIALES (FLUTTER 1:1) =================
   get valorRegistro(): string {
-    return this.datos.no_tarjeta || this.datos.inscripcion || this.datos.matricula || (this.tipo === 'sociedad' ? '5892' : '492031-T');
-  }
-
-  // ===== BLOQUE MEDIO DERECHA (Item 2: Fecha de Inscripción) =====
-  get labelFecha(): string {
-    return 'Fecha res. inscripción';
+    return this.datos?.no_tarjeta || this.datos?.inscripcion || this.datos?.matricula || (this.tipo === 'sociedad' ? '5892' : '492031-T');
   }
 
   get valorFecha(): string {
-    return this.datos.fecha_resolucion || (this.tipo === 'sociedad' ? '12 - Mar - 2025' : '06 - Feb - 2026');
-  }
-
-  // ===== BLOQUE MEDIO DERECHA (Item 3: Resolución en Contador / Expediente en Sociedad) =====
-  get labelMedio3(): string {
-    return this.tipo === 'sociedad' ? 'Número de expediente' : 'Resolución de inscripción';
+    return this.datos?.fecha_resolucion || (this.tipo === 'sociedad' ? '12 - Mar - 2025' : '06 - Feb - 2026');
   }
 
   get valorMedio3(): string | number {
     return this.tipo === 'sociedad'
-      ? (this.datos.no_expd || this.datos.expediente || '621948')
-      : (this.datos.resolucion || '289');
-  }
-
-  // ===== PIE INFERIOR (Fila 1 Izq: Nombre / Razón Social) =====
-  get labelTitular(): string {
-    return this.tipo === 'sociedad' ? 'Razón social' : 'Nombre';
+      ? (this.datos?.resolucion || '0142')
+      : (this.datos?.resolucion || '289');
   }
 
   get valorTitular(): string {
-    return this.datos.nombre_completo || this.datos.razon_social || this.datos.solicitante || (this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas');
-  }
-
-  // ===== PIE INFERIOR (Fila 1 Der: Documento / NIT) =====
-  get labelDocumento(): string {
-    return this.tipo === 'sociedad' ? 'NIT' : 'Cédula de ciudadanía';
+    return this.datos?.nombre_completo || this.datos?.razon_social || this.datos?.solicitante || (this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas');
   }
 
   get valorDocumento(): string {
-    const raw = this.datos.no_documento || this.datos.nit || this.datos.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
+    const raw = this.datos?.no_documento || this.datos?.nit || this.datos?.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
     if (!raw) return '';
     return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
   }
 
-  // ===== PIE INFERIOR (Fila 2 Izq: Institución / Tipo de Registro) =====
-  get labelExtra(): string {
-    return this.tipo === 'sociedad' ? 'Tipo de registro' : 'Institución de educación superior';
-  }
-
   get valorExtra(): string {
-    return this.datos.universidad || (this.tipo === 'sociedad' ? 'Sociedad de contadores' : 'Universidad de La Salle');
-  }
-
-  // ===== PIE INFERIOR (Fila 2 Der: Expediente en Contador / Res. Inscripción en Sociedad) =====
-  get labelPie2Der(): string {
-    return this.tipo === 'sociedad' ? 'Res. inscripción' : 'No. expediente';
+    return this.datos?.universidad || (this.tipo === 'sociedad' ? 'Sociedad de Contadores' : 'Universidad de La Salle');
   }
 
   get valorPie2Der(): string | number {
     return this.tipo === 'sociedad'
-      ? (this.datos.resolucion || '0142')
-      : (this.datos.expediente || '621948');
-  }
-
-  // Getters auxiliares para retrocompatibilidad
-  get labelResolucion(): string {
-    return 'Res. inscripción';
-  }
-
-  get valorResolucion(): string {
-    return this.datos.resolucion || (this.tipo === 'sociedad' ? '0142' : '289');
-  }
-
-  get labelExpediente(): string {
-    return 'No. expediente';
-  }
-
-  get valorExpediente(): string | number {
-    return this.datos.expediente || (this.tipo === 'sociedad' ? '621948' : '621948');
+      ? (this.datos?.no_expd || this.datos?.expediente || '589201')
+      : (this.datos?.no_expd || this.datos?.expediente || '621948');
   }
 
   copiarMatricula(event: MouseEvent): void {

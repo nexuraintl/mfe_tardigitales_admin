@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnChanges, OnDestroy, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/constants/tarjetas.constants';
 import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../tarjeta-credencial/tarjeta-credencial.component';
@@ -12,12 +12,12 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
     <!-- Modal de Detalle (Estructura Ejecutiva Limpia) -->
     <div class="modal-backdrop fade show" *ngIf="isOpen"></div>
     <div class="modal fade show d-block" tabindex="-1" *ngIf="isOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrar.emit()">
-      <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-content shadow border-0 rounded-3 overflow-hidden">
           <!-- Cabecera del Modal -->
           <div class="modal-header bg-white border-bottom py-3 px-4">
             <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle de registro</h5>
-            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" title="Cerrar" data-nx-tooltip="Cerrar"></button>
           </div>
 
           <!-- Cuerpo del Modal -->
@@ -41,7 +41,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                   </span>
                 </div>
                 <div class="small text-secondary mb-1">
-                  <span class="fw-semibold text-dark me-2">{{ isSociedades ? 'NIT:' : 'Documento:' }}</span>
+                  <span class="fw-semibold text-dark me-2">{{ isSociedades ? 'NIT:' : 'Cédula de ciudadanía:' }}</span>
                   <span>{{ isSociedades ? nitVal : documentoContadorVal }}</span>
                 </div>
                 <div class="small text-muted" style="font-size: 11px;">
@@ -81,7 +81,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Documento</label>
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Cédula de ciudadanía</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ documentoContadorVal }}</div>
                   </div>
 
@@ -171,7 +171,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
     <!-- Modal de Tarjeta Profesional Digital -->
     <div class="modal-backdrop fade show" *ngIf="isCardModalOpen"></div>
     <div class="modal fade show d-block" tabindex="-1" *ngIf="isCardModalOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrarTarjeta.emit()">
-      <div class="modal-dialog modal-dialog-centered modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" (click)="$event.stopPropagation()">
         <div class="modal-content shadow border-0">
           <div class="modal-header bg-white border-bottom py-2.5 px-4 d-flex justify-content-between align-items-center">
             <div>
@@ -179,7 +179,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
               <small class="text-muted">Diseño oficial para {{ isSociedades ? 'sociedades' : 'contadores' }}</small>
             </div>
             
-            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" title="Cerrar" data-nx-tooltip="Cerrar"></button>
           </div>
           
           <div class="modal-body p-4 d-flex justify-content-center bg-light">
@@ -196,12 +196,15 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
           </div>
           
           <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-between align-items-center">
-            <button type="button" class="btn btn-outline-secondary btn-sm px-4 fw-semibold" (click)="cerrarTarjeta.emit()">Cerrar</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm px-4 fw-semibold" (click)="cerrarTarjeta.emit()" title="Cerrar visualización" data-nx-tooltip="Cerrar">Cerrar</button>
             <button
               type="button"
               class="btn btn-primary btn-sm px-4 fw-semibold d-flex align-items-center gap-2"
               (click)="exportarTarjetaPdf()"
               [disabled]="exportandoPdf"
+              title="Exportar tarjeta en formato PDF"
+              data-nx-tooltip="Exportar tarjeta en PDF"
+              aria-label="Exportar tarjeta en PDF"
             >
               <span *ngIf="exportandoPdf" class="spinner-border spinner-border-sm"></span>
               <span *ngIf="!exportandoPdf" class="fa fa-file-pdf-o"></span>
@@ -213,9 +216,39 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
     </div>
   `
 })
-export class ModalDetalleTarjetaComponent {
+export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
+  private renderer = inject(Renderer2);
+
   @Input() isOpen: boolean = false;
   @Input() isCardModalOpen: boolean = false;
+
+  ngOnChanges(): void {
+    this.handleScrollLock();
+  }
+
+  ngOnDestroy(): void {
+    this.releaseScrollLock();
+  }
+
+  private handleScrollLock(): void {
+    if (typeof document === 'undefined') return;
+    if (this.isOpen || this.isCardModalOpen) {
+      this.renderer.addClass(document.body, 'modal-open');
+      this.renderer.setStyle(document.body, 'overflow', 'hidden');
+      const content = document.querySelector('.content-area') as HTMLElement;
+      if (content) this.renderer.setStyle(content, 'overflow', 'hidden');
+    } else {
+      this.releaseScrollLock();
+    }
+  }
+
+  private releaseScrollLock(): void {
+    if (typeof document === 'undefined') return;
+    this.renderer.removeClass(document.body, 'modal-open');
+    this.renderer.removeStyle(document.body, 'overflow');
+    const content = document.querySelector('.content-area') as HTMLElement;
+    if (content) this.renderer.removeStyle(content, 'overflow');
+  }
   @Input() selectedTarjeta: any = null;
   @Input() tipoTarjeta: 'contadores' | 'sociedades' = 'contadores';
   @Input() brandingColorFondo: string = '#14275f';
