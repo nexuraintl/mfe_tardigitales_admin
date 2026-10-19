@@ -7,6 +7,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  overflow: visible;
 }
 
 :root, .tarjeta {
@@ -19,7 +20,7 @@
   --radio-tarjeta: 24px;              /* Radius/2 */
   --blanco: #ffffff;                  /* Neutral/100 */
   --vacio: rgba(43, 64, 135, 0.10);   /* Primary alpha 10: foto/logo sin imagen */
-  --sombra-tarjeta: 0 4px 2px rgba(0, 0, 0, 0.25);
+  --sombra-tarjeta: 0 16px 32px -4px rgba(15, 23, 42, 0.28), 0 4px 12px -2px rgba(15, 23, 42, 0.12);
 
   --logo-ancho: 146px;                /* AppMedidas.tarjetaLogo */
   --logo-alto: 42px;

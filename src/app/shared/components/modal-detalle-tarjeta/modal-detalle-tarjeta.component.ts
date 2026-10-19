@@ -17,7 +17,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
           <!-- Cabecera del Modal -->
           <div class="modal-header bg-white border-bottom py-3 px-4">
             <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle de registro</h5>
-            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" title="Cerrar" data-nx-tooltip="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
           </div>
 
           <!-- Cuerpo del Modal -->
@@ -168,22 +168,20 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
       </div>
     </div>
 
-    <!-- Modal de Tarjeta Profesional Digital -->
+    <!-- Modal de Tarjeta Profesional Digital (Diseño Minimalista, Sobrio y Centrado) -->
     <div class="modal-backdrop fade show" *ngIf="isCardModalOpen"></div>
     <div class="modal fade show d-block" tabindex="-1" *ngIf="isCardModalOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrarTarjeta.emit()">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl" (click)="$event.stopPropagation()">
-        <div class="modal-content shadow border-0">
-          <div class="modal-header bg-white border-bottom py-2.5 px-4 d-flex justify-content-between align-items-center">
-            <div>
-              <h5 class="modal-title fw-bold text-dark mb-0">Visualización de tarjeta profesional</h5>
-              <small class="text-muted">Diseño oficial para {{ isSociedades ? 'sociedades' : 'contadores' }}</small>
-            </div>
-            
-            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" title="Cerrar" data-nx-tooltip="Cerrar"></button>
+      <div class="modal-dialog modal-dialog-centered card-modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content card-modal-content">
+          <!-- Cabecera limpia y compacta -->
+          <div class="card-modal-header">
+            <h6 class="modal-title mb-0">{{ isSociedades ? 'Tarjeta digital de sociedad' : 'Tarjeta profesional digital' }}</h6>
+            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
           </div>
           
-          <div class="modal-body p-4 d-flex justify-content-center bg-light">
-            <div class="branding-preview-card w-100" style="max-width: 900px;">
+          <!-- Cuerpo enfocado exclusivamente en la tarjeta, sin contenedores anidados ni bordes superfluos -->
+          <div class="card-modal-body">
+            <div class="card-modal-scale-wrapper">
               <app-tarjeta-credencial
                 [tipo]="isSociedades ? 'sociedad' : 'contador'"
                 modo="digital"
@@ -195,18 +193,17 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
             </div>
           </div>
           
-          <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-between align-items-center">
-            <button type="button" class="btn btn-outline-secondary btn-sm px-4 fw-semibold" (click)="cerrarTarjeta.emit()" title="Cerrar visualización" data-nx-tooltip="Cerrar">Cerrar</button>
+          <!-- Pie sobrio y minimalista -->
+          <div class="card-modal-footer">
+            <button type="button" class="btn btn-light btn-sm px-3.5 py-1.5 fw-semibold border text-secondary" (click)="cerrarTarjeta.emit()">Cerrar</button>
             <button
               type="button"
-              class="btn btn-primary btn-sm px-4 fw-semibold d-flex align-items-center gap-2"
+              class="btn btn-primary btn-sm px-3.5 py-1.5 fw-semibold d-flex align-items-center gap-2 shadow-sm"
               (click)="exportarTarjetaPdf()"
               [disabled]="exportandoPdf"
-              title="Exportar tarjeta en formato PDF"
-              data-nx-tooltip="Exportar tarjeta en PDF"
-              aria-label="Exportar tarjeta en PDF"
+              aria-label="Exportar tarjeta"
             >
-              <span *ngIf="exportandoPdf" class="spinner-border spinner-border-sm"></span>
+              <span *ngIf="exportandoPdf" class="spinner-border spinner-border-sm" role="status"></span>
               <span *ngIf="!exportandoPdf" class="fa fa-file-pdf-o"></span>
               <span>{{ exportandoPdf ? 'Generando PDF...' : 'Exportar tarjeta' }}</span>
             </button>
@@ -214,7 +211,107 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .card-modal-dialog {
+      max-width: 420px;
+      width: 92%;
+      margin: 1.5rem auto;
+    }
+    .card-modal-content {
+      border: 0;
+      border-radius: 18px;
+      box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.04);
+      background: #ffffff;
+      overflow: hidden;
+    }
+    .card-modal-header {
+      background: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-modal-header .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f172a;
+      letter-spacing: -0.2px;
+    }
+    .card-modal-body {
+      background: #f8fafc;
+      padding: 24px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 0;
+      overflow-y: auto;
+      max-height: calc(88vh - 110px);
+    }
+    .card-modal-scale-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card-modal-footer {
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Adaptabilidad sobria ante pantallas con altura reducida */
+    @media (max-height: 820px) {
+      .card-modal-dialog {
+        margin: 1rem auto;
+      }
+      .card-modal-body {
+        padding: 18px 16px;
+      }
+    }
+    @media (max-height: 720px) {
+      .card-modal-dialog {
+        margin: 0.5rem auto;
+      }
+      .card-modal-header {
+        padding: 10px 16px;
+      }
+      .card-modal-body {
+        padding: 12px 14px;
+      }
+      .card-modal-footer {
+        padding: 10px 16px;
+      }
+      .card-modal-scale-wrapper {
+        transform: scale(0.92);
+        transform-origin: center center;
+        margin-top: -16px;
+        margin-bottom: -16px;
+      }
+    }
+    @media (max-height: 640px) {
+      .card-modal-dialog {
+        margin: 0.25rem auto;
+      }
+      .card-modal-scale-wrapper {
+        transform: scale(0.82);
+        margin-top: -36px;
+        margin-bottom: -36px;
+      }
+    }
+    @media (max-height: 560px) {
+      .card-modal-scale-wrapper {
+        transform: scale(0.72);
+        margin-top: -56px;
+        margin-bottom: -56px;
+      }
+    }
+  `]
 })
 export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
   private renderer = inject(Renderer2);
