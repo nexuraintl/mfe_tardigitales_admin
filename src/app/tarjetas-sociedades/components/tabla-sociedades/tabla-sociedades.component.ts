@@ -14,7 +14,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
   template: `
     <!-- Alertas del Sistema -->
     <nx-alert [error]="currentError" (onClose)="currentErrorChange.emit(null)"></nx-alert>
-    <nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" (onClose)="mensajeExitoChange.emit('')"></nx-alert>
+    <nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="6000" (onClose)="mensajeExitoChange.emit('')"></nx-alert>
 
     <!-- Constructor de Múltiples Filtros Dinámicos (Exclusivo para Reportes) -->
     <app-filter-builder

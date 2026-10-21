@@ -728,6 +728,59 @@ code {
   border-radius: 6px;
 }
 
+/* ============================================================================
+ * MEJORA GLOBAL: TOOLTIPS [data-nx-tooltip] Y BOTONES DE CIERRE (MODALES)
+ * ============================================================================ */
+/* Garantizar que el tooltip flote por encima de cualquier modal, header o backdrop */
+[data-nx-tooltip]::after,
+[data-tooltip]::after {
+  z-index: 999999 !important;
+}
+
+/* Evitar que cabeceras de modales o tarjetas recorten el tooltip */
+.modal-content {
+  overflow: visible !important;
+}
+.modal-header {
+  overflow: visible !important;
+}
+
+/* Evitar sombras o recuadros indeseados en el botón de cerrar al hacer hover o focus */
+.modal-header .btn-close,
+.card-modal-header .btn-close {
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 0.65;
+  transition: opacity 0.15s ease-in-out;
+}
+.modal-header .btn-close:hover,
+.card-modal-header .btn-close:hover {
+  opacity: 1;
+  box-shadow: none !important;
+}
+
+/* Tooltip para el botón de cerrar en modales: anclado hacia la izquierda centrado verticalmente */
+.modal-header .btn-close[data-nx-tooltip]::after,
+.modal-header .btn-close[data-tooltip]::after,
+.card-modal-header .btn-close[data-nx-tooltip]::after,
+.card-modal-header .btn-close[data-tooltip]::after {
+  bottom: auto !important;
+  top: 50% !important;
+  right: calc(100% + 8px) !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+}
+
+.modal-header .btn-close[data-nx-tooltip]:hover::after,
+.modal-header .btn-close[data-tooltip]:hover::after,
+.card-modal-header .btn-close[data-nx-tooltip]:hover::after,
+.card-modal-header .btn-close[data-tooltip]:hover::after {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(-50%) !important;
+}
+
 
 
 

@@ -2,7 +2,8 @@ import { Component, OnInit, inject, ChangeDetectorRef, HostListener } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
@@ -157,14 +158,28 @@ export class TarjetasSociedadesComponent implements OnInit {
   totalPagesCount: number = 0;
   searchTimeout: any = null;
   private static brandingCache2: any = null;
+  private static pendingSuccessMessage: string = '';
 
   ngOnInit(): void {
+    if (TarjetasSociedadesComponent.pendingSuccessMessage) {
+      this.mensajeExito = TarjetasSociedadesComponent.pendingSuccessMessage;
+      TarjetasSociedadesComponent.pendingSuccessMessage = '';
+    } else if (history.state?.mensajeExito) {
+      this.mensajeExito = history.state.mensajeExito;
+    }
+
     this.loadColumnsPreference();
     this.cargarBrandingPublicado();
 
     this.route.paramMap.subscribe(params => {
       this.evaluarRutaActual(params);
     });
+
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.evaluarRutaActual();
+      });
   }
 
   evaluarRutaActual(paramsMap?: any): void {
@@ -187,6 +202,12 @@ export class TarjetasSociedadesComponent implements OnInit {
     } else if (url.includes('/emision-masiva')) {
       this.vistaActiva = 'emision-masiva';
     } else {
+      if (TarjetasSociedadesComponent.pendingSuccessMessage) {
+        this.mensajeExito = TarjetasSociedadesComponent.pendingSuccessMessage;
+        TarjetasSociedadesComponent.pendingSuccessMessage = '';
+      } else if (history.state?.mensajeExito) {
+        this.mensajeExito = history.state.mensajeExito;
+      }
       this.vistaActiva = 'listado';
       this.cargarTarjetas();
     }
@@ -805,11 +826,12 @@ export class TarjetasSociedadesComponent implements OnInit {
       this.errorTipoSolicitud = 'Seleccione el tipo de solicitud.';
       hasError = true;
     }
-    const identification = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
-    if (!identification) {
+    const identification = (this.nuevaIdentificacion || '').replace(/[^\d-]/g, '').trim();
+    const digitsOnly = identification.replace(/\D/g, '');
+    if (!digitsOnly) {
       this.errorIdentificacion = 'Ingrese el NIT.';
       hasError = true;
-    } else if (identification.length < 3) {
+    } else if (digitsOnly.length < 3) {
       this.errorIdentificacion = 'El NIT debe contener al menos 3 dígitos.';
       hasError = true;
     }
@@ -888,12 +910,16 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.http.post<any>(`${API_BASE}/tarjetas/sociedad/create?client_id=${this.clientId}`, payload)
       .subscribe({
         next: (res) => {
-          this.mensajeExito = res?.message || "Tarjeta digital de sociedad emitida exitosamente.";
+          const successMsg = res?.message || "Tarjeta digital de sociedad emitida exitosamente.";
+          TarjetasSociedadesComponent.pendingSuccessMessage = successMsg;
+          this.mensajeExito = successMsg;
           this.loading = false;
           this.busquedaRealizada = false;
           this.datosConsulta = null;
           this.nuevaIdentificacion = '';
-          this.router.navigate(['/tarjetas-sociedades']);
+          this.vistaActiva = 'listado';
+          this.cargarTarjetas();
+          this.router.navigate(['/tarjetas-sociedades'], { state: { mensajeExito: successMsg } });
           this.cdr.detectChanges();
         },
         error: (err) => {
