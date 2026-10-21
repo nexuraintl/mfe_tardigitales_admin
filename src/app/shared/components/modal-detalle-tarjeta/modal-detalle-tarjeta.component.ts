@@ -371,6 +371,7 @@ export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
     this.exportandoPdf = true;
     try {
       await this.pdfService.generarPdfTarjeta({
+        id: this.selectedTarjeta.id,
         tipo: this.isSociedades ? 'sociedad' : 'contador',
         no_tarjeta: this.tarjetaProfesionalVal !== '-' ? this.tarjetaProfesionalVal : undefined,
         inscripcion: this.numeroInscripcionVal !== '-' ? this.numeroInscripcionVal : undefined,
