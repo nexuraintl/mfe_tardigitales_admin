@@ -2,8 +2,10 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as QRCode from 'qrcode';
+import { API_BASE, CLIENT_ID } from '../config/api.config';
 
 export interface TarjetaPdfData {
+  id?: number | string;
   tipo: 'contador' | 'sociedad';
   no_tarjeta?: string;
   inscripcion?: string;
@@ -27,9 +29,9 @@ export interface TarjetaPdfData {
 }
 
 /**
- * NOTA ARQUITECTURA:
- * La generación de este PDF se realiza en caliente en el navegador mediante JavaScript (jsPDF + html2canvas)
- * para responder de forma inmediata a la descarga oficial con QR y firma institucional.
+ * SERVICIO OFICIAL DE EXPORTACIÓN PDF / PDF/A
+ * - Prioridad 1: Descarga oficial desde el endpoint del Microservicio Python (PDF/A-2b con ReportLab).
+ * - Fallback: Generación en caliente en el navegador mediante JavaScript (jsPDF + html2canvas).
  */
 @Injectable({
   providedIn: 'root'
@@ -40,11 +42,23 @@ export class TarjetaPdfService {
    * Genera y descarga el documento PDF oficial de la tarjeta con código QR y firma institucional.
    */
   async generarPdfTarjeta(datos: TarjetaPdfData): Promise<void> {
-    // 1. Generar código QR en Base64 a partir del Hash SHA-256 de la tarjeta
+    // 1. Intentar descargar el documento oficial PDF/A directamente desde el Microservicio
+    const idVal = datos.id;
+    const hashVal = datos.hash_sha256;
+
+    if (idVal || hashVal) {
+      try {
+        const descargado = await this.descargarPdfDesdeServidor(idVal, hashVal, datos.tipo);
+        if (descargado) return;
+      } catch (errServidor) {
+        console.warn('[TarjetaPdfService] Fallo descarga PDF/A desde microservicio, aplicando fallback local:', errServidor);
+      }
+    }
+
+    // 2. Fallback: Generar en caliente en el navegador mediante jsPDF + html2canvas
     const hashParaQr = datos.hash_sha256 || this.calcularHashFallback(datos);
     const qrDataUrl = await this.generarQrDataUrl(hashParaQr);
 
-    // 2. Construir el contenedor HTML temporal con la maqueta exacta
     const container = this.construirElementoHtml(datos, qrDataUrl);
     document.body.appendChild(container);
 
@@ -58,23 +72,23 @@ export class TarjetaPdfService {
         logging: false
       });
 
-      // 4. Instanciar jsPDF y agregar la imagen capturada
+      // 4. Instanciar jsPDF y agregar la imagen capturada en tamaño Carta
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'letter'
       });
 
       const imgData = canvas.toDataURL('image/png');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      // Ajustar dimensiones preservando relación de aspecto
+      // Ajustar dimensiones preservando relación de aspecto vertical
       const canvasAspectRatio = canvas.width / canvas.height;
-      const targetWidth = 135; // 135mm de ancho centrado en la página A4
+      const targetWidth = 100; // 100mm de ancho centrado en la página Carta
       const targetHeight = targetWidth / canvasAspectRatio;
       const posX = (pdfWidth - targetWidth) / 2;
-      const posY = 16; // Margen superior equilibrado
+      const posY = 18; // Margen superior equilibrado
 
       pdf.addImage(imgData, 'PNG', posX, posY, targetWidth, targetHeight, undefined, 'FAST');
 
@@ -92,6 +106,49 @@ export class TarjetaPdfService {
         container.parentNode.removeChild(container);
       }
     }
+  }
+
+  /**
+   * Descarga el documento oficial en estándar PDF/A generado por el Microservicio Python.
+   */
+  async descargarPdfDesdeServidor(id?: number | string, hash?: string, tipo?: 'contador' | 'sociedad'): Promise<boolean> {
+    const tipoParam = tipo === 'sociedad' ? 'sociedades' : 'contadores';
+    const baseUrl = `${API_BASE}/tarjetas`;
+    let url = '';
+
+    if (id) {
+      url = `${baseUrl}/pdf/${id}?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true`;
+    } else if (hash) {
+      url = `${baseUrl}/verificar/${hash}/pdf?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true`;
+    } else {
+      return false;
+    }
+
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    let filename = `tarjeta_${tipo || 'credencial'}_${id || hash}.pdf`;
+
+    const disposition = response.headers.get('content-disposition');
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      if (match && match[1]) {
+        filename = match[1].trim();
+      }
+    }
+
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+    return true;
   }
 
   /**
@@ -139,7 +196,7 @@ export class TarjetaPdfService {
     wrapper.style.position = 'fixed';
     wrapper.style.left = '-9999px';
     wrapper.style.top = '-9999px';
-    wrapper.style.width = '420px';
+    wrapper.style.width = '358px';
     wrapper.style.backgroundColor = '#ffffff';
     wrapper.style.padding = '24px 24px 20px 24px';
     wrapper.style.fontFamily = "'Satoshi', sans-serif";
