@@ -13,11 +13,11 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
     <div class="modal-backdrop fade show" *ngIf="isOpen"></div>
     <div class="modal fade show d-block" tabindex="-1" *ngIf="isOpen && selectedTarjeta" role="dialog" aria-modal="true" (click)="cerrar.emit()">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" (click)="$event.stopPropagation()">
-        <div class="modal-content shadow border-0 rounded-3 overflow-hidden">
+        <div class="modal-content shadow border-0 rounded-3">
           <!-- Cabecera del Modal -->
           <div class="modal-header bg-white border-bottom py-3 px-4">
             <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle de registro</h5>
-            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrar.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar" data-nx-tooltip-pos="left"></button>
           </div>
 
           <!-- Cuerpo del Modal -->
@@ -176,7 +176,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
           <!-- Cabecera limpia y compacta -->
           <div class="card-modal-header">
             <h6 class="modal-title mb-0">{{ isSociedades ? 'Tarjeta digital de sociedad' : 'Tarjeta profesional digital' }}</h6>
-            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
+            <button type="button" class="btn-close" (click)="cerrarTarjeta.emit()" aria-label="Cerrar" data-nx-tooltip="Cerrar" data-nx-tooltip-pos="left"></button>
           </div>
           
           <!-- Cuerpo enfocado exclusivamente en la tarjeta, sin contenedores anidados ni bordes superfluos -->
@@ -202,6 +202,8 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
               (click)="exportarTarjetaPdf()"
               [disabled]="exportandoPdf"
               aria-label="Exportar tarjeta"
+              data-nx-tooltip="Exportar tarjeta en formato PDF"
+              data-nx-tooltip-pos="top"
             >
               <span *ngIf="exportandoPdf" class="spinner-border spinner-border-sm" role="status"></span>
               <span *ngIf="!exportandoPdf" class="fa fa-file-pdf-o"></span>
@@ -223,7 +225,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
       border-radius: 18px;
       box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.04);
       background: #ffffff;
-      overflow: hidden;
+      overflow: visible;
     }
     .card-modal-header {
       background: #ffffff;
@@ -232,6 +234,13 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: relative;
+      z-index: 10;
+      overflow: visible;
+    }
+    .card-modal-header .btn-close {
+      position: relative;
+      z-index: 20;
     }
     .card-modal-header .modal-title {
       font-size: 15px;
