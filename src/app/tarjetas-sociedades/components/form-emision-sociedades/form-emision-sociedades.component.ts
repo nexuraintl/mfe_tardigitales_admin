@@ -47,7 +47,6 @@ import { NxFieldErrorComponent } from '../../../shared/components/field-error/fi
                 <option value="">Seleccionar tipo</option>
                 <option value="primeraVez">Primera vez</option>
                 <option value="duplicado">Duplicado</option>
-                <option value="sustitucion">Sustitución</option>
                 <option value="modificacion">Modificación</option>
               </select>
               <nx-field-error [error]="errorTipoSolicitud"></nx-field-error>
@@ -56,10 +55,10 @@ import { NxFieldErrorComponent } from '../../../shared/components/field-error/fi
               <label for="societyIssueNit" class="form-label fw-semibold text-secondary small mb-1">
                 NIT <span class="text-secondary">*</span>
               </label>
-              <input type="text" id="societyIssueNit" inputmode="numeric" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 900540865-5" [ngModel]="nuevaIdentificacion" (keypress)="permitirSoloNumeros($event)" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="onBuscarClick()">
+              <input type="text" id="societyIssueNit" maxlength="20" class="form-control" [class.is-invalid]="!!errorIdentificacion" placeholder="Ej. 900540865-5" [ngModel]="nuevaIdentificacion" (keypress)="permitirNit($event)" (ngModelChange)="onIdentificacionChange($event)" (keyup.enter)="onBuscarClick()">
               <nx-field-error [error]="errorIdentificacion"></nx-field-error>
             </div>
-            <button type="button" class="btn btn-primary w-100 fw-semibold" id="societyIssueSearch" (click)="onBuscarClick()" [disabled]="cargandoBusqueda || (nuevaIdentificacion.length > 0 && nuevaIdentificacion.length < 3)">
+            <button type="button" class="btn btn-primary w-100 fw-semibold" id="societyIssueSearch" (click)="onBuscarClick()" [disabled]="cargandoBusqueda || (nuevaIdentificacion.length > 0 && getDigitosNit(nuevaIdentificacion).length < 3)">
               <span *ngIf="!cargandoBusqueda"><span class="fa fa-search me-1"></span> Consultar NIT</span>
               <span *ngIf="cargandoBusqueda"><span class="spinner-border spinner-border-sm me-1"></span> Buscando...</span>
             </button>
@@ -131,20 +130,34 @@ export class FormEmisionSociedadesComponent {
     }
   }
 
-  permitirSoloNumeros(event: KeyboardEvent): void {
+  getDigitosNit(val: string): string {
+    return (val || '').replace(/\D/g, '');
+  }
+
+  permitirNit(event: KeyboardEvent): void {
     if (event.ctrlKey || event.altKey || event.metaKey || event.key.length > 1) {
       return;
     }
-    if (!/^[0-9]$/.test(event.key)) {
+    // Permitir dígitos del 0 al 9 y un único guion
+    if (!/^[0-9-]$/.test(event.key)) {
+      event.preventDefault();
+      return;
+    }
+    if (event.key === '-' && (this.nuevaIdentificacion || '').includes('-')) {
       event.preventDefault();
     }
   }
 
   onIdentificacionChange(val: string): void {
-    const clean = (val || '').replace(/\D/g, '');
+    let clean = (val || '').replace(/[^\d-]/g, '');
+    const parts = clean.split('-');
+    if (parts.length > 2) {
+      clean = parts[0] + '-' + parts.slice(1).join('');
+    }
     this.nuevaIdentificacion = clean;
     this.nuevaIdentificacionChange.emit(clean);
-    if (clean.length > 0 && clean.length < 3) {
+    const digitsOnly = this.getDigitosNit(clean);
+    if (clean.length > 0 && digitsOnly.length < 3) {
       this.errorIdentificacion = 'El NIT debe contener al menos 3 dígitos.';
     } else {
       this.errorIdentificacion = '';
@@ -156,12 +169,13 @@ export class FormEmisionSociedadesComponent {
   }
 
   onBuscarClick(): void {
-    const clean = (this.nuevaIdentificacion || '').replace(/\D/g, '').trim();
-    if (!clean) {
+    const clean = (this.nuevaIdentificacion || '').replace(/[^\d-]/g, '').trim();
+    const digitsOnly = this.getDigitosNit(clean);
+    if (!digitsOnly) {
       this.errorIdentificacion = 'Ingrese el NIT.';
       return;
     }
-    if (clean.length < 3) {
+    if (digitsOnly.length < 3) {
       this.errorIdentificacion = 'El NIT debe contener al menos 3 dígitos.';
       return;
     }
