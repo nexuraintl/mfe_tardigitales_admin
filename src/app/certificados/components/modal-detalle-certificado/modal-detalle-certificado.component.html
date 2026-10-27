@@ -1,0 +1,219 @@
+<!-- Backdrop -->
+<div class="modal-backdrop fade show" *ngIf="isOpen"></div>
+
+<!-- Modal Dialog -->
+<div 
+  class="modal fade show d-block" 
+  tabindex="-1" 
+  *ngIf="isOpen && certificado" 
+  role="dialog" 
+  aria-modal="true" 
+  (click)="cerrar.emit()"
+>
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow border-0 rounded-3">
+      
+      <!-- Cabecera del modal -->
+      <div class="modal-header bg-white border-bottom py-3 px-4">
+        <div>
+          <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Detalle del certificado</h5>
+          <small class="text-muted">{{ certificado.type }} {{ certificado.certificateNumber }}</small>
+        </div>
+        <button 
+          type="button" 
+          class="btn-close" 
+          (click)="cerrar.emit()" 
+          aria-label="Cerrar"
+        ></button>
+      </div>
+
+      <!-- Cuerpo del modal -->
+      <div class="modal-body p-4 bg-white">
+        
+        <!-- Tarjeta de información general -->
+        <div class="card border mb-4">
+          <div class="card-header bg-light py-2 px-3 border-bottom">
+            <span class="fw-semibold text-secondary small">Información general</span>
+          </div>
+          <div class="card-body p-3">
+            <div class="row g-3">
+              
+              <!-- Número de certificado -->
+              <div class="col-md-6 col-lg-4">
+                <label class="form-label text-muted small fw-semibold mb-1">Número de certificado</label>
+                <div class="field-value fw-bold text-dark">{{ certificado.certificateNumber }}</div>
+              </div>
+
+              <!-- Titular / Razón social -->
+              <div class="col-md-6 col-lg-4">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                  {{ isContador ? 'Nombre completo' : 'Razón social' }}
+                </label>
+                <div class="field-value fw-bold text-dark text-break">{{ certificado.holder }}</div>
+              </div>
+
+              <!-- Documento / NIT -->
+              <div class="col-md-6 col-lg-4">
+                <label class="form-label text-muted small fw-semibold mb-1">
+                  {{ isContador ? 'Número de documento' : 'NIT' }}
+                </label>
+                <div class="field-value fw-bold text-dark">{{ certificado.identifier }}</div>
+              </div>
+
+              <!-- Específicos Contador -->
+              <ng-container *ngIf="isContador">
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Número de tarjeta profesional</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.professionalCard || 'No registra' }}</div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Tipo de tarjeta</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.cardType || 'No registra' }}</div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Estado</label>
+                  <div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                      {{ certificado.status }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Municipio del documento</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.documentMunicipality || 'No registra' }}</div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Departamento del documento</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.documentDepartment || 'No registra' }}</div>
+                </div>
+              </ng-container>
+
+              <!-- Específicos Sociedad -->
+              <ng-container *ngIf="isSociedad">
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Código de sociedad</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.companyCode || 'No registra' }}</div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Representante legal</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.legalRepresentative || 'No registra' }}</div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Estado</label>
+                  <div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                      {{ certificado.status }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Municipio</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.municipality || 'No registra' }}</div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                  <label class="form-label text-muted small fw-semibold mb-1">Departamento</label>
+                  <div class="field-value fw-bold text-dark">{{ certificado.department || 'No registra' }}</div>
+                </div>
+              </ng-container>
+
+              <!-- Fechas transversales -->
+              <div class="col-md-6 col-lg-4">
+                <label class="form-label text-muted small fw-semibold mb-1">Fecha de generación</label>
+                <div class="field-value text-dark">{{ certificado.generatedAt }}</div>
+              </div>
+
+              <div class="col-md-6 col-lg-4">
+                <label class="form-label text-muted small fw-semibold mb-1">Fecha de actualización</label>
+                <div class="field-value text-dark">{{ certificado.updatedAt }}</div>
+              </div>
+
+              <div class="col-md-6 col-lg-4">
+                <label class="form-label text-muted small fw-semibold mb-1">Fecha de firma</label>
+                <div class="field-value text-dark">
+                  <span *ngIf="certificado.signedAt">{{ certificado.signedAt }}</span>
+                  <span *ngIf="!certificado.signedAt" class="text-muted font-italic">No disponible</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de Antecedentes Disciplinarios -->
+        <div class="card border">
+          <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+            <span class="fw-semibold text-secondary small">Antecedentes</span>
+            <span class="badge bg-secondary-subtle text-secondary small">
+              {{ certificado.antecedents.length }} registrado(s)
+            </span>
+          </div>
+          <div class="card-body p-0">
+            
+            <!-- Si tiene antecedentes -->
+            <div class="table-responsive" *ngIf="certificado.antecedents.length > 0">
+              <table class="table table-hover table-striped align-middle mb-0 small">
+                <thead class="table-light text-secondary">
+                  <tr>
+                    <th scope="col" class="ps-3">Tipo de sanción</th>
+                    <th scope="col">Duración en meses</th>
+                    <th scope="col">Número de resolución</th>
+                    <th scope="col">Fecha de resolución</th>
+                    <th scope="col">Fecha de ejecutoria</th>
+                    <th scope="col" class="pe-3">Fecha de finalización</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let ant of certificado.antecedents">
+                    <td class="ps-3 fw-semibold text-dark">{{ ant.sanctionType }}</td>
+                    <td>{{ ant.durationMonths ? ant.durationMonths + ' meses' : 'No aplica' }}</td>
+                    <td class="fw-medium">{{ ant.resolutionNumber }}</td>
+                    <td>{{ ant.resolutionDate }}</td>
+                    <td>{{ ant.enforcementDate }}</td>
+                    <td class="pe-3">{{ ant.completionDate || 'No registra' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Si NO tiene antecedentes (Requerimiento Criterio de Aceptación Escenario 5) -->
+            <div class="p-4 text-center text-muted" *ngIf="certificado.antecedents.length === 0">
+              <i class="fa fa-shield-alt text-success fs-3 mb-2 opacity-75 d-block"></i>
+              <p class="mb-0 fw-semibold text-secondary">Sin antecedentes registrados</p>
+              <small class="text-muted">El titular no registra sanciones disciplinarias vigentes ni históricas.</small>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pie del modal -->
+      <div class="modal-footer bg-light border-top py-2 px-4 d-flex justify-content-between">
+        <button 
+          type="button" 
+          class="btn btn-outline-secondary btn-sm px-3" 
+          (click)="cerrar.emit()"
+        >
+          Cerrar
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-2" 
+          (click)="descargar.emit(certificado)"
+        >
+          <i class="fa fa-download"></i>
+          <span>Descargar certificado</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

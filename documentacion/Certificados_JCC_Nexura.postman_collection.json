@@ -1,0 +1,280 @@
+{
+  "info": {
+    "_postman_id": "b7891234-5678-4321-abcd-ef0123456789",
+    "name": "JCC - Certificados de Vigencia y Antecedentes (Nexura)",
+    "description": "Colección oficial de endpoints para la Historia de Usuario: Consulta unificada de certificados de vigencia y antecedentes de contadores y sociedades, y el servicio REST de procesamiento MyJCC - Plataforma Nexura.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url_gateway",
+      "value": "http://local-jcc.nexura.com.co",
+      "type": "string"
+    },
+    {
+      "key": "base_url_direct_api",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "20001",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "kvllYI0urrjVdqYOUTJZw7p5qIG9U5c8XlnNs60MMfC5yYArY3JuntakvllYI0urrjVdqYOUTJZw7p5qIG9U5c8XlnNs60MMfC5yYArY3",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Consulta Administrativa (MFE)",
+      "description": "Endpoints consumidos por la interfaz administrativa para la consulta, filtrado y descarga de certificados.",
+      "item": [
+        {
+          "name": "Listar certificados (Todos)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados?client_id={{client_id}}&tipo=todos&page=1&page_size=50",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados"],
+              "query": [
+                { "key": "client_id", "value": "{{client_id}}" },
+                { "key": "tipo", "value": "todos" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "50" }
+              ]
+            },
+            "description": "Retorna la tabla unificada de certificados expedidos para contadores y sociedades."
+          }
+        },
+        {
+          "name": "Buscar certificados por texto (Cédula / NIT / Certificado / Nombre)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados?client_id={{client_id}}&search=1000000000",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados"],
+              "query": [
+                { "key": "client_id", "value": "{{client_id}}" },
+                { "key": "search", "value": "1000000000" }
+              ]
+            },
+            "description": "Búsqueda textual sobre número de certificado, NIT, número de documento o nombre del titular."
+          }
+        },
+        {
+          "name": "Filtrar por titular: Solo Contadores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados?client_id={{client_id}}&tipo=contador",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados"],
+              "query": [
+                { "key": "client_id", "value": "{{client_id}}" },
+                { "key": "tipo", "value": "contador" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filtrar por titular: Solo Sociedades",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados?client_id={{client_id}}&tipo=sociedad",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados"],
+              "query": [
+                { "key": "client_id", "value": "{{client_id}}" },
+                { "key": "tipo", "value": "sociedad" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Consultar detalle del certificado (Modal)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados/0221114451sa?client_id={{client_id}}",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados", "0221114451sa"],
+              "query": [
+                { "key": "client_id", "value": "{{client_id}}" }
+              ]
+            },
+            "description": "Retorna la metadata completa del certificado, incluyendo los datos específicos del titular y el listado de antecedentes disciplinarios."
+          }
+        },
+        {
+          "name": "Descargar PDF del certificado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/pdf"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados/0221114451sa/pdf?client_id={{client_id}}",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados", "0221114451sa", "pdf"],
+              "query": [
+                { "key": "client_id", "value": "{{client_id}}" }
+              ]
+            },
+            "description": "Retorna el flujo binario application/pdf del certificado firmado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Integración MyJCC (Generación y Redescarga)",
+      "description": "Servicio web REST que expone Nexura para procesar las peticiones emitidas desde el sistema MyJCC.",
+      "item": [
+        {
+          "name": "Procesar certificado — Contador (Generación inicial)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/pdf"
+              },
+              {
+                "key": "X-Id-Correlacion",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idemp-contador-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Nuevo\": true,\n  \"fechaGeneracion\": \"2026-10-12\",\n  \"tipo\": \"contador\",\n  \"documento\": \"1000000000\",\n  \"N_CERTIFICADO\": \"0221114451sa\",\n  \"historia\": \"5\",\n  \"dirigido\": \"QUIEN INTERESE\",\n  \"Detalles\": {\n    \"CON_CODIGO\": 100001,\n    \"CON_NOMBRES\": \"NOMBRE EJEMPLO\",\n    \"CON_APELLIDO1\": \"APELLIDO UNO\",\n    \"CON_APELLIDO2\": \"APELLIDO DOS\",\n    \"TDOC_CODIGO\": \"CC\",\n    \"CON_NRO_DOCUMENTO\": \"1000000000\",\n    \"MUNICIPIO_DOCUMENTO\": \"BOGOTÁ D.C.\",\n    \"DEPARTAMENTO_DOCUMENTO\": \"BOGOTÁ D.C.\",\n    \"CON_NRO_TARJETA\": \"123456\",\n    \"CON_TIPO_TARJETA\": \"T\",\n    \"ESTADO\": \"ACTIVO\",\n    \"CON_FECHA_ACTUALIZACION\": \"2026-10-15 08:30:00\",\n    \"ANTECEDENTES\": [\n      {\n        \"SAN_TIPO\": \"Amonestación\",\n        \"SAN_MESES\": 3,\n        \"SAN_RESOLUCION\": \"RES-0187-2024\",\n        \"SAN_FECHA_RESOLUCION\": \"2024-02-15 00:00:00\",\n        \"SAN_FECHA_EJECUTORIA\": \"2024-03-01 00:00:00\",\n        \"SAN_FECHA_FIN\": \"2024-06-01 00:00:00\"\n      },\n      {\n        \"SAN_TIPO\": \"Suspensión\",\n        \"SAN_MESES\": 6,\n        \"SAN_RESOLUCION\": \"RES-0042-2022\",\n        \"SAN_FECHA_RESOLUCION\": \"2022-01-20 00:00:00\",\n        \"SAN_FECHA_EJECUTORIA\": \"2022-02-05 00:00:00\",\n        \"SAN_FECHA_FIN\": \"2022-08-05 00:00:00\"\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados/procesar",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados", "procesar"]
+            },
+            "description": "Recibe la metadata de MyJCC para contador, construye PDF, firma con ONAC, persiste en BD y devuelve application/pdf."
+          }
+        },
+        {
+          "name": "Procesar certificado — Sociedad (Sin antecedentes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/pdf"
+              },
+              {
+                "key": "X-Id-Correlacion",
+                "value": "550e8400-e29b-41d4-a716-446655440001"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idemp-sociedad-002"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Nuevo\": true,\n  \"fechaGeneracion\": \"2026-10-15\",\n  \"tipo\": \"sociedad\",\n  \"documento\": \"900000000\",\n  \"N_CERTIFICADO\": \"CERT-EJEMPLO-0002\",\n  \"historia\": \"5\",\n  \"dirigido\": \"QUIEN INTERESE\",\n  \"Detalles\": {\n    \"SOC_RAZON_SOCIAL\": \"SOCIEDAD EJEMPLO S.A.S.\",\n    \"SOC_NIT\": \"900000000\",\n    \"SOC_CODIGO\": 200001,\n    \"SOC_REPRESENTANTE_LEGAL\": \"MARÍA EJEMPLO REPRESENTANTE\",\n    \"ESTADO\": \"ACTIVO\",\n    \"MUNICIPIO\": \"BOGOTÁ D.C.\",\n    \"DEPARTAMENTO\": \"CUNDINAMARCA\",\n    \"SOC_FECHA_ACTUALIZACION\": \"2026-10-15 08:30:00\",\n    \"ANTECEDENTES\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados/procesar",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados", "procesar"]
+            },
+            "description": "Recibe la metadata de MyJCC para sociedad con antecedentes vacíos («Sin antecedentes registrados»)."
+          }
+        },
+        {
+          "name": "Redescarga de certificado existente (Nuevo=false)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/pdf"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Nuevo\": false,\n  \"fechaGeneracion\": \"2026-10-12\",\n  \"tipo\": \"contador\",\n  \"documento\": \"1000000000\",\n  \"N_CERTIFICADO\": \"0221114451sa\",\n  \"historia\": \"5\",\n  \"dirigido\": \"QUIEN INTERESE\",\n  \"Detalles\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url_gateway}}/apig/tardigitales/admin/certificados/procesar",
+              "host": ["{{base_url_gateway}}"],
+              "path": ["apig", "tardigitales", "admin", "certificados", "procesar"]
+            },
+            "description": "Redescarga síncrona de un certificado previamente generado por su N_CERTIFICADO."
+          }
+        }
+      ]
+    }
+  ]
+}
