@@ -55,8 +55,8 @@ export interface TarjetaSociedad {
   selector: 'app-tarjetas-sociedades',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     TablaSociedadesComponent,
     FormEmisionSociedadesComponent,
     EmisionMasivaSociedadesComponent,
@@ -139,7 +139,7 @@ export class TarjetasSociedadesComponent implements OnInit {
       return this.selectedTarjeta.fecha_emision;
     }
     if (this.selectedTarjetaHistorial && Array.isArray(this.selectedTarjetaHistorial.estados)) {
-      const state = this.selectedTarjetaHistorial.estados.find((e: any) => 
+      const state = this.selectedTarjetaHistorial.estados.find((e: any) =>
         e.estado?.toLowerCase() === 'emitida' || e.estado?.toLowerCase() === 'activa'
       );
       if (state && state.fecha) {
@@ -337,7 +337,7 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.saveColumnsPreference();
   }
 
-  private saveColumnsPreference(): void {
+  saveColumnsPreference(): void {
     try {
       const state = this.availableColumns.map(c => ({ key: c.key, visible: c.visible }));
       localStorage.setItem('jcc_cols_sociedades', JSON.stringify(state));
@@ -460,6 +460,9 @@ export class TarjetasSociedadesComponent implements OnInit {
     }
 
     const ts = new Date().getTime();
+    if (this.sortColumn) {
+      url += `&order_by=${encodeURIComponent(String(this.sortColumn))}&order_dir=${this.sortDirection.toUpperCase()}`;
+    }
     url += `&_t=${ts}`;
 
     this.http.get<any>(url)
@@ -467,8 +470,8 @@ export class TarjetasSociedadesComponent implements OnInit {
         next: (res) => {
           const rawList = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
           this.totalRecordsCount = Array.isArray(res) ? rawList.length : (res?.total ?? rawList.length);
-          this.totalPagesCount = Array.isArray(res) 
-            ? Math.ceil(this.totalRecordsCount / this.pageSize) 
+          this.totalPagesCount = Array.isArray(res)
+            ? Math.ceil(this.totalRecordsCount / this.pageSize)
             : (res?.total_pages ?? Math.ceil(this.totalRecordsCount / this.pageSize));
 
           this.tarjetas = rawList.map((item: any) => ({
@@ -492,6 +495,7 @@ export class TarjetasSociedadesComponent implements OnInit {
             estado_sociedad: item.estado_sociedad ?? 'ACTIVO',
             estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
             fecha_emision: item.fecha_emision ?? '',
+            fecha_activacion: item.fecha_activacion ?? '',
             foto: item.foto ?? null,
             hash_sha256: item.hash_sha256 ?? null
           }));
@@ -520,7 +524,8 @@ export class TarjetasSociedadesComponent implements OnInit {
     { key: 'estado_sociedad', label: 'Estado registro', tipo: 'select', options: ['Activo', 'Inactivo'] },
     { key: 'resolucion', label: 'Resolución', tipo: 'string' },
     { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
-    { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' }
+    { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' },
+    { key: 'fecha_activacion', label: 'Fecha activación', tipo: 'date' }
   ];
 
   onApplyMultiFilters(filters: ActiveFilter[]): void {

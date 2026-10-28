@@ -26,6 +26,7 @@ export interface BrandingHistoryItem {
   patron_impresion?: string;
   nombre_director?: string;
   firma_director?: string;
+  observacion?: string | null;
 }
 
 @Component({
@@ -65,7 +66,15 @@ export class BrandingComponent implements OnInit, OnDestroy {
   errorPatronImpresion: string = '';
 
   publishedVersion: number | null = null;
+  publishedObservacion: string = '';
   selectedVersionNumber: number | null = null;
+  selectedVersionObservacion: string = '';
+
+  // Modal de justificación de publicación
+  isPublishModalOpen: boolean = false;
+  versionToPublish: number | null = null;
+  observacionPublicacion: string = '';
+  errorObservacionPublicacion: string = '';
 
 
   // Form / Draft fields
@@ -193,6 +202,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.patronImpresionPreviewUrl = null;
     this.colorLetraImpresion = '#0f172a';
     this.selectedVersionNumber = null;
+    this.selectedVersionObservacion = '';
+    this.publishedObservacion = '';
+    this.isPublishModalOpen = false;
+    this.versionToPublish = null;
+    this.observacionPublicacion = '';
+    this.errorObservacionPublicacion = '';
 
     if (url.includes('sociedades')) {
       this.tipoId = 2;
@@ -245,10 +260,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
           if (res) {
             const data = Array.isArray(res) ? res[0] : res;
             if (data && (data.color_fondo || data.logo || data.patron || data.version_publicada)) {
-              const pubV = data.version_publicada !== undefined && data.version_publicada !== null 
-                ? Number(data.version_publicada) 
+              const pubV = data.version_publicada !== undefined && data.version_publicada !== null
+                ? Number(data.version_publicada)
                 : (data.version ? Number(data.version) : null);
               this.publishedVersion = pubV;
+              this.publishedObservacion = data.observacion || '';
+              this.selectedVersionObservacion = data.observacion || '';
               if (data.color_fondo) this.colorFondo = data.color_fondo;
               if (data.color_letra) this.colorLetra = data.color_letra;
               if (data.color_letra_impresion) this.colorLetraImpresion = data.color_letra_impresion;
@@ -289,6 +306,10 @@ export class BrandingComponent implements OnInit, OnDestroy {
             const data = Array.isArray(res) ? res[0] : res;
             if (data) {
               if (data.version_publicada) this.publishedVersion = Number(data.version_publicada);
+              if (data.observacion) {
+                this.publishedObservacion = data.observacion;
+                this.selectedVersionObservacion = data.observacion;
+              }
               if (data.color_fondo) this.colorFondo = data.color_fondo;
               if (data.color_letra) this.colorLetra = data.color_letra;
               if (data.color_letra_impresion) this.colorLetraImpresion = data.color_letra_impresion;
@@ -349,6 +370,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
               const isItemPublished = item.publicado === true || item.publicado === 1 || item.publicado === '1' || item.publicado === 'Publicada';
               if (isItemPublished) {
                 this.publishedVersion = vNum;
+                this.publishedObservacion = item.observacion || '';
               }
 
               const isPublished = isItemPublished || (this.publishedVersion !== null && vNum === Number(this.publishedVersion));
@@ -366,7 +388,8 @@ export class BrandingComponent implements OnInit, OnDestroy {
                 logo_impresion: item.logo_impresion,
                 patron_impresion: item.patron_impresion,
                 nombre_director: item.nombre_director,
-                firma_director: item.firma_director
+                firma_director: item.firma_director,
+                observacion: item.observacion || null
               };
             });
 
@@ -728,11 +751,12 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.errorPatronImpresion = '';
 
     this.selectedVersionNumber = v.version;
+    this.selectedVersionObservacion = v.observacion || '';
     if (v.color_fondo) this.colorFondo = v.color_fondo;
     if (v.color_letra) this.colorLetra = v.color_letra;
     this.colorLetraImpresion = v.color_letra_impresion || '#0f172a';
 
-    
+
     if (v.logo !== undefined) {
       this.logoFile = null;
       this.logoPreviewUrl = v.logo ? v.logo : null;
@@ -770,15 +794,62 @@ export class BrandingComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  publicarVersion(): void {
-    if (!this.selectedVersionNumber) return;
+  abrirModalPublicar(item: BrandingHistoryItem, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.seleccionarVersionHistorial(item);
+    this.versionToPublish = item.version;
+    this.observacionPublicacion = item.observacion || '';
+    this.errorObservacionPublicacion = '';
+    this.isPublishModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalPublicar(): void {
+    if (this.publishing) return;
+    this.isPublishModalOpen = false;
+    this.versionToPublish = null;
+    this.observacionPublicacion = '';
+    this.errorObservacionPublicacion = '';
+    this.cdr.detectChanges();
+  }
+
+  onObservacionPublicacionChange(val: string): void {
+    this.observacionPublicacion = val;
+    if (val && val.length > 500) {
+      this.errorObservacionPublicacion = 'La observación no debe superar los 500 caracteres.';
+    } else if (this.errorObservacionPublicacion && val && val.trim().length >= 5) {
+      this.errorObservacionPublicacion = '';
+    }
+  }
+
+  confirmarPublicarVersion(): void {
+    const targetVersion = this.versionToPublish || this.selectedVersionNumber;
+    if (!targetVersion) return;
+
+    const obs = (this.observacionPublicacion || '').trim();
+    if (!obs) {
+      this.errorObservacionPublicacion = 'La observación o justificación es obligatoria para publicar la versión.';
+      return;
+    }
+    if (obs.length < 5) {
+      this.errorObservacionPublicacion = 'Ingrese una justificación válida de al menos 5 caracteres.';
+      return;
+    }
+    if (obs.length > 500) {
+      this.errorObservacionPublicacion = 'La observación no debe superar los 500 caracteres.';
+      return;
+    }
 
     this.publishing = true;
     this.currentError = null;
     this.mensajeExito = '';
+    this.errorObservacionPublicacion = '';
 
     const payload = {
-      version_publicada: this.selectedVersionNumber
+      version_publicada: targetVersion,
+      observacion: obs
     };
 
     this.http
@@ -789,9 +860,14 @@ export class BrandingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           this.publishing = false;
-          this.publishedVersion = this.selectedVersionNumber;
-          this.mensajeExito = `Versión v${this.selectedVersionNumber} publicada correctamente para ${this.label}.`;
-          this.cargarHistorial(this.selectedVersionNumber || undefined);
+          this.isPublishModalOpen = false;
+          this.versionToPublish = null;
+          this.observacionPublicacion = '';
+          this.publishedVersion = targetVersion;
+          this.publishedObservacion = obs;
+          this.selectedVersionObservacion = obs;
+          this.mensajeExito = `Versión v${targetVersion} publicada correctamente para ${this.label}.`;
+          this.cargarHistorial(targetVersion);
           this.cdr.detectChanges();
           window.scrollTo({ top: 0, behavior: 'smooth' });
           const contentArea = document.querySelector('.content-area');
