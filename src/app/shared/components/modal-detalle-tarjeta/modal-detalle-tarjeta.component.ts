@@ -105,9 +105,9 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ fechaVal }}</div>
                   </div>
 
-                  <div class="col-md-6" *ngIf="selectedTarjeta?.fecha_activacion">
+                  <div class="col-md-6">
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha activación</label>
-                    <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion }}</div>
+                    <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion || '-' }}</div>
                   </div>
                 </div>
               </ng-container>
@@ -160,9 +160,9 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ fechaVal }}</div>
                   </div>
 
-                  <div class="col-md-6" *ngIf="selectedTarjeta?.fecha_activacion">
+                  <div class="col-md-6">
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha activación</label>
-                    <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion }}</div>
+                    <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion || '-' }}</div>
                   </div>
                 </div>
               </ng-container>
