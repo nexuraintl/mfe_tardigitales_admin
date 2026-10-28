@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -27,11 +27,12 @@ interface NotificationItem {
   templateUrl: './notifications-history.component.html',
   styleUrl: './notifications-history.component.css'
 })
-export class NotificationsHistoryComponent implements OnInit {
+export class NotificationsHistoryComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private errorHandler = inject(ErrorHandlerService);
+  private renderer = inject(Renderer2);
   clientId: number = CLIENT_ID;
 
   notificaciones: NotificationItem[] = [];
@@ -228,14 +229,40 @@ export class NotificationsHistoryComponent implements OnInit {
     return item.id || index;
   }
 
+  ngOnDestroy(): void {
+    this.releaseScrollLock();
+  }
+
+  private handleScrollLock(lock: boolean): void {
+    if (typeof document === 'undefined') return;
+    if (lock) {
+      this.renderer.addClass(document.body, 'modal-open');
+      this.renderer.setStyle(document.body, 'overflow', 'hidden');
+      const content = document.querySelector('.content-area') as HTMLElement;
+      if (content) this.renderer.setStyle(content, 'overflow', 'hidden');
+    } else {
+      this.releaseScrollLock();
+    }
+  }
+
+  private releaseScrollLock(): void {
+    if (typeof document === 'undefined') return;
+    this.renderer.removeClass(document.body, 'modal-open');
+    this.renderer.removeStyle(document.body, 'overflow');
+    const content = document.querySelector('.content-area') as HTMLElement;
+    if (content) this.renderer.removeStyle(content, 'overflow');
+  }
+
   verDetalle(notificacion: NotificationItem): void {
     this.selectedNotification = notificacion;
     this.isModalOpen = true;
+    this.handleScrollLock(true);
   }
 
   cerrarModal(): void {
     this.isModalOpen = false;
     this.selectedNotification = null;
+    this.handleScrollLock(false);
   }
 
   exportarCSV(): void {

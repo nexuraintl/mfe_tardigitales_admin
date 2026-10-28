@@ -214,16 +214,28 @@ export class FormEmisionSociedadesComponent {
 
   get credencialDatos(): CredencialDatos {
     if (!this.datosConsulta) return {};
+    const d = this.datosConsulta;
+    const razonSocial = d.razon_social || d.solicitante || '';
+    const nit = d.nit || d.documento || '';
+    const matricula = d.inscripcion || d.matricula || (d.no_tarjeta ? String(d.no_tarjeta) : 'Pendiente');
+    const expediente = (d.expediente !== undefined && d.expediente !== null && d.expediente !== 0) ? d.expediente : (d.no_expd ?? '');
+    const resolucion = d.resolucion || '';
+    const fechaRes = d.fecha_resolucion || '';
+    let tipoSoc = d.tipo_sociedad || d.universidad || 'Sociedad de Contadores';
+    if (typeof tipoSoc === 'string') {
+      tipoSoc = tipoSoc.replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores');
+    }
+
     return {
-      matricula: this.datosConsulta.inscripcion || 'Pendiente',
-      fecha_resolucion: this.datosConsulta.fecha_resolucion || '15 - Sep - 2026',
-      resolucion: this.datosConsulta.resolucion || '1042',
-      expediente: this.datosConsulta.expediente || '884120',
-      solicitante: this.datosConsulta.razon_social,
-      documento: this.datosConsulta.nit,
-      universidad: this.datosConsulta.tipo_sociedad || 'Sociedad de Contadores Públicos',
-      foto: this.getFotoUrlFn ? this.getFotoUrlFn(this.datosConsulta.foto) : this.datosConsulta.foto,
-      estado: 'Emitida'
+      matricula: matricula,
+      fecha_resolucion: fechaRes,
+      resolucion: resolucion,
+      expediente: expediente,
+      solicitante: razonSocial,
+      documento: nit,
+      universidad: tipoSoc,
+      foto: this.getFotoUrlFn ? this.getFotoUrlFn(d.foto) : d.foto,
+      estado: d.estado || 'Emitida'
     };
   }
 

@@ -207,7 +207,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
       this.documentLabel = 'NIT';
       this.documentValue = '900.123.456-7';
       this.extraLabel = 'Tipo de Sociedad';
-      this.extraValue = 'Sociedad de Contadores Públicos';
+      this.extraValue = 'Sociedad de Contadores';
       this.resolutionValue = '1042';
       this.colorFondo = '#134567';
       this.colorLetra = '#ffffff';

@@ -104,6 +104,11 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha emisión</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ fechaVal }}</div>
                   </div>
+
+                  <div class="col-md-6" *ngIf="selectedTarjeta?.fecha_activacion">
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha activación</label>
+                    <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion }}</div>
+                  </div>
                 </div>
               </ng-container>
 
@@ -153,6 +158,11 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
                   <div class="col-md-6">
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha emisión</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ fechaVal }}</div>
+                  </div>
+
+                  <div class="col-md-6" *ngIf="selectedTarjeta?.fecha_activacion">
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha activación</label>
+                    <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion }}</div>
                   </div>
                 </div>
               </ng-container>
@@ -391,7 +401,7 @@ export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
         razon_social: this.razonSocialVal !== '-' ? this.razonSocialVal : undefined,
         no_documento: this.documentoContadorVal !== '-' ? this.documentoContadorVal : undefined,
         nit: this.nitVal !== '-' ? this.nitVal : undefined,
-        universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle'),
+        universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores' : 'Universidad de La Salle'),
         foto: this.getFoto(this.selectedTarjeta.foto),
         hash_sha256: this.selectedTarjeta.hash_sha256,
         logo_url: this.brandingLogoUrl || 'assets/images/logo-jcc.png',
@@ -509,7 +519,7 @@ export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
       expediente: this.expedienteVal,
       solicitante: this.solicitanteVal,
       documento: this.documentoVal,
-      universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores Públicos' : 'Universidad de La Salle'),
+      universidad: this.selectedTarjeta.universidad || (this.isSociedades ? 'Sociedad de Contadores' : 'Universidad de La Salle'),
       foto: this.getFoto(this.selectedTarjeta.foto),
       estado: this.estadoVal
     };

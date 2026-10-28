@@ -16,6 +16,7 @@ export interface CredencialDatos {
   nit?: string;
   documento?: string;
   universidad?: string;
+  tipo_sociedad?: string;
   foto?: string;
   estado?: string;
 }
@@ -365,37 +366,74 @@ export class TarjetaCredencialComponent implements AfterViewInit, OnDestroy, OnC
 
   // ================= VALORES QUEMADOS OFICIALES (FLUTTER 1:1) =================
   get valorRegistro(): string {
-    return this.datos?.no_tarjeta || this.datos?.inscripcion || this.datos?.matricula || (this.tipo === 'sociedad' ? '5892' : '492031-T');
+    if (this.datos && ('no_tarjeta' in this.datos || 'inscripcion' in this.datos || 'matricula' in this.datos)) {
+      const val = this.datos?.no_tarjeta || this.datos?.inscripcion || this.datos?.matricula;
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        return String(val).trim();
+      }
+    }
+    return this.tipo === 'sociedad' ? '5892' : '492031-T';
   }
 
   get valorFecha(): string {
-    return this.datos?.fecha_resolucion || (this.tipo === 'sociedad' ? '12 - Mar - 2025' : '06 - Feb - 2026');
+    if (this.datos && 'fecha_resolucion' in this.datos) {
+      const val = this.datos?.fecha_resolucion;
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        return String(val).trim();
+      }
+    }
+    return this.tipo === 'sociedad' ? '12 - Mar - 2025' : '06 - Feb - 2026';
   }
 
   get valorMedio3(): string | number {
-    return this.tipo === 'sociedad'
-      ? (this.datos?.resolucion || '0142')
-      : (this.datos?.resolucion || '289');
+    if (this.datos && 'resolucion' in this.datos) {
+      const val = this.datos?.resolucion;
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        return String(val).trim();
+      }
+    }
+    return this.tipo === 'sociedad' ? '0142' : '289';
   }
 
   get valorTitular(): string {
-    return this.datos?.nombre_completo || this.datos?.razon_social || this.datos?.solicitante || (this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas');
+    if (this.datos && ('nombre_completo' in this.datos || 'razon_social' in this.datos || 'solicitante' in this.datos)) {
+      const val = this.datos?.nombre_completo || this.datos?.razon_social || this.datos?.solicitante;
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        return String(val).trim();
+      }
+    }
+    return this.tipo === 'sociedad' ? 'Innovación Financiera y Tributaria S.A.S.' : 'Andrés Felipe Torres Cárdenas';
   }
 
   get valorDocumento(): string {
-    const raw = this.datos?.no_documento || this.datos?.nit || this.datos?.documento || (this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146');
-    if (!raw) return '';
-    return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
+    if (this.datos && ('no_documento' in this.datos || 'nit' in this.datos || 'documento' in this.datos)) {
+      const raw = this.datos?.no_documento || this.datos?.nit || this.datos?.documento || '';
+      if (raw && String(raw).trim() !== '') {
+        return String(raw).replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim();
+      }
+    }
+    return this.tipo === 'sociedad' ? '901482310-5' : '1.053.892.146';
   }
 
   get valorExtra(): string {
-    return this.datos?.universidad || (this.tipo === 'sociedad' ? 'Sociedad de Contadores' : 'Universidad de La Salle');
+    if (this.datos && ('universidad' in this.datos || 'tipo_sociedad' in this.datos)) {
+      let val = this.datos?.universidad || this.datos?.tipo_sociedad || '';
+      if (val && String(val).trim() !== '') {
+        val = String(val).replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores').trim();
+        return val;
+      }
+    }
+    return this.tipo === 'sociedad' ? 'Sociedad de Contadores' : 'Universidad de La Salle';
   }
 
   get valorPie2Der(): string | number {
-    return this.tipo === 'sociedad'
-      ? (this.datos?.no_expd || this.datos?.expediente || '589201')
-      : (this.datos?.no_expd || this.datos?.expediente || '621948');
+    if (this.datos && ('no_expd' in this.datos || 'expediente' in this.datos)) {
+      const val = this.datos?.no_expd ?? this.datos?.expediente;
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        return val;
+      }
+    }
+    return this.tipo === 'sociedad' ? '589201' : '621948';
   }
 
   copiarMatricula(event: MouseEvent): void {
