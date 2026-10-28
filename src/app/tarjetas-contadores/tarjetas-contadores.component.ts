@@ -59,8 +59,8 @@ export interface TarjetaContador {
   selector: 'app-tarjetas-contadores',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     TablaContadoresComponent,
     FormEmisionContadoresComponent,
     EmisionMasivaContadoresComponent,
@@ -144,7 +144,7 @@ export class TarjetasContadoresComponent implements OnInit {
       return this.selectedTarjeta.fecha_emision;
     }
     if (this.selectedTarjetaHistorial && Array.isArray(this.selectedTarjetaHistorial.estados)) {
-      const state = this.selectedTarjetaHistorial.estados.find((e: any) => 
+      const state = this.selectedTarjetaHistorial.estados.find((e: any) =>
         e.estado?.toLowerCase() === 'emitida' || e.estado?.toLowerCase() === 'activa'
       );
       if (state && state.fecha) {
@@ -342,7 +342,7 @@ export class TarjetasContadoresComponent implements OnInit {
     this.saveColumnsPreference();
   }
 
-  private saveColumnsPreference(): void {
+  saveColumnsPreference(): void {
     try {
       const state = this.availableColumns.map(c => ({ key: c.key, visible: c.visible }));
       localStorage.setItem('jcc_cols_contadores', JSON.stringify(state));
@@ -458,6 +458,9 @@ export class TarjetasContadoresComponent implements OnInit {
     }
 
     const ts = new Date().getTime();
+    if (this.sortColumn) {
+      url += `&order_by=${encodeURIComponent(String(this.sortColumn))}&order_dir=${this.sortDirection.toUpperCase()}`;
+    }
     url += `&_t=${ts}`;
 
     this.http.get<any>(url)
@@ -465,8 +468,8 @@ export class TarjetasContadoresComponent implements OnInit {
         next: (res) => {
           const rawList = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
           this.totalRecordsCount = Array.isArray(res) ? rawList.length : (res?.total ?? rawList.length);
-          this.totalPagesCount = Array.isArray(res) 
-            ? Math.ceil(this.totalRecordsCount / this.pageSize) 
+          this.totalPagesCount = Array.isArray(res)
+            ? Math.ceil(this.totalRecordsCount / this.pageSize)
             : (res?.total_pages ?? Math.ceil(this.totalRecordsCount / this.pageSize));
 
           this.tarjetas = rawList.map((item: any) => ({
@@ -494,6 +497,7 @@ export class TarjetasContadoresComponent implements OnInit {
             fecha_grado: item.fecha_grado ?? '',
             seccional: item.seccional ?? '',
             fecha_emision: item.fecha_emision ?? '',
+            fecha_activacion: item.fecha_activacion ?? '',
             foto: item.foto ?? null,
             hash_sha256: item.hash_sha256 ?? null
           }));
@@ -526,7 +530,8 @@ export class TarjetasContadoresComponent implements OnInit {
     { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
     { key: 'acta_jcc', label: 'Acta JCC', tipo: 'string' },
     { key: 'fecha_grado', label: 'Fecha de grado', tipo: 'date' },
-    { key: 'seccional', label: 'Seccional', tipo: 'string' }
+    { key: 'seccional', label: 'Seccional', tipo: 'string' },
+    { key: 'fecha_activacion', label: 'Fecha activación', tipo: 'date' }
   ];
 
   onApplyMultiFilters(filters: ActiveFilter[]): void {

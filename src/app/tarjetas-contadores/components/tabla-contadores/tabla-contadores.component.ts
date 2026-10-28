@@ -303,6 +303,7 @@ export class TablaContadoresComponent {
   @Output() regenerarTarjeta = new EventEmitter<TarjetaContador>();
   @Output() abrirHistorial = new EventEmitter<TarjetaContador>();
   @Output() resetColumns = new EventEmitter<void>();
+  @Output() toggleColumnChange = new EventEmitter<TableColumn>();
 
   isColumnsMenuOpen: boolean = false;
   activeDropdownId: any = null;
@@ -329,6 +330,7 @@ export class TablaContadoresComponent {
     }
     this.columnMessageWarning = '';
     col.visible = !col.visible;
+    this.toggleColumnChange.emit(col);
   }
 
   onSearchQueryChange(query: string): void {
