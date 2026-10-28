@@ -21,6 +21,8 @@ export interface TableColumn {
   key: string;
   label: string;
   visible: boolean;
+  es_filtrable?: boolean;
+  tipo_dato?: string;
 }
 
 export interface TarjetaContador {
@@ -48,6 +50,7 @@ export interface TarjetaContador {
   fecha_grado?: string;
   seccional?: string;
   fecha_emision?: string;
+  fecha_activacion?: string;
   foto?: string | null;
   hash_sha256?: string | null;
 }
@@ -361,6 +364,8 @@ export class TarjetasContadoresComponent implements OnInit {
                 label = 'Cédula de ciudadanía';
               } else if (c.key === 'fecha_registro' || c.key === 'fecha_radicacion') {
                 label = 'Fecha de radicación';
+              } else if (c.key === 'fecha_activacion') {
+                label = 'Fecha activación';
               }
               return {
                 key: c.key,
@@ -370,6 +375,15 @@ export class TarjetasContadoresComponent implements OnInit {
                 tipo_dato: c.tipo_dato || 'string'
               };
             });
+            if (!this.dbColumns.some(c => c.key === 'fecha_activacion')) {
+              this.dbColumns.push({
+                key: 'fecha_activacion',
+                label: 'Fecha activación',
+                visible: true,
+                es_filtrable: true,
+                tipo_dato: 'datetime'
+              });
+            }
             this.availableColumns = this.dbColumns.map(c => ({ ...c }));
           }
           this.applySavedColumnsPreference();

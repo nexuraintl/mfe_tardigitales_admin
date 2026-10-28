@@ -307,7 +307,15 @@ export class App implements OnInit, AfterViewInit {
         icon: 'fa fa-plus',
         action: () => this.activeComponent?.abrirNuevaTarjeta?.()
       };
-      this.viewActions = [];
+      this.viewActions = [
+        {
+          id: 'emision-masiva',
+          label: 'Emisión masiva',
+          icon: 'fa fa-file-excel-o',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.abrirEmisionMasiva?.()
+        }
+      ];
     } else if (cleanUrl.includes('crud')) {
       this.primaryAction = null;
       this.viewActions = [

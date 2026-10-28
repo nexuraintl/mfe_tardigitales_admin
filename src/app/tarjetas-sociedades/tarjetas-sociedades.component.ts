@@ -21,6 +21,8 @@ export interface TableColumn {
   key: string;
   label: string;
   visible: boolean;
+  es_filtrable?: boolean;
+  tipo_dato?: string;
 }
 
 export interface TarjetaSociedad {
@@ -44,6 +46,7 @@ export interface TarjetaSociedad {
   estado_solicitud?: string;
   tipo_solicitud?: string;
   fecha_emision?: string;
+  fecha_activacion?: string;
   foto?: string | null;
   hash_sha256?: string | null;
 }
@@ -356,6 +359,8 @@ export class TarjetasSociedadesComponent implements OnInit {
                 label = 'Tipo de registro';
               } else if (c.key === 'fecha_inscripcion' || c.key === 'fecha_radicacion') {
                 label = 'Fecha de radicación';
+              } else if (c.key === 'fecha_activacion') {
+                label = 'Fecha activación';
               }
               return {
                 key: c.key,
@@ -372,6 +377,15 @@ export class TarjetasSociedadesComponent implements OnInit {
                 visible: true,
                 es_filtrable: true,
                 tipo_dato: 'string'
+              });
+            }
+            if (!cols.some((c: any) => c.key === 'fecha_activacion')) {
+              cols.push({
+                key: 'fecha_activacion',
+                label: 'Fecha activación',
+                visible: true,
+                es_filtrable: true,
+                tipo_dato: 'datetime'
               });
             }
             this.dbColumns = cols;
@@ -850,24 +864,33 @@ export class TarjetasSociedadesComponent implements OnInit {
           const item = res && res.status === 'success' ? res.data : (res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null);
 
           if (item) {
-            const razonSocial = item.razon_social ?? "Sociedad de Contadores Públicos";
-            const docNum = item.nit ?? identification;
+            const razonSocial = item.razon_social || item.solicitante || "Sociedad de Contadores";
+            const docNum = item.nit || item.documento || identification;
 
             const localTarjeta = this.tarjetas.find(t =>
               (t.nit || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
             );
 
             this.datosConsulta = {
+              ...item,
               solicitante: razonSocial,
+              razon_social: razonSocial,
               documento: String(docNum),
-              matricula: item.inscripcion ?? `REG-${docNum}`,
-              expediente: item.no_expd ?? 0,
-              correo: localTarjeta?.correo ?? item.correo ?? '',
-              representante: item.representante_legal ?? "Representante Legal Autorizado",
-              estado: item.estado_sociedad ?? "ACTIVO",
-              seccional: item.seccional ?? "",
-              resolucion: item.resolucion ?? "",
-              foto: item.foto ?? item.pdf ?? localTarjeta?.foto ?? null,
+              nit: String(docNum),
+              matricula: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
+              inscripcion: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
+              no_tarjeta: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
+              expediente: item.no_expd ?? item.expediente ?? 0,
+              no_expd: item.no_expd ?? item.expediente ?? 0,
+              correo: localTarjeta?.correo || item.correo || '',
+              representante: item.representante_legal || "Representante Legal Autorizado",
+              estado: item.estado_sociedad || item.estado || "ACTIVO",
+              seccional: item.seccional || "",
+              resolucion: item.resolucion || "",
+              fecha_resolucion: item.fecha_resolucion || "",
+              tipo_sociedad: (item.tipo_sociedad || "Sociedad de Contadores").replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores'),
+              universidad: (item.tipo_sociedad || "Sociedad de Contadores").replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores'),
+              foto: item.foto || item.pdf || localTarjeta?.foto || null,
               existe: !!localTarjeta
             };
           } else {
