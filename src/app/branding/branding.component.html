@@ -1,19 +1,30 @@
 <!-- Alertas y Mensajes de Estado -->
 <nx-alert *ngIf="currentError" [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
-<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000" (onClose)="mensajeExito = ''"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000"
+  (onClose)="mensajeExito = ''"></nx-alert>
 
 <div class="branding-layout">
   <!-- Columna Izquierda: Formulario de Configuración e Historial -->
   <div class="d-flex flex-column gap-4">
     <!-- Card 1: Formulario de Configuración -->
     <section class="card shadow-sm border-0">
-      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div
+        class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="card-title fw-bold mb-0 text-dark">
           Configuración de branding
         </h5>
         <small class="text-muted">
-          Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar' }}</strong>
+          Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar'
+            }}</strong>
         </small>
+      </div>
+
+      <div *ngIf="publishedVersion !== null && publishedObservacion"
+        class="px-4 py-2 bg-primary-subtle bg-opacity-25 border-bottom" style="font-size: 12px;">
+        <div class="min-w-0">
+          <span class="fw-semibold text-dark">Justificación de publicación vigente (v{{ publishedVersion }}):</span>
+          <span class="text-secondary ms-1 text-break">{{ publishedObservacion }}</span>
+        </div>
       </div>
 
       <div class="card-body p-4">
@@ -24,36 +35,31 @@
             </label>
 
             <!-- Previsualización sobria y moderna del logo seleccionado -->
-            <div *ngIf="logoPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+            <div *ngIf="logoPreviewUrl"
+              class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2"
+              style="max-width: 100%;">
               <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
-                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px;">
-                  <img [src]="logoPreviewUrl" alt="Vista previa del logo" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 60px; height: 40px;">
+                  <img [src]="logoPreviewUrl" alt="Vista previa del logo"
+                    style="max-width: 100%; max-height: 100%; object-fit: contain;" />
                 </div>
                 <div class="min-w-0 flex-grow-1">
-                  <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
+                  <span
+                    class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 text-truncate d-inline-block"
+                    style="font-size: 10px; max-width: 100%;">
                     {{ logoSourceText || 'Logo seleccionado' }}
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
-                title="Quitar logo"
-                style="font-size: 12px;"
-                (click)="quitarLogo()"
-              >
+              <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
+                title="Quitar logo" style="font-size: 12px;" (click)="quitarLogo()">
                 <span class="fa fa-times me-1"></span> Quitar
               </button>
             </div>
 
-            <input
-              type="file"
-              id="brandingLogo"
-              accept="image/png,image/jpeg,image/svg+xml"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorLogo"
-              (change)="onLogoSelected($event)"
-            />
+            <input type="file" id="brandingLogo" accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm" [class.is-invalid]="!!errorLogo" (change)="onLogoSelected($event)" />
             <nx-field-error [error]="errorLogo"></nx-field-error>
           </div>
 
@@ -64,36 +70,32 @@
             </label>
 
             <!-- Previsualización del patrón seleccionado -->
-            <div *ngIf="patronPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+            <div *ngIf="patronPreviewUrl"
+              class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2"
+              style="max-width: 100%;">
               <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
-                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px; overflow: hidden;">
-                  <img [src]="patronPreviewUrl" alt="Vista previa del patrón" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 60px; height: 40px; overflow: hidden;">
+                  <img [src]="patronPreviewUrl" alt="Vista previa del patrón"
+                    style="max-width: 100%; max-height: 100%; object-fit: cover;" />
                 </div>
                 <div class="min-w-0 flex-grow-1">
-                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
+                  <span
+                    class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block"
+                    style="font-size: 10px; max-width: 100%;">
                     {{ patronSourceText || 'Patrón seleccionado' }}
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
-                title="Quitar patrón"
-                style="font-size: 12px;"
-                (click)="quitarPatron()"
-              >
+              <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
+                title="Quitar patrón" style="font-size: 12px;" (click)="quitarPatron()">
                 <span class="fa fa-times me-1"></span> Quitar
               </button>
             </div>
 
-            <input
-              type="file"
-              id="brandingPatron"
-              accept="image/png,image/jpeg,image/svg+xml"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorPatron"
-              (change)="onPatronSelected($event)"
-            />
+            <input type="file" id="brandingPatron" accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm" [class.is-invalid]="!!errorPatron"
+              (change)="onPatronSelected($event)" />
             <nx-field-error [error]="errorPatron"></nx-field-error>
           </div>
 
@@ -103,15 +105,9 @@
               <label for="brandingPrimary" class="form-label fw-semibold text-secondary small mb-1">
                 Color de fondo <span class="text-secondary">*</span>
               </label>
-              <input
-                type="color"
-                id="brandingPrimary"
-                class="form-control form-control-color w-100"
-                [class.is-invalid]="!!errorColorFondo"
-                style="height: 42px; cursor: pointer;"
-                [(ngModel)]="colorFondo"
-                (ngModelChange)="errorColorFondo = ''"
-              />
+              <input type="color" id="brandingPrimary" class="form-control form-control-color w-100"
+                [class.is-invalid]="!!errorColorFondo" style="height: 42px; cursor: pointer;" [(ngModel)]="colorFondo"
+                (ngModelChange)="errorColorFondo = ''" />
               <nx-field-error [error]="errorColorFondo"></nx-field-error>
             </div>
 
@@ -119,15 +115,9 @@
               <label for="brandingSecondary" class="form-label fw-semibold text-secondary small mb-1">
                 Color de letra (Digital) <span class="text-secondary">*</span>
               </label>
-              <input
-                type="color"
-                id="brandingSecondary"
-                class="form-control form-control-color w-100"
-                [class.is-invalid]="!!errorColorLetra"
-                style="height: 42px; cursor: pointer;"
-                [(ngModel)]="colorLetra"
-                (ngModelChange)="errorColorLetra = ''"
-              />
+              <input type="color" id="brandingSecondary" class="form-control form-control-color w-100"
+                [class.is-invalid]="!!errorColorLetra" style="height: 42px; cursor: pointer;" [(ngModel)]="colorLetra"
+                (ngModelChange)="errorColorLetra = ''" />
               <nx-field-error [error]="errorColorLetra"></nx-field-error>
             </div>
           </div>
@@ -140,80 +130,74 @@
           <!-- Campo: Logo para Impresión -->
           <div class="branding-field full mb-3">
             <label for="brandingLogoImpresion" class="form-label fw-semibold text-secondary small mb-1">
-              Logo para impresión (PNG, JPG, SVG - Máx. 300 KB) <span class="text-muted fw-normal" style="font-size: 11px;">(Opcional)</span>
+              Logo para impresión (PNG, JPG, SVG - Máx. 300 KB) <span class="text-muted fw-normal"
+                style="font-size: 11px;">(Opcional)</span>
             </label>
 
             <!-- Previsualización del logo de impresión -->
-            <div *ngIf="logoImpresionPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+            <div *ngIf="logoImpresionPreviewUrl"
+              class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2"
+              style="max-width: 100%;">
               <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
-                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px;">
-                  <img [src]="logoImpresionPreviewUrl" alt="Vista previa del logo de impresión" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 60px; height: 40px;">
+                  <img [src]="logoImpresionPreviewUrl" alt="Vista previa del logo de impresión"
+                    style="max-width: 100%; max-height: 100%; object-fit: contain;" />
                 </div>
                 <div class="min-w-0 flex-grow-1">
-                  <span class="badge bg-info-subtle text-info border border-info border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
+                  <span
+                    class="badge bg-info-subtle text-info border border-info border-opacity-25 text-truncate d-inline-block"
+                    style="font-size: 10px; max-width: 100%;">
                     {{ logoImpresionSourceText || 'Logo de impresión seleccionado' }}
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
-                title="Quitar logo de impresión"
-                style="font-size: 12px;"
-                (click)="quitarLogoImpresion()"
-              >
+              <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
+                title="Quitar logo de impresión" style="font-size: 12px;" (click)="quitarLogoImpresion()">
                 <span class="fa fa-times me-1"></span> Quitar
               </button>
             </div>
 
-            <input
-              type="file"
-              id="brandingLogoImpresion"
-              accept="image/png,image/jpeg,image/svg+xml"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorLogoImpresion"
-              (change)="onLogoImpresionSelected($event)"
-            />
+            <input type="file" id="brandingLogoImpresion" accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm" [class.is-invalid]="!!errorLogoImpresion"
+              (change)="onLogoImpresionSelected($event)" />
             <nx-field-error [error]="errorLogoImpresion"></nx-field-error>
           </div>
 
           <!-- Campo: Patrón de Fondo para Impresión -->
           <div class="branding-field full mb-3">
             <label for="brandingPatronImpresion" class="form-label fw-semibold text-secondary small mb-1">
-              Patrón de fondo para impresión (PNG, JPG, SVG - Máx. 3 MB) <span class="text-muted fw-normal" style="font-size: 11px;">(Opcional)</span>
+              Patrón de fondo para impresión (PNG, JPG, SVG - Máx. 3 MB) <span class="text-muted fw-normal"
+                style="font-size: 11px;">(Opcional)</span>
             </label>
 
             <!-- Previsualización del patrón de impresión -->
-            <div *ngIf="patronImpresionPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+            <div *ngIf="patronImpresionPreviewUrl"
+              class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2"
+              style="max-width: 100%;">
               <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
-                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 40px; overflow: hidden;">
-                  <img [src]="patronImpresionPreviewUrl" alt="Vista previa del patrón de impresión" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 60px; height: 40px; overflow: hidden;">
+                  <img [src]="patronImpresionPreviewUrl" alt="Vista previa del patrón de impresión"
+                    style="max-width: 100%; max-height: 100%; object-fit: cover;" />
                 </div>
                 <div class="min-w-0 flex-grow-1">
-                  <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
+                  <span
+                    class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 text-truncate d-inline-block"
+                    style="font-size: 10px; max-width: 100%;">
                     {{ patronImpresionSourceText || 'Patrón de impresión seleccionado' }}
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
-                title="Quitar patrón de impresión"
-                style="font-size: 12px;"
-                (click)="quitarPatronImpresion()"
-              >
+              <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
+                title="Quitar patrón de impresión" style="font-size: 12px;" (click)="quitarPatronImpresion()">
                 <span class="fa fa-times me-1"></span> Quitar
               </button>
             </div>
 
-            <input
-              type="file"
-              id="brandingPatronImpresion"
-              accept="image/png,image/jpeg,image/svg+xml"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorPatronImpresion"
-              (change)="onPatronImpresionSelected($event)"
-            />
+            <input type="file" id="brandingPatronImpresion" accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm" [class.is-invalid]="!!errorPatronImpresion"
+              (change)="onPatronImpresionSelected($event)" />
             <nx-field-error [error]="errorPatronImpresion"></nx-field-error>
           </div>
 
@@ -221,23 +205,15 @@
           <div class="row g-3 mb-3">
             <div class="col-12">
               <label for="brandingColorLetraImpresion" class="form-label fw-semibold text-secondary small mb-1">
-                Color de texto (Impresión / PDF) <span class="text-muted fw-normal" style="font-size: 11px;">(Opcional)</span>
+                Color de texto (Impresión / PDF) <span class="text-muted fw-normal"
+                  style="font-size: 11px;">(Opcional)</span>
               </label>
               <div class="d-flex align-items-center gap-3">
-                <input
-                  type="color"
-                  id="brandingColorLetraImpresion"
-                  class="form-control form-control-color"
-                  style="width: 60px; height: 42px; cursor: pointer;"
-                  [(ngModel)]="colorLetraImpresion"
-                />
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  style="max-width: 140px; font-family: monospace;"
-                  [(ngModel)]="colorLetraImpresion"
-                  placeholder="#0f172a"
-                />
+                <input type="color" id="brandingColorLetraImpresion" class="form-control form-control-color"
+                  style="width: 60px; height: 42px; cursor: pointer;" [(ngModel)]="colorLetraImpresion" />
+                <input type="text" class="form-control form-control-sm"
+                  style="max-width: 140px; font-family: monospace;" [(ngModel)]="colorLetraImpresion"
+                  placeholder="#0f172a" />
               </div>
             </div>
           </div>
@@ -247,13 +223,10 @@
       </div>
 
       <div class="card-footer bg-light border-top p-3 text-end">
-        <button
-          type="button"
-          class="btn btn-outline-secondary px-4 py-2 fw-semibold"
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-semibold"
           [disabled]="saving || !hasFormChanges"
           [title]="!hasFormChanges ? 'Modifique al menos un parámetro (colores, fuente, logo, patrón, nombre o firma del director) para poder guardar una nueva versión' : ''"
-          (click)="guardarNuevaVersion()"
-        >
+          (click)="guardarNuevaVersion()">
           <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
           <span class="fa fa-save me-1" *ngIf="!saving"></span>
           {{ saving ? 'Guardando...' : 'Guardar nueva versión' }}
@@ -287,37 +260,41 @@
         </div>
 
         <ul class="list-group list-group-flush branding-history mb-0" *ngIf="!loading && historyVersions.length > 0">
-          <li
-            *ngFor="let item of historyVersions"
-            class="list-group-item p-3 d-flex justify-content-between align-items-center transition-all"
-            [class.active-version]="item.version === selectedVersionNumber"
-          >
-            <div class="cursor-pointer flex-grow-1" (click)="seleccionarVersionHistorial(item)">
+          <li *ngFor="let item of historyVersions"
+            class="list-group-item p-3 d-flex justify-content-between align-items-center transition-all gap-2"
+            [class.active-version]="item.version === selectedVersionNumber">
+            <div class="cursor-pointer flex-grow-1 min-w-0" (click)="seleccionarVersionHistorial(item)">
               <strong class="d-block text-dark">
                 Versión v{{ item.version }}
-                <span class="badge bg-primary-subtle text-primary ms-1 font-normal" *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
+                <span class="badge bg-primary-subtle text-primary ms-1 font-normal"
+                  *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
               </strong>
               <small class="text-muted d-block">
                 {{ item.stamp || item.created_at || 'Fecha no disponible' }}
               </small>
-              <small class="text-secondary d-block text-truncate mt-0.5" *ngIf="item.nombre_director" style="font-size: 11px; max-width: 220px;">
-                <span class="fa fa-user-tie me-1"></span>{{ item.nombre_director }}
+              <small class="text-secondary d-block text-truncate mt-1" *ngIf="item.nombre_director"
+                style="font-size: 11px; max-width: 240px;">
+                {{ item.nombre_director }}
               </small>
+              <div *ngIf="item.observacion"
+                class="mt-2 py-1 px-2 bg-light border-start border-3 border-primary rounded-end text-secondary text-break"
+                style="font-size: 11.5px; line-height: 1.4; margin-top: 8px !important;">
+                <span class="fw-semibold text-dark">Observación:</span> {{ item.observacion }}
+              </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1" *ngIf="item.published">Publicada</span>
-              <button
-                *ngIf="!item.published"
-                type="button"
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1"
+                *ngIf="item.published">Publicada</span>
+              <button *ngIf="!item.published" type="button"
                 [class]="item.version === selectedVersionNumber ? 'btn btn-primary btn-sm px-3 py-1.5 fw-bold shadow-sm' : 'btn btn-outline-primary btn-sm px-3 py-1'"
-                style="font-size: 12px;"
-                (click)="seleccionarVersionHistorial(item); publicarVersion()"
-                [disabled]="publishing"
-              >
-                <span *ngIf="publishing && item.version === selectedVersionNumber" class="spinner-border spinner-border-sm me-1"></span>
-                <span class="fa fa-upload me-1" *ngIf="item.version === selectedVersionNumber && !publishing"></span>
-                {{ publishing && item.version === selectedVersionNumber ? 'Publicando...' : (item.version === selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
+                style="font-size: 12px;" (click)="abrirModalPublicar(item, $event)" [disabled]="publishing">
+                <span *ngIf="publishing && item.version === versionToPublish"
+                  class="spinner-border spinner-border-sm me-1"></span>
+                <span class="fa fa-upload me-1"
+                  *ngIf="item.version === selectedVersionNumber && !(publishing && item.version === versionToPublish)"></span>
+                {{ (publishing && item.version === versionToPublish) ? 'Publicando...' : (item.version ===
+                selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
               </button>
             </div>
           </li>
@@ -338,22 +315,14 @@
           Vista previa
         </h5>
         <div class="btn-group btn-group-sm" role="group" aria-label="Modo de previsualización">
-          <button
-            type="button"
-            class="btn"
+          <button type="button" class="btn"
             [ngClass]="modoPreview === 'digital' ? 'btn-primary' : 'btn-outline-secondary'"
-            (click)="modoPreview = 'digital'"
-            title="Vista digital estándar"
-          >
+            (click)="modoPreview = 'digital'" title="Vista digital estándar">
             <i class="fa fa-desktop me-1"></i> Digital
           </button>
-          <button
-            type="button"
-            class="btn"
+          <button type="button" class="btn"
             [ngClass]="modoPreview === 'impresion' ? 'btn-primary' : 'btn-outline-secondary'"
-            (click)="modoPreview = 'impresion'"
-            title="Vista de impresión / PDF"
-          >
+            (click)="modoPreview = 'impresion'" title="Vista de impresión / PDF">
             <i class="fa fa-print me-1"></i> Impresión
           </button>
         </div>
@@ -365,17 +334,74 @@
           <div class="skeleton-card skeleton-box"></div>
         </div>
 
+        <div *ngIf="!loading && selectedVersionObservacion" class="mb-3 py-2 px-3 bg-light border rounded-3"
+          style="font-size: 12px;">
+          <div class="min-w-0">
+            <span class="fw-semibold text-dark">Observación de publicación (v{{ selectedVersionNumber }}):</span>
+            <p class="mb-0 text-secondary mt-1 text-break">{{ selectedVersionObservacion }}</p>
+          </div>
+        </div>
+
         <div *ngIf="!loading" class="branding-preview-card">
-          <app-tarjeta-credencial
-            [tipo]="moduleName === 'sociedades' ? 'sociedad' : 'contador'"
-            [modo]="modoPreview"
-            vista="ambas"
-            layout="stack"
-            [datos]="previewDatos"
-            [branding]="previewBranding"
-          ></app-tarjeta-credencial>
+          <app-tarjeta-credencial [tipo]="moduleName === 'sociedades' ? 'sociedad' : 'contador'" [modo]="modoPreview"
+            vista="ambas" layout="stack" [datos]="previewDatos" [branding]="previewBranding"></app-tarjeta-credencial>
         </div>
       </div>
     </section>
+  </div>
+</div>
+
+<!-- Modal de Justificación para Publicar Versión de Branding -->
+<div class="modal-backdrop fade show" *ngIf="isPublishModalOpen" style="z-index: 1050;"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isPublishModalOpen" role="dialog" aria-modal="true"
+  style="z-index: 1055;" (click)="cerrarModalPublicar()">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow border-0 rounded-3">
+      <div class="modal-header bg-white border-bottom py-3 px-4">
+        <h5 class="modal-title fw-bold text-dark mb-0 fs-6">
+          Publicar versión v{{ versionToPublish }} ({{ label }})
+        </h5>
+        <button type="button" class="btn-close" [disabled]="publishing" (click)="cerrarModalPublicar()"
+          aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body p-4 bg-white">
+        <p class="text-secondary small mb-3">
+          Al publicar la <strong>versión v{{ versionToPublish }}</strong>, esta configuración visual pasará a ser la
+          vigente para las credenciales de <strong>{{ label }}</strong>. Por favor registre la observación o
+          justificación de esta publicación:
+        </p>
+
+        <div class="mb-1">
+          <label for="observacionPublicacionBranding" class="form-label fw-semibold text-dark small mb-1">
+            Observación / Justificación de la publicación <span class="text-danger">*</span>
+          </label>
+          <textarea id="observacionPublicacionBranding" rows="3" maxlength="500" class="form-control form-control-sm"
+            [class.is-invalid]="!!errorObservacionPublicacion"
+            placeholder="Ej: Actualización de imagen institucional conforme a lineamientos vigentes..."
+            [ngModel]="observacionPublicacion" (ngModelChange)="onObservacionPublicacionChange($event)"
+            [disabled]="publishing"></textarea>
+          <div class="d-flex justify-content-between align-items-start mt-1">
+            <nx-field-error [error]="errorObservacionPublicacion"></nx-field-error>
+            <small class="text-muted ms-auto" style="font-size: 11px;">
+              {{ (observacionPublicacion || '').length }}/500
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-light btn-sm px-3 py-1.5 fw-semibold border text-secondary"
+          [disabled]="publishing" (click)="cerrarModalPublicar()">
+          Cancelar
+        </button>
+        <button type="button"
+          class="btn btn-primary btn-sm px-3.5 py-1.5 fw-semibold shadow-sm d-flex align-items-center gap-1"
+          [disabled]="publishing" (click)="confirmarPublicarVersion()">
+          <span *ngIf="publishing" class="spinner-border spinner-border-sm me-1"></span>
+          <span>{{ publishing ? 'Publicando...' : 'Confirmar y publicar' }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>

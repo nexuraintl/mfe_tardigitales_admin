@@ -1,19 +1,30 @@
 <!-- Alertas y Mensajes de Estado -->
 <nx-alert *ngIf="currentError" [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
-<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000" (onClose)="mensajeExito = ''"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000"
+  (onClose)="mensajeExito = ''"></nx-alert>
 
 <div class="branding-layout">
   <!-- Columna Izquierda: Formulario de Configuración e Historial -->
   <div class="d-flex flex-column gap-4">
     <!-- Card 1: Formulario de Configuración -->
     <section class="card shadow-sm border-0">
-      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div
+        class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="card-title fw-bold mb-0 text-dark">
           Configuración de firma institucional
         </h5>
         <small class="text-muted">
-          Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar' }}</strong>
+          Publicada: <strong class="text-primary">{{ publishedVersion !== null ? 'v' + publishedVersion : 'Sin publicar'
+            }}</strong>
         </small>
+      </div>
+
+      <div *ngIf="publishedVersion !== null && publishedObservacion"
+        class="px-4 py-2 bg-primary-subtle bg-opacity-25 border-bottom" style="font-size: 12px;">
+        <div class="min-w-0">
+          <span class="fw-semibold text-dark">Justificación de publicación vigente (v{{ publishedVersion }}):</span>
+          <span class="text-secondary ms-1 text-break">{{ publishedObservacion }}</span>
+        </div>
       </div>
 
       <div class="card-body p-4">
@@ -23,16 +34,9 @@
             <label for="brandingNombreDirector" class="form-label fw-semibold text-secondary small mb-1">
               Nombre del director general <span class="text-secondary">*</span>
             </label>
-            <input
-              type="text"
-              id="brandingNombreDirector"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorNombreDirector"
-              placeholder="Ej: SANDRA MILENA BARRIOS PULIDO"
-              maxlength="255"
-              [ngModel]="nombreDirector"
-              (ngModelChange)="onNombreChange($event)"
-            />
+            <input type="text" id="brandingNombreDirector" class="form-control form-control-sm"
+              [class.is-invalid]="!!errorNombreDirector" placeholder="Ej: SANDRA MILENA BARRIOS PULIDO" maxlength="255"
+              [ngModel]="nombreDirector" (ngModelChange)="onNombreChange($event)" />
             <nx-field-error [error]="errorNombreDirector"></nx-field-error>
           </div>
 
@@ -41,16 +45,9 @@
             <label for="brandingCargoDirector" class="form-label fw-semibold text-secondary small mb-1">
               Cargo institucional <span class="text-secondary">*</span>
             </label>
-            <input
-              type="text"
-              id="brandingCargoDirector"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorCargoDirector"
-              placeholder="Ej: DIRECTOR GENERAL"
-              maxlength="100"
-              [ngModel]="cargoDirector"
-              (ngModelChange)="onCargoChange($event)"
-            />
+            <input type="text" id="brandingCargoDirector" class="form-control form-control-sm"
+              [class.is-invalid]="!!errorCargoDirector" placeholder="Ej: DIRECTOR GENERAL" maxlength="100"
+              [ngModel]="cargoDirector" (ngModelChange)="onCargoChange($event)" />
             <nx-field-error [error]="errorCargoDirector"></nx-field-error>
           </div>
 
@@ -61,49 +58,42 @@
             </label>
 
             <!-- Previsualización de la firma seleccionada -->
-            <div *ngIf="firmaPreviewUrl" class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2" style="max-width: 100%;">
+            <div *ngIf="firmaPreviewUrl"
+              class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 bg-light border rounded-3 mb-2"
+              style="max-width: 100%;">
               <div class="d-flex align-items-center gap-2 min-w-0" style="flex: 1 1 180px;">
-                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 80px; height: 40px; overflow: hidden;">
-                  <img [src]="firmaPreviewUrl" alt="Vista previa de la firma" style="max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply;" />
+                <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 80px; height: 40px; overflow: hidden;">
+                  <img [src]="firmaPreviewUrl" alt="Vista previa de la firma"
+                    style="max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply;" />
                 </div>
                 <div class="min-w-0 flex-grow-1">
-                  <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 text-truncate d-inline-block" style="font-size: 10px; max-width: 100%;">
+                  <span
+                    class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 text-truncate d-inline-block"
+                    style="font-size: 10px; max-width: 100%;">
                     {{ firmaSourceText || 'Firma seleccionada' }}
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
-                title="Quitar firma"
-                style="font-size: 12px;"
-                (click)="quitarFirma()"
-              >
+              <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 px-2 flex-shrink-0"
+                title="Quitar firma" style="font-size: 12px;" (click)="quitarFirma()">
                 <span class="fa fa-times me-1"></span> Quitar
               </button>
             </div>
 
-            <input
-              type="file"
-              id="brandingFirmaDirector"
-              accept="image/png,image/jpeg,image/svg+xml"
-              class="form-control form-control-sm"
-              [class.is-invalid]="!!errorFirma"
-              (change)="onFirmaSelected($event)"
-            />
+            <input type="file" id="brandingFirmaDirector" accept="image/png,image/jpeg,image/svg+xml"
+              class="form-control form-control-sm" [class.is-invalid]="!!errorFirma"
+              (change)="onFirmaSelected($event)" />
             <nx-field-error [error]="errorFirma"></nx-field-error>
           </div>
         </div>
       </div>
 
       <div class="card-footer bg-light border-top p-3 text-end">
-        <button
-          type="button"
-          class="btn btn-outline-secondary px-4 py-2 fw-semibold"
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-semibold"
           [disabled]="saving || !hasFormChanges"
           [title]="!hasFormChanges ? 'Modifique al menos un parámetro (nombre, cargo o firma del director) para poder guardar una nueva versión' : ''"
-          (click)="guardarNuevaVersion()"
-        >
+          (click)="guardarNuevaVersion()">
           <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
           <span class="fa fa-save me-1" *ngIf="!saving"></span>
           {{ saving ? 'Guardando...' : 'Guardar nueva versión' }}
@@ -133,37 +123,40 @@
         </div>
 
         <ul class="list-group list-group-flush branding-history mb-0" *ngIf="!loading && historyVersions.length > 0">
-          <li
-            *ngFor="let item of historyVersions"
-            class="list-group-item p-3 d-flex justify-content-between align-items-center transition-all"
-            [class.active-version]="item.version === selectedVersionNumber"
-          >
-            <div class="cursor-pointer flex-grow-1" (click)="seleccionarVersionHistorial(item)">
+          <li *ngFor="let item of historyVersions"
+            class="list-group-item p-3 d-flex justify-content-between align-items-center transition-all gap-2"
+            [class.active-version]="item.version === selectedVersionNumber">
+            <div class="cursor-pointer flex-grow-1 min-w-0" (click)="seleccionarVersionHistorial(item)">
               <strong class="d-block text-dark">
                 Versión v{{ item.version }}
-                <span class="badge bg-primary-subtle text-primary ms-1 font-normal" *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
+                <span class="badge bg-primary-subtle text-primary ms-1 font-normal"
+                  *ngIf="item.version === selectedVersionNumber" style="font-size: 10px;">Previsualizando</span>
               </strong>
               <small class="text-muted d-block">
                 {{ item.created_at_formatted || 'Fecha no disponible' }}
               </small>
-              <small class="text-secondary d-block text-truncate mt-0.5" *ngIf="item.nombre_director" style="font-size: 11px; max-width: 220px;">
-                <span class="fa fa-user me-1"></span>{{ item.nombre_director }}
+              <small class="text-secondary d-block text-truncate mt-1" *ngIf="item.nombre_director"
+                style="font-size: 11px; max-width: 240px;">
+                {{ item.nombre_director }}
               </small>
+              <div *ngIf="item.observacion"
+                class="mt-2 py-1 px-2 bg-light border-start border-3 border-primary rounded-end text-secondary text-break"
+                style="font-size: 11.5px; line-height: 1.4; margin-top: 8px !important;">
+                <span class="fw-semibold text-dark">Observación:</span> {{ item.observacion }}
+              </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1" *ngIf="item.publicado">Publicada</span>
-              <button
-                *ngIf="!item.publicado"
-                type="button"
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+              <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1"
+                *ngIf="item.publicado">Publicada</span>
+              <button *ngIf="!item.publicado" type="button"
                 [class]="item.version === selectedVersionNumber ? 'btn btn-primary btn-sm px-3 py-1.5 fw-bold shadow-sm' : 'btn btn-outline-primary btn-sm px-3 py-1'"
-                style="font-size: 12px;"
-                (click)="seleccionarVersionHistorial(item); publicarVersion(item.version)"
-                [disabled]="publishing"
-              >
-                <span *ngIf="publishing && item.version === versionBeingPublished" class="spinner-border spinner-border-sm me-1"></span>
+                style="font-size: 12px;" (click)="abrirModalPublicar(item, $event)" [disabled]="publishing">
+                <span *ngIf="publishing && item.version === versionBeingPublished"
+                  class="spinner-border spinner-border-sm me-1"></span>
                 <span class="fa fa-upload me-1" *ngIf="!(publishing && item.version === versionBeingPublished)"></span>
-                {{ (publishing && item.version === versionBeingPublished) ? 'Publicando...' : (item.version === selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
+                {{ (publishing && item.version === versionBeingPublished) ? 'Publicando...' : (item.version ===
+                selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
               </button>
             </div>
           </li>
@@ -194,24 +187,31 @@
           <div class="skeleton-box" style="height: 180px; border-radius: 12px;"></div>
         </div>
 
+        <div *ngIf="!loading && selectedVersionObservacion" class="mb-3 py-2 px-3 bg-light border rounded-3"
+          style="font-size: 12px;">
+          <div class="min-w-0">
+            <span class="fw-semibold text-dark">Observación de publicación (v{{ selectedVersionNumber }}):</span>
+            <p class="mb-0 text-secondary mt-1 text-break">{{ selectedVersionObservacion }}</p>
+          </div>
+        </div>
+
         <div *ngIf="!loading" class="branding-preview-card text-center">
           <div class="official-signature-block p-4 mx-auto" style="max-width: 380px;">
-            <div class="signature-img-container d-flex align-items-center justify-content-center mb-3" style="height: 70px;">
-              <img
-                *ngIf="firmaPreviewUrl"
-                [src]="firmaPreviewUrl"
-                alt="Firma del director general"
-                class="signature-img"
-              />
+            <div class="signature-img-container d-flex align-items-center justify-content-center mb-3"
+              style="height: 70px;">
+              <img *ngIf="firmaPreviewUrl" [src]="firmaPreviewUrl" alt="Firma del director general"
+                class="signature-img" />
               <span *ngIf="!firmaPreviewUrl" class="text-muted small fst-italic">
                 Sin firma seleccionada
               </span>
             </div>
             <div class="signature-line mb-3"></div>
-            <div class="fw-bold text-dark text-uppercase text-break" style="font-size: 13px; letter-spacing: 0.5px; word-break: break-word;">
+            <div class="fw-bold text-dark text-uppercase text-break"
+              style="font-size: 13px; letter-spacing: 0.5px; word-break: break-word;">
               {{ nombreDirector || 'NOMBRE DEL DIRECTOR GENERAL' }}
             </div>
-            <div class="text-secondary small fw-semibold text-uppercase mt-1 text-break" style="font-size: 11px; word-break: break-word;">
+            <div class="text-secondary small fw-semibold text-uppercase mt-1 text-break"
+              style="font-size: 11px; word-break: break-word;">
               {{ cargoDirector || 'DIRECTOR GENERAL' }}
             </div>
             <div class="text-muted text-uppercase mt-1" style="font-size: 10px; letter-spacing: 0.3px;">
@@ -221,5 +221,60 @@
         </div>
       </div>
     </section>
+  </div>
+</div>
+
+<!-- Modal de Justificación para Publicar Versión de Firma Institucional -->
+<div class="modal-backdrop fade show" *ngIf="isPublishModalOpen" style="z-index: 1050;"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isPublishModalOpen" role="dialog" aria-modal="true"
+  style="z-index: 1055;" (click)="cerrarModalPublicar()">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;" (click)="$event.stopPropagation()">
+    <div class="modal-content shadow border-0 rounded-3">
+      <div class="modal-header bg-white border-bottom py-3 px-4">
+        <h5 class="modal-title fw-bold text-dark mb-0 fs-6">
+          Publicar versión v{{ versionToPublish }} (Firma institucional)
+        </h5>
+        <button type="button" class="btn-close" [disabled]="publishing" (click)="cerrarModalPublicar()"
+          aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body p-4 bg-white">
+        <p class="text-secondary small mb-3">
+          Al publicar la <strong>versión v{{ versionToPublish }}</strong>, la firma y datos del director general pasarán
+          a ser los vigentes para todas las credenciales y certificados institucionales. Por favor registre la
+          observación o justificación de esta publicación:
+        </p>
+
+        <div class="mb-1">
+          <label for="observacionPublicacionInstitucional" class="form-label fw-semibold text-dark small mb-1">
+            Observación / Justificación de la publicación <span class="text-danger">*</span>
+          </label>
+          <textarea id="observacionPublicacionInstitucional" rows="3" maxlength="500"
+            class="form-control form-control-sm" [class.is-invalid]="!!errorObservacionPublicacion"
+            placeholder="Ej: Actualización de firma oficial del Director General según resolución..."
+            [ngModel]="observacionPublicacion" (ngModelChange)="onObservacionPublicacionChange($event)"
+            [disabled]="publishing"></textarea>
+          <div class="d-flex justify-content-between align-items-start mt-1">
+            <nx-field-error [error]="errorObservacionPublicacion"></nx-field-error>
+            <small class="text-muted ms-auto" style="font-size: 11px;">
+              {{ (observacionPublicacion || '').length }}/500
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light border-top py-2.5 px-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-light btn-sm px-3 py-1.5 fw-semibold border text-secondary"
+          [disabled]="publishing" (click)="cerrarModalPublicar()">
+          Cancelar
+        </button>
+        <button type="button"
+          class="btn btn-primary btn-sm px-3.5 py-1.5 fw-semibold shadow-sm d-flex align-items-center gap-1"
+          [disabled]="publishing" (click)="confirmarPublicarVersion()">
+          <span *ngIf="publishing" class="spinner-border spinner-border-sm me-1"></span>
+          <span>{{ publishing ? 'Publicando...' : 'Confirmar y publicar' }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
