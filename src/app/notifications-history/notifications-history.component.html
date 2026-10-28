@@ -243,7 +243,13 @@
           </tr>
         </thead>
         <tbody id="historyTableBody">
-          <tr *ngFor="let item of pagedNotifications; trackBy: trackByNotifId">
+          <tr *ngIf="loading">
+            <td colspan="9" class="text-center py-5 text-muted">
+              <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+              Cargando historial de notificaciones...
+            </td>
+          </tr>
+          <tr *ngFor="let item of (loading ? [] : pagedNotifications); trackBy: trackByNotifId">
             <td class="ps-3 text-muted small">#{{ item.id }}</td>
             <td>
               <strong class="text-dark">{{ item.titulo }}</strong>
@@ -285,7 +291,7 @@
               </button>
             </td>
           </tr>
-          <tr *ngIf="pagedNotifications.length === 0">
+          <tr *ngIf="!loading && pagedNotifications.length === 0">
             <td colspan="9" class="text-center py-4 text-muted">
               <span class="fa fa-info-circle me-1"></span> No se encontraron notificaciones con los filtros seleccionados.
             </td>

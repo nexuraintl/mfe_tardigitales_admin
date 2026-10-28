@@ -102,7 +102,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of pagedTramites; trackBy: trackByTramiteId">
+        <tr *ngIf="loading">
+          <td colspan="7" class="text-center py-5 text-muted">
+            <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+            Cargando trámites...
+          </td>
+        </tr>
+        <tr *ngFor="let item of (loading ? [] : pagedTramites); trackBy: trackByTramiteId">
           <td class="ps-3 text-muted small">#{{ item.id }}</td>
           <td><strong class="text-dark">{{ item.nombre }}</strong></td>
           <td>
@@ -155,7 +161,7 @@
             </div>
           </td>
         </tr>
-        <tr *ngIf="pagedTramites.length === 0">
+        <tr *ngIf="!loading && pagedTramites.length === 0">
           <td colspan="7" class="text-center py-4 text-muted">
             <span class="fa fa-info-circle me-1"></span> No se encontraron trámites registrados.
           </td>

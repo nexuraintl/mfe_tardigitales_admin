@@ -74,7 +74,8 @@
         <small class="text-muted" *ngIf="certificados.length > 0">
           Se encontraron {{ certificados.length }} certificado{{ certificados.length === 1 ? '' : 's' }}.
         </small>
-        <small class="text-muted" *ngIf="certificados.length === 0">
+        <small class="text-muted" *ngIf="isLoading">Consultando registros...</small>
+        <small class="text-muted" *ngIf="!isLoading && certificados.length === 0">
           Sin registros encontrados.
         </small>
       </div>
@@ -95,7 +96,11 @@
     <div class="card-body p-0">
       
       <!-- Tabla de resultados -->
-      <div class="table-responsive" *ngIf="certificados.length > 0">
+      <div class="text-center py-5 px-3 text-muted" *ngIf="isLoading">
+        <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+        Cargando certificados...
+      </div>
+      <div class="table-responsive" *ngIf="!isLoading && certificados.length > 0">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light text-secondary small border-bottom">
             <tr>
@@ -184,7 +189,7 @@
       </div>
 
       <!-- Estado vacío formal (Criterio de Aceptación Escenario 6 y Regla 14) -->
-      <div class="text-center py-5 px-3" *ngIf="certificados.length === 0">
+      <div class="text-center py-5 px-3" *ngIf="!isLoading && certificados.length === 0">
         <i class="fa fa-search text-muted opacity-50 fs-1 mb-3 d-block"></i>
         <h6 class="fw-bold text-secondary mb-1">No se encontraron registros que coincidan con los criterios de búsqueda</h6>
         <p class="text-muted small mb-3">Intente modificando el término de búsqueda o cambiando el selector de titular.</p>

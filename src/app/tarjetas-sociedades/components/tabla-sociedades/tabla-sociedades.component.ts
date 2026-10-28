@@ -122,7 +122,13 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of paginatedTarjetas; let i = index; trackBy: trackByFn">
+            <tr *ngIf="loading">
+              <td [attr.colspan]="(visibleColumnsCount || 1) + 1" class="text-center py-5 text-muted">
+                <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+                Cargando solicitudes registradas...
+              </td>
+            </tr>
+            <tr *ngFor="let row of (loading ? [] : paginatedTarjetas); let i = index; trackBy: trackByFn">
               <ng-container *ngFor="let col of availableColumns">
                 <td *ngIf="col.visible">
                   <ng-container [ngSwitch]="col.key">
@@ -206,7 +212,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
                 </div>
               </td>
             </tr>
-            <tr *ngIf="paginatedTarjetas.length === 0">
+            <tr *ngIf="!loading && paginatedTarjetas.length === 0">
               <td [attr.colspan]="visibleColumnsCount + 1" class="text-center py-4 text-muted">
                 <span class="fa fa-info-circle me-1"></span> No se encontraron solicitudes registradas.
               </td>
@@ -284,6 +290,7 @@ export class TablaSociedadesComponent {
   @Output() pageSizeChange = new EventEmitter<number>();
   @Input() pageSizeOptions: number[] = [10, 25, 50, 100];
 
+  @Input() loading: boolean = false;
   @Input() paginatedTarjetas: TarjetaSociedad[] = [];
   @Input() totalOriginal: number = 0;
   @Input() totalRecords: number = 0;

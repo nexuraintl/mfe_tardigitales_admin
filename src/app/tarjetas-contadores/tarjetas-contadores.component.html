@@ -4,7 +4,7 @@
   [visibleColumnsCount]="visibleColumnsCount" [columnMessageWarning]="columnMessageWarning"
   [(searchQuery)]="searchQuery" (searchQueryChange)="onSearchChange()" [(pageSize)]="pageSize"
   (pageSizeChange)="cambiarTamanoPagina($event)" [pageSizeOptions]="pageSizeOptions"
-  [paginatedTarjetas]="paginatedTarjetas" [totalOriginal]="tarjetas.length" [totalRecords]="totalRecords"
+  [loading]="loading || availableColumns.length === 0" [paginatedTarjetas]="paginatedTarjetas" [totalOriginal]="tarjetas.length" [totalRecords]="totalRecords"
   [totalPages]="totalPages" [currentPage]="currentPage" [pagesArray]="pagesArray" [recordRangeStart]="recordRangeStart"
   [recordRangeEnd]="recordRangeEnd" [sortColumn]="sortColumn" [sortDirection]="sortDirection"
   (sort)="ordenarPorColumna($event)" (cambiarPagina)="cambiarPagina($event)" (abrirDetalle)="abrirDetalle($event)"
