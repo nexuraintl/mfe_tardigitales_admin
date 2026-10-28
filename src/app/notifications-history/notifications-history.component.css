@@ -1,1 +1,5 @@
 /* Estilos específicos para la vista de historial de notificaciones */
+.modal {
+  overflow-x: hidden;
+  overflow-y: auto;
+}

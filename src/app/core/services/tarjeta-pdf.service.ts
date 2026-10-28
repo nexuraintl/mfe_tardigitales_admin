@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as QRCode from 'qrcode';
@@ -37,6 +39,7 @@ export interface TarjetaPdfData {
   providedIn: 'root'
 })
 export class TarjetaPdfService {
+  private http = inject(HttpClient);
 
   /**
    * Genera y descarga el documento PDF oficial de la tarjeta con código QR y firma institucional.
@@ -110,6 +113,7 @@ export class TarjetaPdfService {
 
   /**
    * Descarga el documento oficial en estándar PDF/A generado por el Microservicio Python.
+   * Utiliza HttpClient de Angular para garantizar la inyección automática del token Bearer por authInterceptor.
    */
   async descargarPdfDesdeServidor(id?: number | string, hash?: string, tipo?: 'contador' | 'sociedad'): Promise<boolean> {
     const tipoParam = tipo === 'sociedad' ? 'sociedades' : 'contadores';
@@ -124,12 +128,18 @@ export class TarjetaPdfService {
       return false;
     }
 
-    const response = await fetch(url, { method: 'GET' });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    const response = await firstValueFrom(
+      this.http.get(url, {
+        responseType: 'blob',
+        observe: 'response'
+      })
+    );
+
+    const blob = response.body;
+    if (!blob) {
+      throw new Error('Respuesta del servidor sin contenido binario.');
     }
 
-    const blob = await response.blob();
     let filename = `tarjeta_${tipo || 'credencial'}_${id || hash}.pdf`;
 
     const disposition = response.headers.get('content-disposition');
@@ -216,14 +226,14 @@ export class TarjetaPdfService {
     const valorMedio3 = isSociedad ? (datos.no_expd || '621948') : (datos.resolucion || '289');
 
     const labelTitular = isSociedad ? 'Razón social' : 'Nombre';
-    const valorTitular = isSociedad ? (datos.razon_social || 'Sociedad de Contadores Públicos') : (datos.nombre_completo || 'Andrés Felipe Torres Cárdenas');
+    const valorTitular = isSociedad ? (datos.razon_social || 'Sociedad de Contadores') : (datos.nombre_completo || 'Andrés Felipe Torres Cárdenas');
 
     const labelDocumento = isSociedad ? 'NIT' : 'Cédula de ciudadanía';
     const rawDoc = isSociedad ? datos.nit : datos.no_documento;
     const valorDocumento = String(rawDoc || '').replace(/^(CC|C\.C\.|NIT|CE|TI|PASAPORTE)\s*:?\s*/i, '').trim() || (isSociedad ? '901482310-5' : '1.053.892.146');
 
     const labelExtra = isSociedad ? 'Tipo de registro' : 'Institución de Educación Superior';
-    const valorExtra = datos.universidad || (isSociedad ? 'Sociedad de contadores' : 'Universidad de La Salle');
+    const valorExtra = datos.universidad || (isSociedad ? 'Sociedad de Contadores' : 'Universidad de La Salle');
 
     const labelPie2Der = isSociedad ? 'Res. Inscripción' : 'N. Expediente';
     const valorPie2Der = isSociedad ? (datos.resolucion || '0142') : (datos.no_expd || '621948');
@@ -236,7 +246,7 @@ export class TarjetaPdfService {
     const colorTexto = datos.color_letra_impresion || '#0f172a';
 
     const legalText = isSociedad
-      ? 'Este documento acredita el registro de la Sociedad de Contadores Públicos, conforme a lo establecido en la normatividad legal vigente.'
+      ? 'Este documento acredita el registro de la Sociedad de Contadores, conforme a lo establecido en la normatividad legal vigente.'
       : 'Este documento acredita la calidad de Contador Público, conforme a lo establecido en la Ley 43 de 1990 y el Decreto 1510 de 1998.';
 
     wrapper.innerHTML = `
