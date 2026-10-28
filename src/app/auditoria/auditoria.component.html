@@ -169,7 +169,7 @@
       </thead>
       <tbody>
         <!-- Cargando -->
-        <tr *ngIf="loading && logs.length === 0">
+        <tr *ngIf="loading">
           <td colspan="8" class="text-center py-5 text-muted">
             <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
             Cargando registros de auditoría...
@@ -184,7 +184,7 @@
         </tr>
 
         <!-- Filas de Datos -->
-        <ng-container *ngFor="let log of paginatedLogs">
+        <ng-container *ngFor="let log of (loading ? [] : paginatedLogs)">
           <tr>
             <td class="ps-3 text-muted small fw-semibold">
               {{ log.id }}
