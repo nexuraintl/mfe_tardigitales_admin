@@ -121,9 +121,11 @@ export class TarjetaPdfService {
     let url = '';
 
     if (id) {
-      url = `${baseUrl}/pdf/${id}?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true`;
+      const originParam = (typeof window !== 'undefined' && window.location.origin) ? `&base_url=${encodeURIComponent(window.location.origin)}` : '';
+      url = `${baseUrl}/pdf/${id}?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true${originParam}`;
     } else if (hash) {
-      url = `${baseUrl}/verificar/${hash}/pdf?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true`;
+      const originParam = (typeof window !== 'undefined' && window.location.origin) ? `&base_url=${encodeURIComponent(window.location.origin)}` : '';
+      url = `${baseUrl}/verificar/${hash}/pdf?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true${originParam}`;
     } else {
       return false;
     }
@@ -238,7 +240,7 @@ export class TarjetaPdfService {
     const labelPie2Der = isSociedad ? 'Res. Inscripción' : 'N. Expediente';
     const valorPie2Der = isSociedad ? (datos.resolucion || '0142') : (datos.no_expd || '621948');
 
-    const fotoSrc = datos.foto || (isSociedad ? 'assets/images/card-logo-sociedades.png' : 'assets/images/photo_card.jpg');
+    const fotoSrc = datos.foto || (isSociedad ? 'assets/images/card-logo-sociedades.png' : 'assets/images/default-avatar.svg');
     // Logo oficial institucional para impresión
     const logoSrc = datos.logo_impresion_url || datos.logo_url || 'assets/images/logo_impresion_jcc.png';
     // Patrón de fondo para impresión (marca de agua/trama sutil)
@@ -289,7 +291,7 @@ export class TarjetaPdfService {
         <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 58% 1fr; gap: 14px 16px; align-items: start; padding-top: 16px; border-top: 1px solid #f1f5f9;">
           <div>
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelTitular}</span>
-            <strong style="display: block; font-size: 13.5px; font-weight: 700; color: ${colorTexto}; line-height: 1.25;">${valorTitular}</strong>
+            <strong style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; font-weight: 700; color: ${colorTexto}; line-height: 1.25; word-break: break-word;">${valorTitular}</strong>
           </div>
           <div style="text-align: right;">
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelDocumento}</span>
@@ -297,7 +299,7 @@ export class TarjetaPdfService {
           </div>
           <div>
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelExtra}</span>
-            <strong style="display: block; font-size: 13px; font-weight: 700; color: ${colorTexto}; line-height: 1.25;">${valorExtra}</strong>
+            <strong style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; font-weight: 700; color: ${colorTexto}; line-height: 1.25; word-break: break-word;">${valorExtra}</strong>
           </div>
           <div style="text-align: right;">
             <span style="display: block; font-size: 10.5px; color: #475569; margin-bottom: 2px; font-weight: 500;">${labelPie2Der}</span>
