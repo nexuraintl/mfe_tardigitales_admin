@@ -150,6 +150,10 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
                       {{ getCellValue(row, 'tipo_asociado') }}
                     </span>
 
+                    <span *ngSwitchCase="'fecha_activacion'" class="text-secondary small">
+                      {{ getCellValue(row, 'fecha_activacion') }}
+                    </span>
+
                     <span *ngSwitchDefault class="small text-muted">
                       {{ getCellValue(row, col.key) }}
                     </span>
