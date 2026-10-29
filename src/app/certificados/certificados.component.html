@@ -1,7 +1,8 @@
-<div class="certificados-container d-flex flex-column gap-3">
-  
+El<div class="certificados-container d-flex flex-column gap-3">
+
   <!-- Alerta temporal de proceso/descarga (Regla 14) -->
-  <div class="alert alert-success d-flex align-items-center gap-2 mb-0 shadow-sm border-0 py-2 px-3 small" *ngIf="mensajeExito" role="alert">
+  <div class="alert alert-success d-flex align-items-center gap-2 mb-0 shadow-sm border-0 py-2 px-3 small"
+    *ngIf="mensajeExito" role="alert">
     <i class="fa fa-check-circle"></i>
     <span>{{ mensajeExito }}</span>
   </div>
@@ -13,7 +14,7 @@
     </div>
     <div class="card-body p-4">
       <div class="row g-3 align-items-end">
-        
+
         <!-- Búsqueda textual -->
         <div class="col-md-8 col-lg-9">
           <label for="certificatesSearch" class="form-label text-muted small fw-semibold mb-1">
@@ -23,21 +24,11 @@
             <span class="input-group-text bg-light border-end-0 text-muted">
               <i class="fa fa-search"></i>
             </span>
-            <input 
-              type="text" 
-              id="certificatesSearch" 
-              class="form-control border-start-0" 
-              placeholder="Número de certificado, NIT, documento, nombre o razón social" 
-              [(ngModel)]="searchQuery" 
-              (ngModelChange)="onSearchChange()"
-            />
-            <button 
-              *ngIf="searchQuery" 
-              class="btn btn-outline-secondary border-start-0" 
-              type="button" 
-              (click)="searchQuery = ''; onSearchChange()"
-              title="Limpiar búsqueda"
-            >
+            <input type="text" id="certificatesSearch" class="form-control border-start-0"
+              placeholder="Número de certificado, NIT, documento, nombre o razón social" [(ngModel)]="searchQuery"
+              (ngModelChange)="onSearchChange()" />
+            <button *ngIf="searchQuery" class="btn btn-outline-secondary border-start-0" type="button"
+              (click)="searchQuery = ''; onSearchChange()" title="Limpiar búsqueda">
               <i class="fa fa-times"></i>
             </button>
           </div>
@@ -48,12 +39,8 @@
           <label for="certificateHolderType" class="form-label text-muted small fw-semibold mb-1">
             Tipo de titular
           </label>
-          <select 
-            id="certificateHolderType" 
-            class="form-select" 
-            [ngModel]="holderType" 
-            (ngModelChange)="onHolderTypeChange($event)"
-          >
+          <select id="certificateHolderType" class="form-select" [ngModel]="holderType"
+            (ngModelChange)="onHolderTypeChange($event)">
             <option value="todos">Todos</option>
             <option value="contador">Contador</option>
             <option value="sociedad">Sociedad</option>
@@ -66,9 +53,10 @@
 
   <!-- TARJETA 2: Resultados de certificados -->
   <div class="card shadow-sm border-0">
-    
+
     <!-- Encabezado de la tabla con contador -->
-    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div
+      class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div>
         <h5 class="card-title fw-bold mb-1 text-dark fs-6">Resultados de certificados</h5>
         <small class="text-muted" *ngIf="certificados.length > 0">
@@ -81,12 +69,8 @@
       </div>
 
       <!-- Indicador o botón de refresco -->
-      <button 
-        type="button" 
-        class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-        (click)="limpiarFiltros()"
-        *ngIf="searchQuery || holderType !== 'todos'"
-      >
+      <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+        (click)="limpiarFiltros()" *ngIf="searchQuery || holderType !== 'todos'">
         <i class="fa fa-undo"></i>
         <span>Restablecer filtros</span>
       </button>
@@ -94,7 +78,7 @@
 
     <!-- Cuerpo de la tabla -->
     <div class="card-body p-0">
-      
+
       <!-- Tabla de resultados -->
       <div class="text-center py-5 px-3 text-muted" *ngIf="isLoading">
         <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
@@ -116,13 +100,11 @@
           </thead>
           <tbody class="small">
             <tr *ngFor="let cert of certificados">
-              
+
               <!-- Tipo con badge contextual -->
               <td class="ps-4">
-                <span 
-                  class="badge" 
-                  [ngClass]="cert.type === 'Contador' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-info-subtle text-info border border-info-subtle'"
-                >
+                <span class="badge"
+                  [ngClass]="cert.type === 'Contador' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-info-subtle text-info border border-info-subtle'">
                   {{ cert.type }}
                 </span>
               </td>
@@ -155,26 +137,18 @@
               <!-- Acciones -->
               <td class="text-end pe-4">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Acciones de certificado">
-                  
+
                   <!-- Consultar detalle -->
-                  <button 
-                    type="button" 
-                    class="btn btn-outline-primary d-inline-flex align-items-center gap-1" 
-                    (click)="abrirDetalle(cert)"
-                    title="Consultar detalle"
-                  >
+                  <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-1"
+                    (click)="abrirDetalle(cert)" title="Consultar detalle">
                     <i class="fa fa-eye"></i>
                     <span>Consultar detalle</span>
                   </button>
 
                   <!-- Descargar PDF -->
-                  <button 
-                    type="button" 
-                    class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" 
-                    (click)="descargarCertificado(cert)"
-                    [disabled]="descargandoId === cert.certificateNumber"
-                    title="Descargar certificado"
-                  >
+                  <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
+                    (click)="descargarCertificado(cert)" [disabled]="descargandoId === cert.certificateNumber"
+                    title="Descargar certificado">
                     <i class="fa fa-spinner fa-spin" *ngIf="descargandoId === cert.certificateNumber"></i>
                     <i class="fa fa-download" *ngIf="descargandoId !== cert.certificateNumber"></i>
                     <span>Descargar</span>
@@ -191,13 +165,11 @@
       <!-- Estado vacío formal (Criterio de Aceptación Escenario 6 y Regla 14) -->
       <div class="text-center py-5 px-3" *ngIf="!isLoading && certificados.length === 0">
         <i class="fa fa-search text-muted opacity-50 fs-1 mb-3 d-block"></i>
-        <h6 class="fw-bold text-secondary mb-1">No se encontraron registros que coincidan con los criterios de búsqueda</h6>
-        <p class="text-muted small mb-3">Intente modificando el término de búsqueda o cambiando el selector de titular.</p>
-        <button 
-          type="button" 
-          class="btn btn-sm btn-outline-primary"
-          (click)="limpiarFiltros()"
-        >
+        <h6 class="fw-bold text-secondary mb-1">No se encontraron registros que coincidan con los criterios de búsqueda
+        </h6>
+        <p class="text-muted small mb-3">Intente modificando el término de búsqueda o cambiando el selector de titular.
+        </p>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="limpiarFiltros()">
           Limpiar búsqueda y filtros
         </button>
       </div>
@@ -205,19 +177,18 @@
     </div>
 
     <!-- Pie de tabla con totalizadores -->
-    <div class="card-footer bg-white py-2 px-4 border-top d-flex align-items-center justify-content-between text-muted small" *ngIf="certificados.length > 0">
-      <span>{{ certificados.length }} certificado{{ certificados.length === 1 ? '' : 's' }} encontrado{{ certificados.length === 1 ? '' : 's' }}</span>
+    <div
+      class="card-footer bg-white py-2 px-4 border-top d-flex align-items-center justify-content-between text-muted small"
+      *ngIf="certificados.length > 0">
+      <span>{{ certificados.length }} certificado{{ certificados.length === 1 ? '' : 's' }} encontrado{{
+        certificados.length === 1 ? '' : 's' }}</span>
       <span class="text-secondary">Consulta oficial unificada</span>
     </div>
 
   </div>
 
   <!-- Modal de Detalle de Certificado -->
-  <app-modal-detalle-certificado
-    [isOpen]="isModalOpen"
-    [certificado]="selectedCertificado"
-    (cerrar)="cerrarModal()"
-    (descargar)="descargarCertificado($event)"
-  ></app-modal-detalle-certificado>
+  <app-modal-detalle-certificado [isOpen]="isModalOpen" [certificado]="selectedCertificado" (cerrar)="cerrarModal()"
+    (descargar)="descargarCertificado($event)"></app-modal-detalle-certificado>
 
 </div>
