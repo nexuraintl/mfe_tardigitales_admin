@@ -8,7 +8,7 @@ import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
-import { formatCanonicalLabel } from '../core/constants/tarjetas.constants';
+import { formatCanonicalLabel, formatTipoSolicitud } from '../core/constants/tarjetas.constants';
 
 import { TablaSociedadesComponent } from './components/tabla-sociedades/tabla-sociedades.component';
 import { FormEmisionSociedadesComponent } from './components/form-emision-sociedades/form-emision-sociedades.component';
@@ -863,63 +863,94 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.http.get<any>(`${API_BASE}/tarjetas/consult-registry?documento=${encodeURIComponent(identification)}&tipo_tarjeta=sociedades&tipo=${encodeURIComponent(this.tipoSolicitud)}&client_id=${this.clientId}`)
       .subscribe({
         next: (res) => {
-          this.cargandoBusqueda = false;
-          this.busquedaRealizada = true;
-
           const item = res && res.status === 'success' ? res.data : (res && res.disponibles && res.disponibles.length > 0 ? res.disponibles[0] : null);
 
           if (item) {
-            const razonSocial = item.razon_social || item.solicitante || "Sociedad de Contadores";
-            const docNum = item.nit || item.documento || identification;
+            this.cargandoBusqueda = false;
+            this.busquedaRealizada = true;
+            this.aplicarSociedadConsultada(item, identification);
+          } else {
+            this.buscarSociedadEnBaseLocal(identification);
+          }
+        },
+        error: (err) => {
+          console.warn('Registro no retornado por API externa JCC, verificando base de datos local:', err);
+          this.buscarSociedadEnBaseLocal(identification);
+        }
+      });
+  }
 
-            const localTarjeta = this.tarjetas.find(t =>
-              (t.nit || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
-            );
+  private buscarSociedadEnBaseLocal(identification: string): void {
+    const docClean = identification.replace(/\D/g, '');
+    const localTarjeta = this.tarjetas.find(t =>
+      (t.nit || '').replace(/\D/g, '') === docClean
+    );
 
-            this.datosConsulta = {
-              ...item,
-              solicitante: razonSocial,
-              razon_social: razonSocial,
-              documento: String(docNum),
-              nit: String(docNum),
-              matricula: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
-              inscripcion: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
-              no_tarjeta: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
-              expediente: item.no_expd ?? item.expediente ?? 0,
-              no_expd: item.no_expd ?? item.expediente ?? 0,
-              correo: localTarjeta?.correo || item.correo || '',
-              representante: item.representante_legal || "Representante Legal Autorizado",
-              estado: item.estado_sociedad || item.estado || "ACTIVO",
-              seccional: item.seccional || "",
-              resolucion: item.resolucion || "",
-              fecha_resolucion: item.fecha_resolucion || "",
-              tipo_sociedad: (item.tipo_sociedad || "Sociedad de Contadores").replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores'),
-              universidad: (item.tipo_sociedad || "Sociedad de Contadores").replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores'),
-              foto: item.foto || item.pdf || localTarjeta?.foto || null,
-              existe: !!localTarjeta
-            };
+    if (localTarjeta) {
+      this.cargandoBusqueda = false;
+      this.busquedaRealizada = true;
+      this.aplicarSociedadConsultada(localTarjeta, identification);
+      return;
+    }
+
+    this.http.get<any>(`${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&texto=${encodeURIComponent(identification)}&page=1&page_size=5`)
+      .subscribe({
+        next: (searchRes) => {
+          this.cargandoBusqueda = false;
+          this.busquedaRealizada = true;
+          const foundList = Array.isArray(searchRes) ? searchRes : (searchRes?.data || []);
+          const match = foundList.find((s: any) => (s.nit || '').replace(/\D/g, '') === docClean) || (foundList.length > 0 ? foundList[0] : null);
+          if (match) {
+            this.aplicarSociedadConsultada(match, identification);
           } else {
             this.datosConsulta = null;
             this.tipoAlerta = 'warning';
             this.mensajeError = "No se encontró ningún registro oficial para el NIT especificado en la JCC.";
+            this.cdr.detectChanges();
           }
-          this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error al consultar registro de sociedad en la JCC:', err);
+        error: () => {
           this.cargandoBusqueda = false;
           this.busquedaRealizada = true;
           this.datosConsulta = null;
-          const appErr = this.errorHandler.parseError(err, 'MS_3834_CONSULTA_MATRICULA', `${API_BASE}/tarjetas/consult-registry`);
-          let userMsg = appErr.mensaje_base || appErr.message;
-          userMsg = userMsg.replace(/^Error\s+\d+\s*-\s*[A-Z_]+:\s*/i, '');
-          userMsg = userMsg.split('Tabla afectada:')[0].trim();
-          userMsg = userMsg.split('Detalle técnico:')[0].trim();
-          this.tipoAlerta = 'danger';
-          this.mensajeError = userMsg || 'No se pudo consultar el registro de la sociedad.';
+          this.tipoAlerta = 'warning';
+          this.mensajeError = "No se encontró ningún registro oficial para el NIT especificado en la JCC.";
           this.cdr.detectChanges();
         }
       });
+  }
+
+  private aplicarSociedadConsultada(item: any, identification: string): void {
+    const razonSocial = item.razon_social || item.solicitante || "Sociedad de Contadores";
+    const docNum = item.nit || item.documento || identification;
+
+    const localTarjeta = this.tarjetas.find(t =>
+      (t.nit || '').replace(/\D/g, '') === String(docNum).replace(/\D/g, '')
+    );
+
+    this.datosConsulta = {
+      ...item,
+      solicitante: razonSocial,
+      razon_social: razonSocial,
+      documento: String(docNum),
+      nit: String(docNum),
+      matricula: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
+      inscripcion: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
+      no_tarjeta: item.inscripcion || item.matricula || (item.no_tarjeta ? String(item.no_tarjeta) : `REG-${docNum}`),
+      expediente: item.no_expd ?? item.expediente ?? 0,
+      no_expd: item.no_expd ?? item.expediente ?? 0,
+      correo: localTarjeta?.correo || item.correo || '',
+      representante: item.representante_legal || "Representante Legal Autorizado",
+      estado: item.estado_sociedad || item.estado || "ACTIVO",
+      seccional: item.seccional || "",
+      resolucion: item.resolucion || "",
+      fecha_resolucion: item.fecha_resolucion || "",
+      tipo_sociedad: (item.tipo_sociedad || "Sociedad de Contadores").replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores'),
+      universidad: (item.tipo_sociedad || "Sociedad de Contadores").replace(/Sociedad de Contadores Públicos/gi, 'Sociedad de Contadores'),
+      foto: item.foto || item.pdf || localTarjeta?.foto || null,
+      existe: !!localTarjeta || !!item.id
+    };
+    this.cdr.detectChanges();
   }
 
   confirmarEmision(): void {
@@ -1003,28 +1034,124 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   exportarCSV(): void {
-    if (!this.filteredTarjetas || this.filteredTarjetas.length === 0) {
-      alert('No hay registros para exportar');
-      return;
-    }
     const visibleCols = this.availableColumns.filter(c => c.visible);
     if (visibleCols.length === 0) {
       alert('Debe tener al menos una columna visible para exportar');
       return;
     }
+
+    let url = `${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&page=1&page_size=10000`;
+    const q = this.searchQuery ? this.searchQuery.trim() : '';
+    if (q) {
+      url += `&texto=${encodeURIComponent(q)}`;
+    }
+    if (this.filterColumn && this.filterValue) {
+      const val = encodeURIComponent(this.filterValue.trim());
+      if (this.filterColumn === 'nit' || this.filterColumn === 'documento') {
+        url += `&filtro_documento=${val}`;
+      } else if (this.filterColumn === 'inscripcion' || this.filterColumn === 'matricula') {
+        url += `&filtro_inscripcion=${val}`;
+      } else if (this.filterColumn === 'razon_social') {
+        url += `&texto=${val}`;
+      } else if (this.filterColumn === 'no_expd' || this.filterColumn === 'expediente') {
+        url += `&filtro_expediente=${val}`;
+      } else if (this.filterColumn === 'correo') {
+        url += `&filtro_correo=${val}`;
+      }
+    }
+    if (this.sortColumn) {
+      url += `&order_by=${encodeURIComponent(String(this.sortColumn))}&order_dir=${this.sortDirection.toUpperCase()}`;
+    }
+
+    this.loading = true;
+    this.http.get<any>(url).subscribe({
+      next: (res) => {
+        this.loading = false;
+        const rawList: any[] = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
+        let dataset = rawList.map((item: any) => ({
+          id: item.id,
+          tipo_tarjeta: item.tipo_tarjeta ?? 'sociedades',
+          no_expd: item.no_expd ?? 0,
+          razon_social: item.razon_social ?? '',
+          nit: String(item.nit ?? ''),
+          tipo_sociedad: item.tipo_sociedad ?? 'SOCIEDAD DE CONTADORES',
+          inscripcion: item.inscripcion ?? '',
+          correo: item.correo ?? '',
+          fecha_radicacion: item.fecha_radicacion ?? '',
+          estado_sociedad: item.estado_sociedad ?? 'ACTIVO',
+          resolucion: item.resolucion ?? '',
+          fecha_resolucion: item.fecha_resolucion ?? '',
+          acta_jcc: item.acta_jcc ?? '',
+          estado_solicitud: item.estado_solicitud ?? '',
+          tipo_solicitud: item.tipo_solicitud ?? '',
+          fecha_emision: item.fecha_emision ?? '',
+          tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+          estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
+          representante_legal: item.representante_legal ?? '',
+          fecha_activacion: item.fecha_activacion ?? ''
+        }));
+
+        if (this.multiFilters && this.multiFilters.length > 0) {
+          dataset = dataset.filter(item => {
+            return this.multiFilters.every(f => {
+              const val = (item as any)[f.column];
+              if (f.column.startsWith('fecha')) {
+                const rowDate = String(val || '').slice(0, 10);
+                return (!f.dateFrom || rowDate >= f.dateFrom) && (!f.dateTo || rowDate <= f.dateTo);
+              }
+              if (f.column === 'no_expd' || f.column === 'expediente') {
+                return String(val || '') === f.value;
+              }
+              if (f.column === 'estado_tarjeta') {
+                return String(val || '').toLowerCase() === f.value.toLowerCase();
+              }
+              if (f.column === 'estado_sociedad') {
+                return String(val || '').toLowerCase() === f.value.toLowerCase();
+              }
+              return String(val || '').toLowerCase().includes(f.value.toLowerCase());
+            });
+          });
+        }
+
+        if (dataset.length === 0) {
+          alert('No hay registros que coincidan con los filtros aplicados para exportar');
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.descargarArchivoCSV(dataset, visibleCols, 'reporte_sociedades');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error al exportar CSV de sociedades:', err);
+        if (this.filteredTarjetas && this.filteredTarjetas.length > 0) {
+          this.descargarArchivoCSV(this.filteredTarjetas, visibleCols, 'reporte_sociedades');
+        } else {
+          alert('No fue posible exportar los registros.');
+        }
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private descargarArchivoCSV(dataset: any[], visibleCols: TableColumn[], prefix: string): void {
     const headers = visibleCols.map(c => `"${c.label.replace(/"/g, '""')}"`);
-    const rows = this.filteredTarjetas.map(t => {
+    const rows = dataset.map(t => {
       return visibleCols.map(c => {
-        const val = (t as any)[c.key];
-        const valStr = (val === undefined || val === null) ? '' : String(val);
-        return `"${valStr.replace(/"/g, '""')}"`;
+        let val = (t as any)[c.key];
+        if (c.key === 'tipo_asociado' && val) {
+          val = formatTipoSolicitud(val);
+        }
+        if (val === undefined || val === null) val = '';
+        return `"${String(val).replace(/"/g, '""')}"`;
       }).join(',');
     });
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,﻿' + [headers.join(','), ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `reporte_sociedades_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `${prefix}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -87,20 +87,12 @@ export class App implements OnInit, AfterViewInit {
   // Configuración de módulos en el menú de aplicaciones del topbar
   appGrid: AppTile[] = [
     { 
-      id: 'tarjetas', 
-      name: 'Tarjetas Digitales', 
+      id: 'admin', 
+      name: 'Panel de administración', 
       color: 'blue', 
-      iconClass: 'fa fa-id-card', 
-      path: '/admin/tardigitales/tarjetas-contadores', 
+      iconClass: 'fa fa-th', 
+      path: '/admin.php', 
       active: true 
-    },
-    { 
-      id: 'reportes', 
-      name: 'Reportes y Analítica', 
-      color: 'purple', 
-      iconClass: 'fa fa-bar-chart', 
-      path: '/admin/tardigitales/reportes/dashboard', 
-      active: false 
     }
   ];
 
@@ -338,13 +330,6 @@ export class App implements OnInit, AfterViewInit {
       this.primaryAction = null;
       this.viewActions = [
         {
-          id: 'exportar-csv',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        },
-        {
           id: 'nueva-notificacion',
           label: 'Nueva notificación',
           icon: 'fa fa-plus',
@@ -393,7 +378,7 @@ export class App implements OnInit, AfterViewInit {
 
   navegarA(path: string): void {
     if (!path) return;
-    if (path.startsWith('http')) {
+    if (path.startsWith('http') || path.endsWith('.php') || path.includes('.php')) {
       window.location.href = path;
       return;
     }
@@ -434,7 +419,7 @@ export class App implements OnInit, AfterViewInit {
   }
 
   onAppChange(event: CustomEvent): void {
-    const app = event.detail?.app;
+    const app = event.detail?.app || event.detail;
     if (app?.path) {
       this.navegarA(app.path);
     }

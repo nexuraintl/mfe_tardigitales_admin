@@ -788,3 +788,15 @@ code {
 
 
 
+
+/* ============================================================================
+   BARRA DE OPCIONES Y TÍTULO DE VISTA FIJO AL HACER SCROLL (STICKY)
+   ============================================================================ */
+nx-admin-mod-options {
+  display: block !important;
+  width: 100% !important;
+  position: sticky !important;
+  top: 64px !important;
+  z-index: 850 !important;
+  background-color: #ffffff !important;
+}
