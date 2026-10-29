@@ -264,7 +264,7 @@ export class TarjetaPdfService {
         </div>
 
         <!-- Fila 2: Foto/Logo + Datos Laterales -->
-        <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 36% 1fr; gap: 16px; align-items: center; margin-bottom: 20px;">
+        <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 44% 1fr; gap: 16px; align-items: center; margin-bottom: 18px;">
           <!-- Foto o Logo -->
           <div style="width: 100%; aspect-ratio: 3 / 4; border-radius: 16px; overflow: hidden; background-color: #f8fafc; border: 1px solid #cbd5e1; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);">
             <img src="${fotoSrc}" alt="Fotografía" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%;" crossorigin="anonymous" />
