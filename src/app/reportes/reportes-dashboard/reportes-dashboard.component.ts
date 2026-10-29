@@ -22,6 +22,12 @@ export interface ReportesData {
     emitida: number;
     cancelada: number;
     fallecido: number;
+    registro_activo?: number;
+    registro_cancelada?: number;
+    registro_fallecido?: number;
+    tarjeta_activa?: number;
+    tarjeta_cancelada?: number;
+    tarjeta_emitida?: number;
     contadores_total: number;
     contadores_pct: number;
     sociedades_total: number;
@@ -184,6 +190,44 @@ export class ReportesDashboardComponent implements OnInit {
   }
 
   // Métodos de cálculo de anchos y estilos para gráficos CSS nativos
+  get periodoTextoBadge(): string {
+    if (!this.fechaDesde) return 'Consolidado';
+    const d = new Date(this.fechaDesde + 'T00:00:00');
+    if (isNaN(d.getTime())) return 'Consolidado';
+    const m = d.toLocaleDateString('es-ES', { month: 'long' });
+    return `${m.charAt(0).toUpperCase() + m.slice(1)} ${d.getFullYear()}`;
+  }
+
+  getRegistroTotal(): number {
+    const c = this.data.cards;
+    const act = c.registro_activo ?? (c.contadores_total + c.sociedades_total);
+    const can = c.registro_cancelada ?? c.cancelada ?? 0;
+    const fal = c.registro_fallecido ?? c.fallecido ?? 0;
+    return act + can + fal;
+  }
+
+  getRegistroWidth(value: number): string {
+    const total = this.getRegistroTotal();
+    if (!total || total <= 0) return '0%';
+    const pct = (value / total) * 100;
+    return `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
+  getTarjetaTotal(): number {
+    const c = this.data.cards;
+    const act = c.tarjeta_activa ?? c.activa ?? 0;
+    const can = c.tarjeta_cancelada ?? c.cancelada ?? 0;
+    const emi = c.tarjeta_emitida ?? c.emitida ?? 0;
+    return act + can + emi;
+  }
+
+  getTarjetaWidth(value: number): string {
+    const total = this.getTarjetaTotal();
+    if (!total || total <= 0) return '0%';
+    const pct = (value / total) * 100;
+    return `${Math.min(100, Math.max(0, pct))}%`;
+  }
+
   getCardWidth(value: number): string {
     const total = this.data.cards.total;
     if (!total || total <= 0) return '0%';

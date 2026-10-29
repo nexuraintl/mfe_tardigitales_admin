@@ -8,7 +8,7 @@ import { ErrorHandlerService, AppError } from '../core/services/error-handler.se
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
-import { formatCanonicalLabel } from '../core/constants/tarjetas.constants';
+import { formatCanonicalLabel, formatTipoSolicitud } from '../core/constants/tarjetas.constants';
 
 import { TablaContadoresComponent } from './components/tabla-contadores/tabla-contadores.component';
 import { FormEmisionContadoresComponent } from './components/form-emision-contadores/form-emision-contadores.component';
@@ -999,31 +999,131 @@ export class TarjetasContadoresComponent implements OnInit {
   }
 
   exportarCSV(): void {
-    if (!this.filteredTarjetas || this.filteredTarjetas.length === 0) {
-      alert('No hay registros para exportar');
-      return;
-    }
     const visibleCols = this.availableColumns.filter(c => c.visible);
     if (visibleCols.length === 0) {
       alert('Debe tener al menos una columna visible para exportar');
       return;
     }
+
+    let url = `${API_BASE}/tarjetas/list?tipo_tarjeta=contadores&client_id=${this.clientId}&page=1&page_size=10000`;
+    const q = this.searchQuery ? this.searchQuery.trim() : '';
+    if (q) {
+      url += `&texto=${encodeURIComponent(q)}`;
+    }
+    if (this.filterColumn && this.filterValue) {
+      const val = encodeURIComponent(this.filterValue.trim());
+      if (this.filterColumn === 'no_documento') {
+        url += `&filtro_documento=${val}`;
+      } else if (this.filterColumn === 'no_tarjeta') {
+        url += `&filtro_no_tarjeta=${val}`;
+      } else if (this.filterColumn === 'nombre_completo') {
+        url += `&texto=${val}`;
+      } else if (this.filterColumn === 'no_expd') {
+        url += `&filtro_expediente=${val}`;
+      } else if (this.filterColumn === 'correo') {
+        url += `&filtro_correo=${val}`;
+      }
+    }
+    if (this.sortColumn) {
+      url += `&order_by=${encodeURIComponent(String(this.sortColumn))}&order_dir=${this.sortDirection.toUpperCase()}`;
+    }
+
+    this.loading = true;
+    this.http.get<any>(url).subscribe({
+      next: (res) => {
+        this.loading = false;
+        const rawList: any[] = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
+        let dataset = rawList.map((item: any) => ({
+          id: item.id,
+          tipo_tarjeta: item.tipo_tarjeta ?? 'contadores',
+          no_tarjeta: item.no_tarjeta ?? '',
+          no_expd: item.no_expd ?? 0,
+          nombre_completo: item.nombre_completo || `${item.nombres || ''} ${item.primer_apellido || ''} ${item.segundo_apellido || ''}`.trim(),
+          nombres: item.nombres ?? '',
+          primer_apellido: item.primer_apellido ?? '',
+          segundo_apellido: item.segundo_apellido ?? '',
+          tipo_documento: item.tipo_documento ?? 'CC',
+          no_documento: String(item.no_documento ?? ''),
+          correo: item.correo ?? '',
+          universidad: item.universidad ?? '',
+          estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
+          tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+          estado_contador: item.estado_contador ?? 'ACTIVO',
+          resolucion: item.resolucion ?? '',
+          fecha_resolucion: item.fecha_resolucion ?? '',
+          acta_jcc: item.acta_jcc ?? '',
+          fecha_estado: item.fecha_estado ?? '',
+          fecha_radicacion: item.fecha_radicacion ?? '',
+          fecha_grado: item.fecha_grado ?? '',
+          seccional: item.seccional ?? '',
+          fecha_emision: item.fecha_emision ?? '',
+          fecha_activacion: item.fecha_activacion ?? ''
+        }));
+
+        if (this.multiFilters && this.multiFilters.length > 0) {
+          dataset = dataset.filter(item => {
+            return this.multiFilters.every(f => {
+              const val = (item as any)[f.column];
+              if (f.column.startsWith('fecha')) {
+                const rowDate = String(val || '').slice(0, 10);
+                return (!f.dateFrom || rowDate >= f.dateFrom) && (!f.dateTo || rowDate <= f.dateTo);
+              }
+              if (f.column === 'no_expd' || f.column === 'expediente') {
+                return String(val || '') === f.value;
+              }
+              if (f.column === 'estado_tarjeta') {
+                return String(val || '').toLowerCase() === f.value.toLowerCase();
+              }
+              if (f.column === 'estado_contador') {
+                return String(val || '').toLowerCase() === f.value.toLowerCase();
+              }
+              return String(val || '').toLowerCase().includes(f.value.toLowerCase());
+            });
+          });
+        }
+
+        if (dataset.length === 0) {
+          alert('No hay registros que coincidan con los filtros aplicados para exportar');
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.descargarArchivoCSV(dataset, visibleCols, 'reporte_contadores');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error al exportar CSV de contadores:', err);
+        if (this.filteredTarjetas && this.filteredTarjetas.length > 0) {
+          this.descargarArchivoCSV(this.filteredTarjetas, visibleCols, 'reporte_contadores');
+        } else {
+          alert('No fue posible exportar los registros.');
+        }
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private descargarArchivoCSV(dataset: any[], visibleCols: TableColumn[], prefix: string): void {
     const headers = visibleCols.map(c => `"${c.label.replace(/"/g, '""')}"`);
-    const rows = this.filteredTarjetas.map(t => {
+    const rows = dataset.map(t => {
       return visibleCols.map(c => {
         let val = (t as any)[c.key];
         if (c.key === 'nombre_completo' && !val) {
           val = `${t.nombres || ''} ${t.primer_apellido || ''} ${t.segundo_apellido || ''}`.trim();
         }
+        if (c.key === 'tipo_asociado' && val) {
+          val = formatTipoSolicitud(val);
+        }
         if (val === undefined || val === null) val = '';
         return `"${String(val).replace(/"/g, '""')}"`;
       }).join(',');
     });
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,﻿' + [headers.join(','), ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `reporte_contadores_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `${prefix}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

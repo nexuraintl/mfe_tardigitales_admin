@@ -105,15 +105,66 @@
 
 <!-- Grid de Gráficos CSS Nativos -->
 <div class="row g-3 mb-4">
-  <!-- Gráfico 1: Tarjetas por estado (Visible en General y Tarjetas) -->
+  <!-- Gráfico 1A: Tarjetas estado de registro (Visible en General y Tarjetas) -->
   <div class="col-12 col-lg-6" *ngIf="tipoReporte === 'general' || tipoReporte === 'cards'">
     <div class="card shadow-sm h-100">
       <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-start">
         <div>
-          <h5 class="card-title fw-bold mb-0 text-dark">Tarjetas por estado</h5>
-          <small class="text-muted">Distribución consolidada de contadores y sociedades.</small>
+          <h5 class="card-title fw-bold mb-0 text-dark">Tarjetas estado de registro</h5>
+          <small class="text-muted">Distribución por estado del registro de contadores y sociedades.</small>
         </div>
-        <span class="badge bg-light text-secondary border">Total: {{ data.cards.total | number:'1.0-0' }}</span>
+        <span class="badge bg-light text-secondary border">{{ periodoTextoBadge }}</span>
+      </div>
+
+      <div class="card-body px-3 py-3 d-flex flex-column justify-content-between">
+        <div class="horizontal-chart">
+          <!-- Activo -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Activo</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-success" [style.width]="getRegistroWidth(data.cards.registro_activo ?? (data.cards.contadores_total + data.cards.sociedades_total))"></div>
+            </div>
+            <strong>{{ (data.cards.registro_activo ?? (data.cards.contadores_total + data.cards.sociedades_total)) | number:'1.0-0' }}</strong>
+          </div>
+
+          <!-- Cancelada -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Cancelada</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-danger" [style.width]="getRegistroWidth(data.cards.registro_cancelada ?? data.cards.cancelada)"></div>
+            </div>
+            <strong>{{ (data.cards.registro_cancelada ?? data.cards.cancelada) | number:'1.0-0' }}</strong>
+          </div>
+
+          <!-- Fallecido -->
+          <div class="horizontal-chart-row">
+            <span class="chart-label">Fallecido</span>
+            <div class="chart-track">
+              <div class="chart-fill bg-secondary" [style.width]="getRegistroWidth(data.cards.registro_fallecido ?? data.cards.fallecido)"></div>
+            </div>
+            <strong>{{ (data.cards.registro_fallecido ?? data.cards.fallecido) | number:'1.0-0' }}</strong>
+          </div>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="report-chart-footer mt-2 pt-2 border-top d-flex gap-3 text-muted small">
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-success"></i> Activo</span>
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-danger"></i> Cancelada</span>
+          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-secondary"></i> Fallecido</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico 1B: Tarjetas estado (Visible en General y Tarjetas) -->
+  <div class="col-12 col-lg-6" *ngIf="tipoReporte === 'general' || tipoReporte === 'cards'">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="card-title fw-bold mb-0 text-dark">Tarjetas estado</h5>
+          <small class="text-muted">Distribución según el estado de la tarjeta.</small>
+        </div>
+        <span class="badge bg-light text-secondary border">{{ periodoTextoBadge }}</span>
       </div>
 
       <div class="card-body px-3 py-3 d-flex flex-column justify-content-between">
@@ -122,36 +173,27 @@
           <div class="horizontal-chart-row">
             <span class="chart-label">Activa</span>
             <div class="chart-track">
-              <div class="chart-fill bg-success" [style.width]="getCardWidth(data.cards.activa)"></div>
+              <div class="chart-fill bg-success" [style.width]="getTarjetaWidth(data.cards.tarjeta_activa ?? data.cards.activa)"></div>
             </div>
-            <strong>{{ data.cards.activa | number:'1.0-0' }}</strong>
+            <strong>{{ (data.cards.tarjeta_activa ?? data.cards.activa) | number:'1.0-0' }}</strong>
           </div>
 
           <!-- Cancelada -->
           <div class="horizontal-chart-row">
             <span class="chart-label">Cancelada</span>
             <div class="chart-track">
-              <div class="chart-fill bg-danger" [style.width]="getCardWidth(data.cards.cancelada)"></div>
+              <div class="chart-fill bg-danger" [style.width]="getTarjetaWidth(data.cards.tarjeta_cancelada ?? data.cards.cancelada)"></div>
             </div>
-            <strong>{{ data.cards.cancelada | number:'1.0-0' }}</strong>
-          </div>
-
-          <!-- Fallecido -->
-          <div class="horizontal-chart-row">
-            <span class="chart-label">Fallecido</span>
-            <div class="chart-track">
-              <div class="chart-fill bg-secondary" [style.width]="getCardWidth(data.cards.fallecido)"></div>
-            </div>
-            <strong>{{ data.cards.fallecido | number:'1.0-0' }}</strong>
+            <strong>{{ (data.cards.tarjeta_cancelada ?? data.cards.cancelada) | number:'1.0-0' }}</strong>
           </div>
 
           <!-- Emitida -->
           <div class="horizontal-chart-row">
             <span class="chart-label">Emitida</span>
             <div class="chart-track">
-              <div class="chart-fill bg-primary" [style.width]="getCardWidth(data.cards.emitida)"></div>
+              <div class="chart-fill bg-primary" [style.width]="getTarjetaWidth(data.cards.tarjeta_emitida ?? data.cards.emitida)"></div>
             </div>
-            <strong>{{ data.cards.emitida | number:'1.0-0' }}</strong>
+            <strong>{{ (data.cards.tarjeta_emitida ?? data.cards.emitida) | number:'1.0-0' }}</strong>
           </div>
         </div>
 
@@ -159,7 +201,6 @@
         <div class="report-chart-footer mt-2 pt-2 border-top d-flex gap-3 text-muted small">
           <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-success"></i> Activa</span>
           <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-danger"></i> Cancelada</span>
-          <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-secondary"></i> Fallecido</span>
           <span class="d-flex align-items-center gap-1"><i class="legend-dot bg-primary"></i> Emitida</span>
         </div>
       </div>
