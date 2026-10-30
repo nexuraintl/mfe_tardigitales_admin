@@ -259,10 +259,10 @@ export class BrandingComponent implements OnInit, OnDestroy {
         next: (res) => {
           if (res) {
             const data = Array.isArray(res) ? res[0] : res;
-            if (data && (data.color_fondo || data.logo || data.patron || data.version_publicada)) {
-              const pubV = data.version_publicada !== undefined && data.version_publicada !== null
-                ? Number(data.version_publicada)
-                : (data.version ? Number(data.version) : null);
+            if (data && (data.color_fondo || data.logo || data.patron || data.version || data.version_publicada)) {
+              const pubV = data.version !== undefined && data.version !== null
+                ? Number(data.version)
+                : (data.version_publicada ? Number(data.version_publicada) : null);
               this.publishedVersion = pubV;
               this.publishedObservacion = data.observacion || '';
               this.selectedVersionObservacion = data.observacion || '';
