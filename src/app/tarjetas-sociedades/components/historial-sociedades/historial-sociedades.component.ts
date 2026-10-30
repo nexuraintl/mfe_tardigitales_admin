@@ -76,10 +76,14 @@ import { TarjetaSociedad } from '../../tarjetas-sociedades.component';
               <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.lecturas && selectedTarjetaHistorial.lecturas.length > 0" class="d-flex flex-column gap-3">
                 <div *ngFor="let lectura of selectedTarjetaHistorial.lecturas" class="border-bottom pb-2.5 last-border-0">
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="text-dark fw-bold" style="font-size: 14px;">• Verificación pública exitosa</span>
+                    <span class="text-dark fw-bold" style="font-size: 14px;">
+                      • {{ lectura.origen === 'Dispositivo móvil' ? 'Consulta desde dispositivo móvil' : 'Verificación pública exitosa' }}
+                    </span>
                   </div>
                   <div class="text-muted small ps-3">
-                    {{ lectura.fecha }} - {{ lectura.dispositivo || 'Navegador web' }} <span *ngIf="lectura.ip" class="opacity-75">({{ lectura.ip }})</span>
+                    {{ lectura.fecha }} - {{ lectura.origen || lectura.dispositivo || 'Navegador web' }}
+                    <span *ngIf="lectura.documento_consultor" class="opacity-75"> (Consultado por: {{ lectura.documento_consultor }})</span>
+                    <span *ngIf="lectura.ip" class="opacity-75"> ({{ lectura.ip }})</span>
                   </div>
                 </div>
               </div>
