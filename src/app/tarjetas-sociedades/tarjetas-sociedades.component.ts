@@ -76,6 +76,7 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   tarjetas: TarjetaSociedad[] = [];
   loading: boolean = false;
+  exportandoCSV: boolean = false;
   currentError: AppError | null = null;
 
   // Catálogo dinámico cargado 100% desde la API (tn_tarjetavirtual_config_columnas_filtro_tarjetas)
@@ -433,11 +434,44 @@ export class TarjetasSociedadesComponent implements OnInit {
     }
   }
 
+  private buildFilterQueryParams(filters: ActiveFilter[]): string {
+    if (!filters || filters.length === 0) return '';
+    let params = '';
+    for (const f of filters) {
+      if (f.column && f.column.startsWith('fecha')) {
+        if (f.dateFrom) params += `&${f.column}_desde=${encodeURIComponent(f.dateFrom)}`;
+        if (f.dateTo) params += `&${f.column}_hasta=${encodeURIComponent(f.dateTo)}`;
+      } else if (f.column === 'no_expd' || f.column === 'expediente') {
+        params += `&filtro_expediente=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'nit' || f.column === 'no_documento' || f.column === 'documento') {
+        params += `&filtro_documento=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'inscripcion' || f.column === 'matricula') {
+        params += `&filtro_inscripcion=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'resolucion') {
+        params += `&filtro_resolucion=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'acta_jcc') {
+        params += `&filtro_acta_jcc=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'correo') {
+        params += `&filtro_correo=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'estado_tarjeta') {
+        params += `&estado_tarjeta=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'estado_sociedad') {
+        params += `&estado_sociedad=${encodeURIComponent(f.value)}`;
+      } else if (f.column === 'tipo_asociado') {
+        params += `&tipo_asociado=${encodeURIComponent(f.value)}`;
+      } else if (f.value) {
+        params += `&${f.column}=${encodeURIComponent(f.value)}`;
+      }
+    }
+    return params;
+  }
+
   cargarTarjetas(): void {
     this.loading = true;
     this.currentError = null;
 
     let url = `${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&page=${this.currentPage}&page_size=${this.pageSize}`;
+    url += this.buildFilterQueryParams(this.multiFilters);
 
     const q = this.searchQuery ? this.searchQuery.trim() : '';
     if (q) {
@@ -542,46 +576,17 @@ export class TarjetasSociedadesComponent implements OnInit {
 
   // Filtrado reactivo
   get filteredTarjetas(): TarjetaSociedad[] {
-    if (!this.multiFilters || this.multiFilters.length === 0) {
-      return this.tarjetas;
-    }
-    return this.tarjetas.filter(item => {
-      return this.multiFilters.every(f => {
-        const val = (item as any)[f.column];
-        if (f.column.startsWith('fecha')) {
-          const rowDate = String(val || '').slice(0, 10);
-          return (!f.dateFrom || rowDate >= f.dateFrom) && (!f.dateTo || rowDate <= f.dateTo);
-        }
-        if (f.column === 'no_expd' || f.column === 'expediente') {
-          return String(val || '') === f.value;
-        }
-        if (f.column === 'estado_tarjeta') {
-          return String(val || '').toLowerCase() === f.value.toLowerCase();
-        }
-        if (f.column === 'estado_sociedad') {
-          return String(val || '').toLowerCase() === f.value.toLowerCase();
-        }
-        return String(val || '').toLowerCase().includes(f.value.toLowerCase());
-      });
-    });
+    return this.tarjetas;
   }
-
   get sortedTarjetas(): TarjetaSociedad[] {
     return this.filteredTarjetas;
   }
 
   get paginatedTarjetas(): TarjetaSociedad[] {
-    if (this.multiFilters && this.multiFilters.length > 0) {
-      const startIndex = (this.currentPage - 1) * this.pageSize;
-      return this.filteredTarjetas.slice(startIndex, startIndex + this.pageSize);
-    }
-    return this.filteredTarjetas;
+    return this.tarjetas;
   }
 
   get totalRecords(): number {
-    if (this.multiFilters && this.multiFilters.length > 0) {
-      return this.filteredTarjetas.length;
-    }
     return this.totalRecordsCount;
   }
 
@@ -1034,13 +1039,18 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   exportarCSV(): void {
+    if (this.exportandoCSV) {
+      console.warn('[TarjetasSociedades] Exportación CSV ya en proceso.');
+      return;
+    }
     const visibleCols = this.availableColumns.filter(c => c.visible);
     if (visibleCols.length === 0) {
       alert('Debe tener al menos una columna visible para exportar');
       return;
     }
 
-    let url = `${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&page=1&page_size=10000`;
+    let url = `${API_BASE}/tarjetas/list?tipo_tarjeta=sociedades&client_id=${this.clientId}&page=1&page_size=50000`;
+    url += this.buildFilterQueryParams(this.multiFilters);
     const q = this.searchQuery ? this.searchQuery.trim() : '';
     if (q) {
       url += `&texto=${encodeURIComponent(q)}`;
@@ -1064,9 +1074,11 @@ export class TarjetasSociedadesComponent implements OnInit {
     }
 
     this.loading = true;
+    this.exportandoCSV = true;
     this.http.get<any>(url).subscribe({
       next: (res) => {
         this.loading = false;
+        this.exportandoCSV = false;
         const rawList: any[] = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
         let dataset = rawList.map((item: any) => ({
           id: item.id,
@@ -1124,6 +1136,7 @@ export class TarjetasSociedadesComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
+        this.exportandoCSV = false;
         console.error('Error al exportar CSV de sociedades:', err);
         if (this.filteredTarjetas && this.filteredTarjetas.length > 0) {
           this.descargarArchivoCSV(this.filteredTarjetas, visibleCols, 'reporte_sociedades');
@@ -1145,15 +1158,18 @@ export class TarjetasSociedadesComponent implements OnInit {
         }
         if (val === undefined || val === null) val = '';
         return `"${String(val).replace(/"/g, '""')}"`;
-      }).join(',');
+      }).join(';');
     });
-    const csvContent = 'data:text/csv;charset=utf-8,﻿' + [headers.join(','), ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', url);
     link.setAttribute('download', `${prefix}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 }
