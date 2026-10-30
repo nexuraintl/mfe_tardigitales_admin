@@ -398,11 +398,22 @@ export class App implements OnInit, AfterViewInit {
     this.router.navigateByUrl(path);
   }
 
+  private _lastActionExecTime = 0;
+  private _lastActionExecKey = '';
+
   ejecutarAccion(action: HeaderAction): void {
-    if (action.action) {
-      action.action();
+    const now = Date.now();
+    const key = action?.id || action?.label || 'action';
+    if (this._lastActionExecKey === key && (now - this._lastActionExecTime < 600)) {
       this.cdr.detectChanges();
+      return;
     }
+    this._lastActionExecKey = key;
+    this._lastActionExecTime = now;
+
+    // nx-admin-mod-options ya invoca act.action() directamente en su manejador _onActionClick.
+    // Solo forzamos la detección de cambios para reflejar el estado en Angular sin duplicar la llamada.
+    this.cdr.detectChanges();
   }
 
   // Manejo de eventos emitidos por el Web Component de Lit
@@ -428,12 +439,11 @@ export class App implements OnInit, AfterViewInit {
   onPrimaryAction(event: CustomEvent): void {
     const actionObj = this.primaryAction || event.detail?.action;
     console.log('[MFE] Acción principal solicitada:', actionObj);
-    if (typeof actionObj?.action === 'function') {
-      actionObj.action();
-      this.cdr.detectChanges();
-    } else if (actionObj?.path) {
+    // nx-admin-mod-sidebar ya invoca actionObj.action() en su click interno.
+    if (typeof actionObj?.action !== 'function' && actionObj?.path) {
       this.navegarA(actionObj.path);
     }
+    this.cdr.detectChanges();
   }
 
   onBack(): void {
