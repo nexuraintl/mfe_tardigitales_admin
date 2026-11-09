@@ -21,6 +21,7 @@ export interface TarjetaPdfData {
   universidad?: string;
   foto?: string;
   hash_sha256?: string;
+  token_verificacion?: string;
   logo_url?: string | null;
   patron_url?: string | null;
   logo_impresion_url?: string | null;
@@ -47,7 +48,7 @@ export class TarjetaPdfService {
   async generarPdfTarjeta(datos: TarjetaPdfData): Promise<void> {
     // 1. Intentar descargar el documento oficial PDF/A directamente desde el Microservicio
     const idVal = datos.id;
-    const hashVal = datos.hash_sha256;
+    const hashVal = datos.token_verificacion || datos.hash_sha256;
 
     if (idVal || hashVal) {
       try {
@@ -59,7 +60,7 @@ export class TarjetaPdfService {
     }
 
     // 2. Fallback: Generar en caliente en el navegador mediante jsPDF + html2canvas
-    const hashParaQr = datos.hash_sha256 || this.calcularHashFallback(datos);
+    const hashParaQr = datos.token_verificacion || datos.hash_sha256 || this.calcularHashFallback(datos);
     const qrDataUrl = await this.generarQrDataUrl(hashParaQr);
 
     const container = this.construirElementoHtml(datos, qrDataUrl);
