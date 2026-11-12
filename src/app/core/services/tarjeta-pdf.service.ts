@@ -165,6 +165,46 @@ export class TarjetaPdfService {
   }
 
   /**
+   * Descarga el documento oficial de Soporte de Activación en formato PDF generado por el Microservicio.
+   */
+  async descargarConstanciaActivacion(id: number | string, tipo: 'contador' | 'sociedad' = 'contador'): Promise<boolean> {
+    const tipoParam = tipo === 'sociedad' ? 'sociedades' : 'contadores';
+    const url = `${API_BASE}/tarjetas/${id}/constancia-activacion?tipo_tarjeta=${tipoParam}&client_id=${CLIENT_ID}&download=true`;
+
+    const response = await firstValueFrom(
+      this.http.get(url, {
+        responseType: 'blob',
+        observe: 'response'
+      })
+    );
+
+    const blob = response.body;
+    if (!blob) {
+      throw new Error('Respuesta del servidor sin contenido binario.');
+    }
+
+    let filename = `constancia_activacion_${tipo}_${id}.pdf`;
+    const disposition = response.headers.get('content-disposition');
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      if (match && match[1]) {
+        filename = match[1].trim();
+      }
+    }
+
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+    return true;
+  }
+
+
+  /**
    * Genera el código QR en Base64 PNG apuntando a la verificación pública simulada en el MFE.
    */
   private async generarQrDataUrl(hash: string): Promise<string> {
