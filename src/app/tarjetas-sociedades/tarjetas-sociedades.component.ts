@@ -6,6 +6,7 @@ import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
+import { TarjetaPdfService } from '../core/services/tarjeta-pdf.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 import { formatCanonicalLabel, formatTipoSolicitud } from '../core/constants/tarjetas.constants';
@@ -70,6 +71,7 @@ export class TarjetasSociedadesComponent implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private errorHandler = inject(ErrorHandlerService);
+  private pdfService = inject(TarjetaPdfService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   clientId: number = CLIENT_ID;
@@ -673,6 +675,27 @@ export class TarjetasSociedadesComponent implements OnInit {
     this.qrSeed = Math.random();
     this.isCardModalOpen = true;
     this.cargarBrandingPublicado();
+  }
+
+  async descargarConstanciaActivacion(tarjeta: TarjetaSociedad): Promise<void> {
+    if (!tarjeta || !tarjeta.id) return;
+    try {
+      this.loading = true;
+      this.currentError = null;
+      await this.pdfService.descargarConstanciaActivacion(tarjeta.id, 'sociedad');
+      this.mensajeExito = 'Constancia de activación generada y descargada correctamente.';
+      setTimeout(() => { this.mensajeExito = ''; }, 4000);
+    } catch (err: any) {
+      console.error('Error descargando constancia de activación:', err);
+      this.currentError = this.errorHandler.parseError(
+        err,
+        'MS_3850_CONSTANCIA_ACTIVACION_ERROR',
+        `${API_BASE}/tarjetas/${tarjeta.id}/constancia-activacion`
+      );
+    } finally {
+      this.loading = false;
+      this.cdr.markForCheck();
+    }
   }
 
   cerrarTarjeta(): void {

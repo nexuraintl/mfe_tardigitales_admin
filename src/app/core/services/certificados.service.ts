@@ -136,6 +136,17 @@ export class CertificadosService {
     );
   }
 
+  /**
+   * Descarga el flujo binario del PDF oficial del certificado generado por el backend.
+   */
+  descargarCertificadoPdf(nCertificado: string): Observable<Blob> {
+    const params = new HttpParams().set('client_id', (CLIENT_ID || 20001).toString());
+    return this.http.get(`${this.baseUrl}/${nCertificado}/pdf`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
   private filtrarLocal(filtros?: FiltroCertificados): CertificadoItem[] {
     if (!filtros) return [...this.mockCertificados];
     const query = this.normalizeSearch(filtros.search);
