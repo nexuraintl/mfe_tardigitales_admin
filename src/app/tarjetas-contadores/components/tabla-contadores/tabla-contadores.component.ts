@@ -196,6 +196,12 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
                         <span>Ver tarjeta</span>
                       </button>
                     </li>
+                    <li *ngIf="esTarjetaActiva(row)">
+                      <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="obtenerConstanciaActivacion.emit(row); activeDropdownId = null">
+                        <span class="fa fa-file-text-o text-muted" style="width: 16px;"></span>
+                        <span>Constancia de activación</span>
+                      </button>
+                    </li>
                     <li *ngIf="row.estado_tarjeta === 'Emitida'">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="regenerarTarjeta.emit(row); activeDropdownId = null">
                         <span class="fa fa-refresh text-muted" style="width: 16px;"></span>
@@ -307,6 +313,7 @@ export class TablaContadoresComponent {
   @Output() cambiarPagina = new EventEmitter<number>();
   @Output() abrirDetalle = new EventEmitter<TarjetaContador>();
   @Output() abrirTarjeta = new EventEmitter<TarjetaContador>();
+  @Output() obtenerConstanciaActivacion = new EventEmitter<TarjetaContador>();
   @Output() regenerarTarjeta = new EventEmitter<TarjetaContador>();
   @Output() abrirHistorial = new EventEmitter<TarjetaContador>();
   @Output() resetColumns = new EventEmitter<void>();
@@ -352,6 +359,11 @@ export class TablaContadoresComponent {
 
   getEstadoBadgeClass(estado?: string | null): string {
     return getEstadoTarjetaBadgeClass(estado);
+  }
+
+  esTarjetaActiva(row?: TarjetaContador | null): boolean {
+    const estado = String(row?.estado_tarjeta || '').trim().toLowerCase();
+    return estado === 'activa' || estado === 'activo';
   }
 
   getCellValue(row: any, key: string): any {

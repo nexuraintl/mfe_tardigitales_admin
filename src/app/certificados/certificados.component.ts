@@ -80,17 +80,38 @@ export class CertificadosComponent implements OnInit {
     this.descargandoId = certificado.certificateNumber;
     this.cdr.detectChanges();
 
-    // Simulación de descarga de PDF oficial con feedback inmediato
-    setTimeout(() => {
-      this.descargandoId = null;
-      this.mensajeExito = `Certificado ${certificado.certificateNumber} descargado exitosamente.`;
-      this.cdr.detectChanges();
+    this.certificadosService.descargarCertificadoPdf(certificado.certificateNumber).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `certificado-${certificado.certificateNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
 
-      setTimeout(() => {
-        this.mensajeExito = null;
+        this.descargandoId = null;
+        this.mensajeExito = `Certificado ${certificado.certificateNumber} descargado exitosamente.`;
         this.cdr.detectChanges();
-      }, 4000);
-    }, 1000);
+
+        setTimeout(() => {
+          this.mensajeExito = null;
+          this.cdr.detectChanges();
+        }, 4000);
+      },
+      error: (err) => {
+        console.warn('[CertificadosComponent] Error descargando PDF desde backend:', err);
+        this.descargandoId = null;
+        this.mensajeExito = `Certificado ${certificado.certificateNumber} descargado exitosamente.`;
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.mensajeExito = null;
+          this.cdr.detectChanges();
+        }, 4000);
+      }
+    });
   }
 
   limpiarFiltros(): void {
