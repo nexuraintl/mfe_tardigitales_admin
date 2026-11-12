@@ -47,7 +47,7 @@ export interface ConfigValidadorSociedad {
           <!-- Cabecera Institucional -->
           <div class="card-header bg-white border-bottom py-4 px-4 text-center">
             <img src="assets/images/logo-jcc.png" alt="UAE Junta Central de Contadores" style="height: 48px; max-width: 220px; object-fit: contain;" class="mb-2" />
-            <h5 class="fw-bold text-slate-800 mb-1" style="font-size: 16px;">Verificación Pública de Credencial Digital</h5>
+            <h5 class="fw-bold text-slate-800 mb-1" style="font-size: 16px;">Verificación Pública de Tarjeta Digital</h5>
             <p class="text-muted mb-0" style="font-size: 12.5px;">Sistema Oficial de Registro — UAE Junta Central de Contadores</p>
           </div>
 
@@ -109,12 +109,12 @@ export interface ConfigValidadorSociedad {
               <div class="mb-3">
                 <span class="fa fa-exclamation-triangle text-danger" style="font-size: 48px;"></span>
               </div>
-              <h5 class="fw-bold text-danger mb-2" style="font-size: 17px;">Credencial no verificable</h5>
+              <h5 class="fw-bold text-danger mb-2" style="font-size: 17px;">Tarjeta no verificable</h5>
               <p class="text-muted mb-4 px-3" style="font-size: 13.5px;">{{ errorMsg }}</p>
               <div class="p-3 bg-light rounded-3 text-start mb-3" style="font-size: 12px; color: #64748b;">
                 <strong>Verifique que:</strong>
                 <ul class="mb-0 mt-1 ps-3">
-                  <li>El código QR o enlace provenga de una credencial oficial emitida.</li>
+                  <li>El código QR o enlace provenga de una tarjeta oficial emitida.</li>
                   <li>El token o hash de autenticidad esté completo y sin alteraciones.</li>
                 </ul>
               </div>
@@ -357,7 +357,7 @@ export class VerificarPublicaComponent implements OnInit {
         const tarjetaData = resp?.data || resp;
         if (!tarjetaData || (!tarjetaData.id && !tarjetaData.hash_sha256)) {
           this.cargando = false;
-          this.errorMsg = 'No se encontró ninguna credencial registrada con el código de verificación suministrado.';
+          this.errorMsg = 'No se encontró ninguna tarjeta registrada con el código de verificación suministrado.';
           this.cdr.detectChanges();
           return;
         }
@@ -444,7 +444,7 @@ export class VerificarPublicaComponent implements OnInit {
       error: (err) => {
         this.cargando = false;
         if (err.status === 404) {
-          this.errorMsg = 'La credencial consultada no existe en la base de datos oficial o el enlace ha caducado.';
+          this.errorMsg = 'La tarjeta consultada no existe en la base de datos oficial o el enlace ha caducado.';
         } else {
           this.errorMsg = 'Ocurrió un error al consultar el servicio oficial de verificación. Por favor intente nuevamente.';
         }
