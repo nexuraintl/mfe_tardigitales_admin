@@ -20,7 +20,7 @@
       const isPreprod = location.href.includes('https://preproduccion9-jcc.nexura.com.co');
       const cdnUrl = isPreprod
         ? 'https://preproduccion9-jcc.nexura.com.co/mod/Galeria/js/web-components/admin/v1/layout.esm.js'
-        : 'http://local-cdn.nexura.com.co/web-components/admin/v1/layout.esm.js';
+        : '/web-components/admin/v1/layout.esm.js';
 
       const script = document.createElement('script');
       script.type = 'module';
