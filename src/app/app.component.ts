@@ -64,7 +64,7 @@ export class App implements OnInit, AfterViewInit {
     '/auditoria': 'Auditoría API',
     '/procesos-lotes': 'Gestión de colas y procesos en lote',
     '/usuarios': 'Usuarios',
-    '/verificar': 'Verificación pública de credencial'
+    '/verificar': 'Verificación pública de tarjeta'
   };
 
   get isPublicRoute(): boolean {
