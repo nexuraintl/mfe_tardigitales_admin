@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableColumn, TarjetaContador } from '../../tarjetas-contadores.component';
@@ -6,6 +6,8 @@ import { NxAlertComponent } from '../../../shared/components/alert/alert.compone
 import { FilterBuilderComponent, FilterColumnConfig, ActiveFilter } from '../../../shared/components/filter-builder/filter-builder.component';
 import { AppError } from '../../../core/services/error-handler.service';
 import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel } from '../../../core/constants/tarjetas.constants';
+import { PermissionsService } from '../../../core/services/permissions.service';
+import { TarjetaPermissionScope } from '../../../core/constants/permissions.constants';
 
 @Component({
   selector: 'app-tabla-contadores',
@@ -118,12 +120,12 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
                   }"></span>
                 </th>
               </ng-container>
-              <th scope="col" class="text-end pe-3" style="width: 120px;">Acciones</th>
+              <th *ngIf="hasAnyRowAction" scope="col" class="text-end pe-3" style="width: 120px;">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="loading">
-              <td [attr.colspan]="(visibleColumnsCount || 1) + 1" class="text-center py-5 text-muted">
+              <td [attr.colspan]="(visibleColumnsCount || 1) + (hasAnyRowAction ? 1 : 0)" class="text-center py-5 text-muted">
                 <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
                 Cargando solicitudes registradas...
               </td>
@@ -166,22 +168,26 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
                   </ng-container>
                 </td>
               </ng-container>
-              <td class="text-end pe-3 position-relative">
+              <td *ngIf="hasAnyRowAction" class="text-end pe-3 position-relative">
                 <div class="btn-group btn-group-sm">
-                  <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" (click)="abrirDetalle.emit(row)">
+                  <button *ngIf="canDetalles" type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" (click)="abrirDetalle.emit(row)">
                     <span class="fa fa-eye"></span>
                     <span>Detalles</span>
                   </button>
                   <button 
+                    *ngIf="hasDropdownActions(row)"
                     type="button" 
-                    class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+                    class="btn btn-outline-secondary dropdown-toggle"
+                    [class.dropdown-toggle-split]="canDetalles"
                     (click)="toggleRowDropdown($event, row.id)"
                     aria-expanded="false"
                     title="Más opciones"
                   >
+                    <span *ngIf="!canDetalles" class="me-1">Opciones</span>
                     <span class="visually-hidden">Más opciones</span>
                   </button>
                   <ul 
+                    *ngIf="hasDropdownActions(row)"
                     class="dropdown-menu dropdown-menu-end shadow-sm border" 
                     [class.show]="activeDropdownId === row.id"
                     [style.top]="isDropup(i, paginatedTarjetas.length) ? 'auto' : '100%'"
@@ -190,25 +196,25 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
                     [style.margin-top]="isDropup(i, paginatedTarjetas.length) ? '0' : '4px'"
                     style="position: absolute; right: 0; z-index: 1050; min-width: 175px;"
                   >
-                    <li>
+                    <li *ngIf="canVerTarjeta">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="abrirTarjeta.emit(row); activeDropdownId = null">
                         <span class="fa fa-id-card-o text-muted" style="width: 16px;"></span>
                         <span>Ver tarjeta</span>
                       </button>
                     </li>
-                    <li *ngIf="esTarjetaActiva(row)">
+                    <li *ngIf="canExportar && esTarjetaActiva(row)">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="obtenerConstanciaActivacion.emit(row); activeDropdownId = null">
                         <span class="fa fa-file-text-o text-muted" style="width: 16px;"></span>
                         <span>Constancia de activación</span>
                       </button>
                     </li>
-                    <li *ngIf="row.estado_tarjeta === 'Emitida'">
+                    <li *ngIf="canRegenerar && row.estado_tarjeta === 'Emitida'">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="regenerarTarjeta.emit(row); activeDropdownId = null">
                         <span class="fa fa-refresh text-muted" style="width: 16px;"></span>
                         <span>Regenerar</span>
                       </button>
                     </li>
-                    <li>
+                    <li *ngIf="canHistorial">
                       <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="abrirHistorial.emit(row); activeDropdownId = null">
                         <span class="fa fa-history text-muted" style="width: 16px;"></span>
                         <span>Historial</span>
@@ -219,7 +225,7 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
               </td>
             </tr>
             <tr *ngIf="!loading && paginatedTarjetas.length === 0">
-              <td [attr.colspan]="visibleColumnsCount + 1" class="text-center py-4 text-muted">
+              <td [attr.colspan]="visibleColumnsCount + (hasAnyRowAction ? 1 : 0)" class="text-center py-4 text-muted">
                 <span class="fa fa-info-circle me-1"></span> No se encontraron solicitudes registradas.
               </td>
             </tr>
@@ -272,11 +278,56 @@ import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel }
   `
 })
 export class TablaContadoresComponent {
+  private permissionsService = inject(PermissionsService);
+
   @Input() currentError: AppError | null = null;
   @Output() currentErrorChange = new EventEmitter<AppError | null>();
 
   @Input() mensajeExito: string = '';
   @Output() mensajeExitoChange = new EventEmitter<string>();
+
+  get permissionScope(): TarjetaPermissionScope {
+    return this.esModoReporte ? 'repCont' : 'cont';
+  }
+
+  get canDetalles(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'detalles');
+  }
+
+  get canVerTarjeta(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'verTarjeta');
+  }
+
+  get canExportar(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'exportar');
+  }
+
+  get canRegenerar(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'regenerar');
+  }
+
+  get canHistorial(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'historial');
+  }
+
+  get hasAnyRowAction(): boolean {
+    return (
+      this.canDetalles ||
+      this.canVerTarjeta ||
+      this.canExportar ||
+      this.canRegenerar ||
+      this.canHistorial
+    );
+  }
+
+  hasDropdownActions(row: TarjetaContador): boolean {
+    return (
+      this.canVerTarjeta ||
+      (this.canExportar && this.esTarjetaActiva(row)) ||
+      (this.canRegenerar && row.estado_tarjeta === 'Emitida') ||
+      this.canHistorial
+    );
+  }
 
   formatLabel(label?: string | null): string {
     return formatCanonicalLabel(label);
