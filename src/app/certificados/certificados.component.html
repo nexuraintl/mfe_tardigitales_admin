@@ -1,4 +1,4 @@
-El<div class="certificados-container d-flex flex-column gap-3">
+<div class="certificados-container d-flex flex-column gap-3">
 
   <!-- Alerta temporal de proceso/descarga (Regla 14) -->
   <div class="alert alert-success d-flex align-items-center gap-2 mb-0 shadow-sm border-0 py-2 px-3 small"
@@ -95,7 +95,7 @@ El<div class="certificados-container d-flex flex-column gap-3">
               <th scope="col">Fecha de generación</th>
               <th scope="col">Fecha de firma</th>
               <th scope="col">Estado</th>
-              <th scope="col" class="text-end pe-4">Acciones</th>
+              <th *nxHasPermission="['certDetalle', 'certDescargar']" scope="col" class="text-end pe-4">Acciones</th>
             </tr>
           </thead>
           <tbody class="small">
@@ -135,18 +135,20 @@ El<div class="certificados-container d-flex flex-column gap-3">
               </td>
 
               <!-- Acciones -->
-              <td class="text-end pe-4">
+              <td *nxHasPermission="['certDetalle', 'certDescargar']" class="text-end pe-4">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Acciones de certificado">
 
                   <!-- Consultar detalle -->
-                  <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-1"
-                    (click)="abrirDetalle(cert)" title="Consultar detalle">
+                  <button *nxHasPermission="'certDetalle'" type="button"
+                    class="btn btn-outline-primary d-inline-flex align-items-center gap-1" (click)="abrirDetalle(cert)"
+                    title="Consultar detalle">
                     <i class="fa fa-eye"></i>
                     <span>Consultar detalle</span>
                   </button>
 
                   <!-- Descargar PDF -->
-                  <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
+                  <button *nxHasPermission="'certDescargar'" type="button"
+                    class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
                     (click)="descargarCertificado(cert)" [disabled]="descargandoId === cert.certificateNumber"
                     title="Descargar certificado">
                     <i class="fa fa-spinner fa-spin" *ngIf="descargandoId === cert.certificateNumber"></i>

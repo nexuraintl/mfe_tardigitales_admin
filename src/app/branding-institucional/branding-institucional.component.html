@@ -89,7 +89,7 @@
         </div>
       </div>
 
-      <div class="card-footer bg-light border-top p-3 text-end">
+      <div *nxHasPermission="'brandFirmaGuardar'" class="card-footer bg-light border-top p-3 text-end">
         <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-semibold"
           [disabled]="saving || !hasFormChanges"
           [title]="!hasFormChanges ? 'Modifique al menos un parámetro (nombre, cargo o firma del director) para poder guardar una nueva versión' : ''"
@@ -149,15 +149,18 @@
             <div class="d-flex align-items-center gap-2 flex-shrink-0">
               <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1"
                 *ngIf="item.publicado">Publicada</span>
-              <button *ngIf="!item.publicado" type="button"
-                [class]="item.version === selectedVersionNumber ? 'btn btn-primary btn-sm px-3 py-1.5 fw-bold shadow-sm' : 'btn btn-outline-primary btn-sm px-3 py-1'"
-                style="font-size: 12px;" (click)="abrirModalPublicar(item, $event)" [disabled]="publishing">
-                <span *ngIf="publishing && item.version === versionBeingPublished"
-                  class="spinner-border spinner-border-sm me-1"></span>
-                <span class="fa fa-upload me-1" *ngIf="!(publishing && item.version === versionBeingPublished)"></span>
-                {{ (publishing && item.version === versionBeingPublished) ? 'Publicando...' : (item.version ===
-                selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
-              </button>
+              <ng-container *nxHasPermission="'brandFirmaPublicar'">
+                <button *ngIf="!item.publicado" type="button"
+                  [class]="item.version === selectedVersionNumber ? 'btn btn-primary btn-sm px-3 py-1.5 fw-bold shadow-sm' : 'btn btn-outline-primary btn-sm px-3 py-1'"
+                  style="font-size: 12px;" (click)="abrirModalPublicar(item, $event)" [disabled]="publishing">
+                  <span *ngIf="publishing && item.version === versionBeingPublished"
+                    class="spinner-border spinner-border-sm me-1"></span>
+                  <span class="fa fa-upload me-1"
+                    *ngIf="!(publishing && item.version === versionBeingPublished)"></span>
+                  {{ (publishing && item.version === versionBeingPublished) ? 'Publicando...' : (item.version ===
+                  selectedVersionNumber ? 'Publicar esta versión' : 'Publicar') }}
+                </button>
+              </ng-container>
             </div>
           </li>
         </ul>
