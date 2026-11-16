@@ -1,8 +1,10 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { MenuSection, UserProfile, AppTile, PrimaryAction } from './core/models/layout.models';
+import { PermissionsService } from './core/services/permissions.service';
+import { PERMISSIONS } from './core/constants/permissions.constants';
 
 export interface HeaderAction {
   id: string;
@@ -25,6 +27,7 @@ export interface HeaderAction {
 export class App implements OnInit, AfterViewInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  public permissionsService = inject(PermissionsService);
 
   currentUrl = (typeof window !== 'undefined' && window.location.pathname) ? window.location.pathname : '';
   pageTitle = 'Tarjeta digital para contadores';
@@ -47,11 +50,11 @@ export class App implements OnInit, AfterViewInit {
     '/sociedades': 'Tarjeta digital para sociedades',
     '/historial': 'Historial de notificaciones',
     '/crear-notificacion': 'Nueva notificación',
-    '/crud': 'Gestión de Trámites',
-    '/validador-qr': 'Campos del Validador QR',
+    '/crud': 'Gestión de trámites',
+    '/validador-qr': 'Campos del validador QR',
     '/validador-qr-contadores': 'Validador QR — Contadores',
     '/validador-qr-sociedades': 'Validador QR — Sociedades',
-    '/certificados': 'Certificados Oficiales',
+    '/certificados': 'Certificados oficiales',
     '/reportes/contadores': 'Reporte contadores',
     '/reportes/sociedades': 'Reporte sociedades',
     '/reportes/notificaciones': 'Reporte notificaciones',
@@ -64,6 +67,7 @@ export class App implements OnInit, AfterViewInit {
     '/auditoria': 'Auditoría API',
     '/procesos-lotes': 'Gestión de colas y procesos en lote',
     '/usuarios': 'Usuarios',
+    '/sin-permisos': 'Acceso restringido',
     '/verificar': 'Verificación pública de tarjeta'
   };
 
@@ -73,30 +77,36 @@ export class App implements OnInit, AfterViewInit {
     return cleanUrl.includes('verificar');
   }
 
-  // Configuración del usuario para el shell
-  currentUser: UserProfile = {
-    name: 'Fabian Vargas',
-    email: 'fvargas@nexura.com',
+  private readonly defaultUser: UserProfile = {
+    name: 'Usuario',
+    email: '',
     role: 'Administrador',
-    initials: 'FV'
+    initials: 'US'
   };
+
+  currentUser: UserProfile = { ...this.defaultUser };
 
   // Acción principal destacada sobre el sidebar (configurable y opcional por vista)
   primaryAction: PrimaryAction | null = null;
 
-  // Configuración de módulos en el menú de aplicaciones del topbar
-  appGrid: AppTile[] = [
-    { 
-      id: 'admin', 
-      name: 'Panel de administración', 
-      color: 'blue', 
-      iconClass: 'fa fa-th', 
-      path: '/admin.php', 
-      active: true 
+  private readonly defaultAppGrid: AppTile[] = [
+    {
+      id: 'admin',
+      name: 'Panel de administración',
+      color: 'blue',
+      iconClass: 'fa fa-th',
+      path: '/admin',
+      active: true
     }
   ];
 
-  menuSections: MenuSection[] = [
+  appGrid: AppTile[] = [...this.defaultAppGrid];
+
+  /**
+   * Catálogo maestro de opciones del menú lateral con su permiso granular asociado.
+   * `wc_admin_layout` permanece 100% agnóstico: `menuSections` solo recibe las opciones autorizadas.
+   */
+  private readonly masterMenuSections: MenuSection[] = [
     {
       sectionTitle: 'Gestión principal',
       items: [
@@ -105,8 +115,18 @@ export class App implements OnInit, AfterViewInit {
           label: 'Tarjetas',
           icon: 'fa fa-id-card',
           children: [
-            { label: 'Tarjetas contadores', icon: 'fa fa-user', path: '/tarjetas-contadores' },
-            { label: 'Tarjetas sociedades', icon: 'fa fa-building-o', path: '/tarjetas-sociedades' }
+            {
+              label: 'Tarjetas contadores',
+              icon: 'fa fa-user',
+              path: '/tarjetas-contadores',
+              permission: PERMISSIONS.CONT_LISTADO
+            },
+            {
+              label: 'Tarjetas sociedades',
+              icon: 'fa fa-building-o',
+              path: '/tarjetas-sociedades',
+              permission: PERMISSIONS.SOC_LISTADO
+            }
           ]
         },
         {
@@ -114,8 +134,18 @@ export class App implements OnInit, AfterViewInit {
           label: 'Notificaciones',
           icon: 'fa fa-bell',
           children: [
-            { label: 'Nueva notificación', icon: 'fa fa-paper-plane', path: '/crear-notificacion' },
-            { label: 'Historial de notificaciones', icon: 'fa fa-history', path: '/historial' }
+            {
+              label: 'Nueva notificación',
+              icon: 'fa fa-paper-plane',
+              path: '/crear-notificacion',
+              permission: PERMISSIONS.NOTIF_NUEVA
+            },
+            {
+              label: 'Historial de notificaciones',
+              icon: 'fa fa-history',
+              path: '/historial',
+              permission: PERMISSIONS.NOTIF_HISTORIAL
+            }
           ]
         }
       ]
@@ -128,21 +158,61 @@ export class App implements OnInit, AfterViewInit {
           label: 'Reportes',
           icon: 'fa fa-bar-chart',
           children: [
-            { label: 'Dashboard general', icon: 'fa fa-pie-chart', path: '/reportes/dashboard' },
-            { label: 'Reporte contadores', icon: 'fa fa-user', path: '/reportes/contadores' },
-            { label: 'Reporte sociedades', icon: 'fa fa-building-o', path: '/reportes/sociedades' },
-            { label: 'Reporte notificaciones', icon: 'fa fa-bell', path: '/reportes/notificaciones' }
+            {
+              label: 'Dashboard general',
+              icon: 'fa fa-pie-chart',
+              path: '/reportes/dashboard',
+              permission: PERMISSIONS.REP_DASHBOARD_GEN
+            },
+            {
+              label: 'Reporte contadores',
+              icon: 'fa fa-user',
+              path: '/reportes/contadores',
+              permission: PERMISSIONS.REP_CONT_LISTADO_CSV
+            },
+            {
+              label: 'Reporte sociedades',
+              icon: 'fa fa-building-o',
+              path: '/reportes/sociedades',
+              permission: PERMISSIONS.REP_SOC_LISTADO_CSV
+            },
+            {
+              label: 'Reporte notificaciones',
+              icon: 'fa fa-bell',
+              path: '/reportes/notificaciones',
+              permission: PERMISSIONS.REP_NOTIFICACIONES
+            }
           ]
         },
-        { label: 'Certificados', icon: 'fa fa-certificate', path: '/certificados' },
+        {
+          label: 'Certificados',
+          icon: 'fa fa-certificate',
+          path: '/certificados',
+          permission: PERMISSIONS.CERT_LISTADO
+        },
         {
           id: 'grupo-branding',
           label: 'Branding',
           icon: 'fa fa-paint-brush',
           children: [
-            { label: 'Contadores', icon: 'fa fa-user', path: '/branding-contadores' },
-            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/branding-sociedades' },
-            { label: 'Firma institucional', icon: 'fa fa-pencil-square-o', path: '/branding-institucional' }
+            {
+              label: 'Contadores',
+              icon: 'fa fa-user',
+              path: '/branding-contadores',
+              permission: PERMISSIONS.BRAND_CONT_VER
+            },
+            {
+              label: 'Sociedades',
+              icon: 'fa fa-building-o',
+              path: '/branding-sociedades',
+              permission: PERMISSIONS.BRAND_SOC_VER
+            },
+            {
+              label: 'Firma institucional',
+              icon: 'fa fa-pencil-square-o',
+              path: '/branding-institucional',
+              permission: PERMISSIONS.BRAND_FIRMA_VER
+            }
           ]
         },
         {
@@ -150,21 +220,57 @@ export class App implements OnInit, AfterViewInit {
           label: 'Validador QR',
           icon: 'fa fa-qrcode',
           children: [
-            { label: 'Contadores', icon: 'fa fa-user', path: '/validador-qr-contadores' },
-            { label: 'Sociedades', icon: 'fa fa-building-o', path: '/validador-qr-sociedades' }
+            {
+              label: 'Contadores',
+              icon: 'fa fa-user',
+              path: '/validador-qr-contadores',
+              permission: PERMISSIONS.VAL_QR_CONTADORES
+            },
+            {
+              label: 'Sociedades',
+              icon: 'fa fa-building-o',
+              path: '/validador-qr-sociedades',
+              permission: PERMISSIONS.VAL_QR_SOCIEDADES
+            }
           ]
         },
-        { label: 'Auditoría API', icon: 'fa fa-shield', path: '/auditoria' },
-        { label: 'Usuarios', icon: 'fa fa-users', path: '/usuarios' }
+        {
+          label: 'Auditoría API',
+          icon: 'fa fa-shield',
+          path: '/auditoria',
+          permission: PERMISSIONS.AUDITORIA_API_REG
+        }
       ]
     }
   ];
+
+  menuSections: MenuSection[] = [];
+
+  constructor() {
+    effect(() => {
+      // Reaccionar automáticamente ante cambios de sesión o permisos (incluyendo revocaciones manuales)
+      this.permissionsService.effectivePermissions();
+      this.permissionsService.user();
+      this.permissionsService.modules();
+
+      this.currentUser = this.permissionsService.buildUserProfile(this.defaultUser);
+      this.appGrid = this.permissionsService.buildAppGrid(this.defaultAppGrid);
+      this.menuSections = this.permissionsService.filterMenuSections(this.masterMenuSections);
+      this.updateViewActions(this.currentUrl);
+      this.cdr.markForCheck();
+    });
+  }
 
   ngOnInit(): void {
     if (typeof window !== 'undefined' && window.innerWidth <= 992) {
       this.sidebarCollapsed = true;
     }
     this.currentUrl = (typeof window !== 'undefined' && window.location.pathname) ? window.location.pathname : this.router.url;
+
+    if (!this.isPublicRoute) {
+      this.permissionsService.ensureInitialized().subscribe();
+    }
+
     this.updatePageTitle(this.currentUrl);
     this.updateViewActions(this.currentUrl);
 
@@ -227,25 +333,25 @@ export class App implements OnInit, AfterViewInit {
   private updateViewActions(url: string) {
     const cleanUrl = url.split('?')[0].split('#')[0];
 
-    if (cleanUrl.includes('/historial/') || cleanUrl.includes('/nueva') || cleanUrl.includes('/emision-masiva')) {
-      this.primaryAction = null;
-      this.viewActions = [];
-      return;
-    }
-
-    if (cleanUrl.includes('validador-qr')) {
-      this.primaryAction = null;
-      this.viewActions = [];
-      return;
-    }
-
-    if (cleanUrl.includes('branding')) {
+    if (
+      cleanUrl.includes('/historial/') ||
+      cleanUrl.includes('/nueva') ||
+      cleanUrl.includes('/emision-masiva') ||
+      cleanUrl.includes('validador-qr') ||
+      cleanUrl.includes('branding') ||
+      cleanUrl.includes('sin-permisos')
+    ) {
       this.primaryAction = null;
       this.viewActions = [];
       return;
     }
 
     if (cleanUrl.includes('reportes/dashboard') || cleanUrl === '/reportes') {
+      if (!this.permissionsService.hasPermission(PERMISSIONS.REP_DASHBOARD_GEN)) {
+        this.primaryAction = null;
+        this.viewActions = [];
+        return;
+      }
       this.primaryAction = {
         label: 'Imprimir',
         icon: 'fa fa-print',
@@ -267,47 +373,85 @@ export class App implements OnInit, AfterViewInit {
           action: () => this.activeComponent?.exportarCSV?.()
         }
       ];
-    } else if (cleanUrl.includes('reportes/contadores') || cleanUrl.includes('reportes/sociedades') || cleanUrl.includes('reportes/notificaciones')) {
+    } else if (cleanUrl.includes('reportes/contadores')) {
       this.primaryAction = null;
-      this.viewActions = [
-        {
-          id: 'exportar-csv-subreporte',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        }
-      ];
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.REP_CONT_LISTADO_CSV)
+        ? [
+          {
+            id: 'exportar-csv-subreporte',
+            label: 'Exportar CSV',
+            icon: 'fa fa-download',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.exportarCSV?.()
+          }
+        ]
+        : [];
+    } else if (cleanUrl.includes('reportes/sociedades')) {
+      this.primaryAction = null;
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.REP_SOC_LISTADO_CSV)
+        ? [
+          {
+            id: 'exportar-csv-subreporte',
+            label: 'Exportar CSV',
+            icon: 'fa fa-download',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.exportarCSV?.()
+          }
+        ]
+        : [];
+    } else if (cleanUrl.includes('reportes/notificaciones')) {
+      this.primaryAction = null;
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.REP_NOTIFICACIONES)
+        ? [
+          {
+            id: 'exportar-csv-subreporte',
+            label: 'Exportar CSV',
+            icon: 'fa fa-download',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.exportarCSV?.()
+          }
+        ]
+        : [];
     } else if (cleanUrl.includes('tarjetas-contadores')) {
-      this.primaryAction = {
-        label: 'Nueva tarjeta',
-        icon: 'fa fa-plus',
-        action: () => this.activeComponent?.abrirNuevaTarjeta?.()
-      };
-      this.viewActions = [
-        {
-          id: 'emision-masiva',
-          label: 'Emisión masiva',
-          icon: 'fa fa-file-excel-o',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.abrirEmisionMasiva?.()
+      this.primaryAction = this.permissionsService.hasPermission(PERMISSIONS.CONT_NUEVA_TARJETA)
+        ? {
+          label: 'Nueva tarjeta',
+          icon: 'fa fa-plus',
+          action: () => this.activeComponent?.abrirNuevaTarjeta?.()
         }
-      ];
+        : null;
+
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.CONT_EMISION_MASIVA)
+        ? [
+          {
+            id: 'emision-masiva',
+            label: 'Emisión masiva',
+            icon: 'fa fa-file-excel-o',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.abrirEmisionMasiva?.()
+          }
+        ]
+        : [];
     } else if (cleanUrl.includes('tarjetas-sociedades') || cleanUrl === '/sociedades' || cleanUrl.startsWith('/sociedades/')) {
-      this.primaryAction = {
-        label: 'Nueva tarjeta',
-        icon: 'fa fa-plus',
-        action: () => this.activeComponent?.abrirNuevaTarjeta?.()
-      };
-      this.viewActions = [
-        {
-          id: 'emision-masiva',
-          label: 'Emisión masiva',
-          icon: 'fa fa-file-excel-o',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.abrirEmisionMasiva?.()
+      this.primaryAction = this.permissionsService.hasPermission(PERMISSIONS.SOC_NUEVA_TARJETA)
+        ? {
+          label: 'Nueva tarjeta',
+          icon: 'fa fa-plus',
+          action: () => this.activeComponent?.abrirNuevaTarjeta?.()
         }
-      ];
+        : null;
+
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.SOC_EMISION_MASIVA)
+        ? [
+          {
+            id: 'emision-masiva',
+            label: 'Emisión masiva',
+            icon: 'fa fa-file-excel-o',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.abrirEmisionMasiva?.()
+          }
+        ]
+        : [];
     } else if (cleanUrl.includes('crud')) {
       this.primaryAction = null;
       this.viewActions = [
@@ -328,48 +472,56 @@ export class App implements OnInit, AfterViewInit {
       ];
     } else if (cleanUrl.includes('historial')) {
       this.primaryAction = null;
-      this.viewActions = [
-        {
-          id: 'nueva-notificacion',
-          label: 'Nueva notificación',
-          icon: 'fa fa-plus',
-          btnClass: 'btn btn-primary',
-          action: () => this.navegarA('/crear-notificacion')
-        }
-      ];
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.NOTIF_NUEVA)
+        ? [
+          {
+            id: 'nueva-notificacion',
+            label: 'Nueva notificación',
+            icon: 'fa fa-plus',
+            btnClass: 'btn btn-primary',
+            action: () => this.navegarA('/crear-notificacion')
+          }
+        ]
+        : [];
     } else if (cleanUrl.includes('crear-notificacion')) {
       this.primaryAction = null;
-      this.viewActions = [
-        {
-          id: 'ver-historial',
-          label: 'Ver historial',
-          icon: 'fa fa-history',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.navegarA('/historial')
-        }
-      ];
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.NOTIF_HISTORIAL)
+        ? [
+          {
+            id: 'ver-historial',
+            label: 'Ver historial',
+            icon: 'fa fa-history',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.navegarA('/historial')
+          }
+        ]
+        : [];
     } else if (cleanUrl.includes('certificados')) {
       this.primaryAction = null;
-      this.viewActions = [
-        {
-          id: 'exportar-csv',
-          label: 'Exportar CSV',
-          icon: 'fa fa-download',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.exportarCSV?.()
-        }
-      ];
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.CERT_LISTADO)
+        ? [
+          {
+            id: 'exportar-csv',
+            label: 'Exportar CSV',
+            icon: 'fa fa-download',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.exportarCSV?.()
+          }
+        ]
+        : [];
     } else if (cleanUrl.includes('auditoria')) {
       this.primaryAction = null;
-      this.viewActions = [
-        {
-          id: 'actualizar-auditoria',
-          label: 'Actualizar',
-          icon: 'fa fa-refresh',
-          btnClass: 'btn btn-outline-secondary',
-          action: () => this.activeComponent?.cargarAuditoria?.()
-        }
-      ];
+      this.viewActions = this.permissionsService.hasPermission(PERMISSIONS.AUDITORIA_API_REG)
+        ? [
+          {
+            id: 'actualizar-auditoria',
+            label: 'Actualizar',
+            icon: 'fa fa-refresh',
+            btnClass: 'btn btn-outline-secondary',
+            action: () => this.activeComponent?.cargarAuditoria?.()
+          }
+        ]
+        : [];
     } else {
       this.primaryAction = null;
       this.viewActions = [];
@@ -378,7 +530,7 @@ export class App implements OnInit, AfterViewInit {
 
   navegarA(path: string): void {
     if (!path) return;
-    if (path.startsWith('http') || path.endsWith('.php') || path.includes('.php')) {
+    if (path.startsWith('http') || path.endsWith('.php') || path.includes('.php') || path === '/admin') {
       window.location.href = path;
       return;
     }
@@ -411,12 +563,9 @@ export class App implements OnInit, AfterViewInit {
     this._lastActionExecKey = key;
     this._lastActionExecTime = now;
 
-    // nx-admin-mod-options ya invoca act.action() directamente en su manejador _onActionClick.
-    // Solo forzamos la detección de cambios para reflejar el estado en Angular sin duplicar la llamada.
     this.cdr.detectChanges();
   }
 
-  // Manejo de eventos emitidos por el Web Component de Lit
   onToggleSidebar(): void {
     this.sidebarCollapsed = !this.sidebarCollapsed;
     this.cdr.detectChanges();
@@ -438,8 +587,6 @@ export class App implements OnInit, AfterViewInit {
 
   onPrimaryAction(event: CustomEvent): void {
     const actionObj = this.primaryAction || event.detail?.action;
-    console.log('[MFE] Acción principal solicitada:', actionObj);
-    // nx-admin-mod-sidebar ya invoca actionObj.action() en su click interno.
     if (typeof actionObj?.action !== 'function' && actionObj?.path) {
       this.navegarA(actionObj.path);
     }
@@ -452,15 +599,15 @@ export class App implements OnInit, AfterViewInit {
     } else if (typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     } else {
-      this.navegarA('/tarjetas-contadores');
+      const fallback = this.permissionsService.getFirstAllowedRoute() || '/tarjetas-contadores';
+      this.navegarA(fallback);
     }
   }
 
   onProfileAction(event: CustomEvent): void {
     const action = event.detail?.action;
-    console.log('[MFE] Acción de perfil solicitada:', action);
     if (action === 'logout') {
-      alert('Cerrando sesión...');
+      window.location.href = '/admin';
     }
   }
 }

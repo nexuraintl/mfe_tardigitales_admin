@@ -5,7 +5,8 @@ import { AuthService } from '../services/auth.service';
 import { TOKEN_URL, API_BASE } from '../config/api.config';
 
 /**
- * Interceptor HTTP funcional que inyecta el token Bearer en peticiones al API Gateway / Microservicio.
+ * Interceptor HTTP funcional que inyecta el token Bearer y habilita el envío de cookies
+ * (`nexuraSID` mediante `withCredentials: true`) en peticiones al API Gateway / Microservicio.
  */
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
@@ -13,8 +14,8 @@ export const authInterceptor: HttpInterceptorFn = (
 ): Observable<HttpEvent<unknown>> => {
   const authService = inject(AuthService);
 
-  // Evitar interceptar la petición que obtiene el propio token o la prueba de sesión Redis
-  if (req.url.includes(TOKEN_URL) || req.url.includes('redis-session-test')) {
+  // Evitar interceptar la petición que obtiene el propio token
+  if (req.url.includes(TOKEN_URL)) {
     return next(req);
   }
 
@@ -27,20 +28,18 @@ export const authInterceptor: HttpInterceptorFn = (
 
   return authService.getGatewayToken().pipe(
     switchMap(token => {
-      let authReq = req;
-
+      const headers: Record<string, string> = {};
       if (token) {
-        authReq = req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${token}`
-          },
-          withCredentials: true
-        });
+        headers['Authorization'] = `Bearer ${token}`;
       }
+
+      const authReq = req.clone({
+        setHeaders: headers,
+        withCredentials: true
+      });
 
       return next(authReq).pipe(
         catchError((error: HttpErrorResponse) => {
-          // Si el Gateway retorna 401 por token expirado, invalidamos la caché local
           if (error.status === 401) {
             authService.clearToken();
           }
