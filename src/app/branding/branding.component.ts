@@ -10,8 +10,6 @@ import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { NxFieldErrorComponent } from '../shared/components/field-error/field-error.component';
 import { PHOTO_CARD_PATH, DEFAULT_AVATAR_PATH, getFotoContadorOrDefault } from '../core/constants/assets.constants';
 import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../shared/components/tarjeta-credencial/tarjeta-credencial.component';
-import { HasPermissionDirective } from '../shared/directives/has-permission.directive';
-import { PERMISSIONS } from '../core/constants/permissions.constants';
 
 export interface BrandingHistoryItem {
   id?: number;
@@ -34,7 +32,7 @@ export interface BrandingHistoryItem {
 @Component({
   selector: 'app-branding',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent, TarjetaCredencialComponent, NxFieldErrorComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, NxAlertComponent, TarjetaCredencialComponent, NxFieldErrorComponent],
   templateUrl: './branding.component.html',
   styleUrls: ['./branding.component.css']
 })
@@ -52,14 +50,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
   tipoId: number = 1; // 1: Contadores, 2: Sociedades
   moduleName: string = 'contadores';
   label: string = 'Contadores';
-
-  get permisoGuardar(): string {
-    return this.moduleName === 'sociedades' ? PERMISSIONS.BRAND_SOC_GUARDAR : PERMISSIONS.BRAND_CONT_GUARDAR;
-  }
-
-  get permisoPublicar(): string {
-    return this.moduleName === 'sociedades' ? PERMISSIONS.BRAND_SOC_PUBLICAR : PERMISSIONS.BRAND_CONT_PUBLICAR;
-  }
 
   loading: boolean = false;
   saving: boolean = false;

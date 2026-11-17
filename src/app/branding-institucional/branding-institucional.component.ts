@@ -6,7 +6,6 @@ import { API_BASE, CLIENT_ID } from '../core/config/api.config';
 import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
 import { NxAlertComponent } from '../shared/components/alert/alert.component';
 import { NxFieldErrorComponent } from '../shared/components/field-error/field-error.component';
-import { HasPermissionDirective } from '../shared/directives/has-permission.directive';
 
 export interface InstitucionalHistoryItem {
   id: number;
@@ -22,7 +21,7 @@ export interface InstitucionalHistoryItem {
 @Component({
   selector: 'app-branding-institucional',
   standalone: true,
-  imports: [CommonModule, FormsModule, NxAlertComponent, NxFieldErrorComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, NxAlertComponent, NxFieldErrorComponent],
   templateUrl: './branding-institucional.component.html',
   styleUrls: ['./branding-institucional.component.css']
 })
