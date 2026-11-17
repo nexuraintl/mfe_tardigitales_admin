@@ -7,8 +7,6 @@ export interface MenuItem {
   badge?: string;
   badgeClass?: string;
   disabled?: boolean;
-  permission?: string;
-  permissions?: string[];
   children?: MenuItem[];
   expanded?: boolean;
 }
