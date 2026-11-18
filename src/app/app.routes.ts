@@ -12,7 +12,6 @@ import { AuditoriaComponent } from './auditoria/auditoria.component';
 import { BrandingComponent } from './branding/branding.component';
 import { BrandingInstitucionalComponent } from './branding-institucional/branding-institucional.component';
 import { ProcesosLotesComponent } from './procesos-lotes/procesos-lotes.component';
-import { VerificarPublicaComponent } from './verificar-publica/verificar-publica.component';
 import { authAndPermissionGuard } from './core/guards/permission.guard';
 import { PERMISSIONS } from './core/constants/permissions.constants';
 
@@ -217,24 +216,6 @@ export const routes: Routes = [
     path: 'sin-permisos',
     component: PlaceholderComponent,
     data: { mode: 'sin-permisos' },
-  },
-
-  // Ruta pública de simulación de verificación QR
-  {
-    path: 'verificar',
-    component: VerificarPublicaComponent,
-  },
-  {
-    path: 'verificar/:token',
-    component: VerificarPublicaComponent,
-  },
-  {
-    path: 'admin/tardigitales/verificar',
-    component: VerificarPublicaComponent,
-  },
-  {
-    path: 'admin/tardigitales/verificar/:token',
-    component: VerificarPublicaComponent,
   },
   {
     path: 'construccion',
