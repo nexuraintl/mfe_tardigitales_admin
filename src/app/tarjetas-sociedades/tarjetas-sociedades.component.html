@@ -32,8 +32,9 @@
   [getFechaEmisionFn]="getFechaEmision.bind(this)"></app-historial-sociedades>
 
 <app-modal-detalle-tarjeta [isOpen]="isDetailModalOpen" [isCardModalOpen]="isCardModalOpen"
-  [selectedTarjeta]="selectedTarjeta" [tipoTarjeta]="'sociedades'" [brandingColorFondo]="brandingColorFondo"
-  [brandingColorLetra]="brandingColorLetra" [brandingLogoUrl]="brandingLogoUrl" [brandingPatronUrl]="brandingPatronUrl"
+  [selectedTarjeta]="selectedTarjeta" [tipoTarjeta]="'sociedades'" [esModoReporte]="esModoReporte"
+  [brandingColorFondo]="brandingColorFondo" [brandingColorLetra]="brandingColorLetra"
+  [brandingLogoUrl]="brandingLogoUrl" [brandingPatronUrl]="brandingPatronUrl"
   [brandingLogoImpresionUrl]="brandingLogoImpresionUrl" [brandingPatronImpresionUrl]="brandingPatronImpresionUrl"
   [brandingColorLetraImpresion]="brandingColorLetraImpresion" [brandingNombreDirector]="brandingNombreDirector"
   [brandingFirmaDirector]="brandingFirmaDirector" [getFotoUrlFn]="getFotoUrl.bind(this)" (cerrar)="cerrarDetalle()"
