@@ -12,217 +12,156 @@ import { AuditoriaComponent } from './auditoria/auditoria.component';
 import { BrandingComponent } from './branding/branding.component';
 import { BrandingInstitucionalComponent } from './branding-institucional/branding-institucional.component';
 import { ProcesosLotesComponent } from './procesos-lotes/procesos-lotes.component';
-import { authAndPermissionGuard } from './core/guards/permission.guard';
-import { PERMISSIONS } from './core/constants/permissions.constants';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'tarjetas-contadores',
-    pathMatch: 'full',
+    redirectTo: 'historial',
+    pathMatch: 'full'
   },
   {
     path: 'historial',
-    component: NotificationsHistoryComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.NOTIF_HISTORIAL },
+    component: NotificationsHistoryComponent
   },
   {
     path: 'crud',
-    component: TramitesCrudComponent,
-    canActivate: [authAndPermissionGuard],
+    component: TramitesCrudComponent
   },
-
+  
   // Rutas semánticas reales - Contadores
   {
     path: 'tarjetas-contadores',
-    component: TarjetasContadoresComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.CONT_LISTADO },
+    component: TarjetasContadoresComponent
   },
   {
     path: 'tarjetas-contadores/nueva',
-    component: TarjetasContadoresComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.CONT_NUEVA_TARJETA },
+    component: TarjetasContadoresComponent
   },
   {
     path: 'tarjetas-contadores/emision-masiva',
-    component: TarjetasContadoresComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.CONT_EMISION_MASIVA },
+    component: TarjetasContadoresComponent
   },
   {
     path: 'tarjetas-contadores/historial/:id',
-    component: TarjetasContadoresComponent,
-    canActivate: [authAndPermissionGuard],
-    data: {
-      permissions: [PERMISSIONS.CONT_HISTORIAL, PERMISSIONS.REP_CONT_HISTORIAL],
-    },
+    component: TarjetasContadoresComponent
   },
 
   // Rutas semánticas reales - Sociedades
   {
     path: 'tarjetas-sociedades',
-    component: TarjetasSociedadesComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.SOC_LISTADO },
+    component: TarjetasSociedadesComponent
   },
   {
     path: 'tarjetas-sociedades/nueva',
-    component: TarjetasSociedadesComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.SOC_NUEVA_TARJETA },
+    component: TarjetasSociedadesComponent
   },
   {
     path: 'tarjetas-sociedades/emision-masiva',
-    component: TarjetasSociedadesComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.SOC_EMISION_MASIVA },
+    component: TarjetasSociedadesComponent
   },
   {
     path: 'tarjetas-sociedades/historial/:id',
-    component: TarjetasSociedadesComponent,
-    canActivate: [authAndPermissionGuard],
-    data: {
-      permissions: [PERMISSIONS.SOC_HISTORIAL, PERMISSIONS.REP_SOC_HISTORIAL],
-    },
+    component: TarjetasSociedadesComponent
   },
   {
     path: 'sociedades',
     redirectTo: 'tarjetas-sociedades',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'sociedades/nueva',
     redirectTo: 'tarjetas-sociedades/nueva',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'sociedades/emision-masiva',
     redirectTo: 'tarjetas-sociedades/emision-masiva',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'sociedades/historial/:id',
     redirectTo: 'tarjetas-sociedades/historial/:id',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'crear-notificacion',
-    component: CrearNotificacionComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.NOTIF_NUEVA },
+    component: CrearNotificacionComponent
   },
   {
     path: 'reportes',
     redirectTo: 'reportes/dashboard',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'reportes/dashboard',
-    component: ReportesDashboardComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.REP_DASHBOARD_GEN },
+    component: ReportesDashboardComponent
   },
   {
     path: 'reportes/contadores',
-    component: TarjetasContadoresComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.REP_CONT_LISTADO_CSV },
+    component: TarjetasContadoresComponent
   },
   {
     path: 'reportes/sociedades',
-    component: TarjetasSociedadesComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.REP_SOC_LISTADO_CSV },
+    component: TarjetasSociedadesComponent
   },
   {
     path: 'reportes/notificaciones',
-    component: NotificationsHistoryComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.REP_NOTIFICACIONES },
+    component: NotificationsHistoryComponent
   },
   {
     path: 'certificados',
-    component: CertificadosComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.CERT_LISTADO },
+    component: CertificadosComponent
   },
   {
     path: 'branding',
-    component: BrandingComponent,
-    canActivate: [authAndPermissionGuard],
-    data: {
-      permissions: [
-        PERMISSIONS.BRAND_CONT_VER,
-        PERMISSIONS.BRAND_SOC_VER,
-        PERMISSIONS.BRAND_FIRMA_VER,
-      ],
-    },
+    component: BrandingComponent
   },
   {
     path: 'branding-contadores',
-    component: BrandingComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.BRAND_CONT_VER },
+    component: BrandingComponent
   },
   {
     path: 'branding-sociedades',
-    component: BrandingComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.BRAND_SOC_VER },
+    component: BrandingComponent
   },
   {
     path: 'branding-institucional',
-    component: BrandingInstitucionalComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.BRAND_FIRMA_VER },
+    component: BrandingInstitucionalComponent
   },
   {
     path: 'validador-qr',
     redirectTo: 'validador-qr-contadores',
-    pathMatch: 'full',
+    pathMatch: 'full'
   },
   {
     path: 'validador-qr-contadores',
     component: ValidadorQrComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { tipo: 'contadores', permission: PERMISSIONS.VAL_QR_CONTADORES },
+    data: { tipo: 'contadores' }
   },
   {
     path: 'validador-qr-sociedades',
     component: ValidadorQrComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { tipo: 'sociedades', permission: PERMISSIONS.VAL_QR_SOCIEDADES },
+    data: { tipo: 'sociedades' }
   },
   {
     path: 'auditoria',
-    component: AuditoriaComponent,
-    canActivate: [authAndPermissionGuard],
-    data: { permission: PERMISSIONS.AUDITORIA_API_REG },
+    component: AuditoriaComponent
   },
   {
     path: 'procesos-lotes',
-    component: ProcesosLotesComponent,
-    canActivate: [authAndPermissionGuard],
+    component: ProcesosLotesComponent
   },
   {
     path: 'usuarios',
-    component: PlaceholderComponent,
-    canActivate: [authAndPermissionGuard],
-  },
-  {
-    path: 'sin-permisos',
-    component: PlaceholderComponent,
-    data: { mode: 'sin-permisos' },
+    component: PlaceholderComponent
   },
   {
     path: 'construccion',
-    component: PlaceholderComponent,
+    component: PlaceholderComponent
   },
   {
     path: '**',
-    redirectTo: 'tarjetas-contadores',
-  },
+    redirectTo: 'tarjetas-contadores'
+  }
 ];
+

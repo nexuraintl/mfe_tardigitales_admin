@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { map, catchError, shareReplay, tap } from 'rxjs/operators';
 import { TOKEN_URL } from '../config/api.config';
 
@@ -32,6 +32,13 @@ export class AuthService {
     if (typeof window !== 'undefined') {
       (window as any).authService = this;
     }
+    console.log('[AuthService] Inicializado. Token en caché:', this.cachedToken ? 'Sí' : 'No');
+    // Disparar prueba de sesión inmediatamente al inicializar el servicio
+    if (this.cachedToken) {
+      this.testRedisSession(this.cachedToken);
+    } else {
+      this.getGatewayToken().subscribe();
+    }
   }
 
   /**
@@ -41,6 +48,8 @@ export class AuthService {
    */
   public getGatewayToken(): Observable<string | null> {
     if (this.isTokenValid()) {
+      console.log('[AuthService] Token vigente en caché. Disparando testRedisSession...');
+      this.testRedisSession(this.cachedToken!);
       return of(this.cachedToken);
     }
 
@@ -48,18 +57,25 @@ export class AuthService {
       return this.tokenRequest$;
     }
 
-    this.tokenRequest$ = this.http.get<TokenResponse>(TOKEN_URL, { withCredentials: true }).pipe(
+    console.log('[AuthService] Solicitando token a:', TOKEN_URL);
+    this.tokenRequest$ = this.http.get<TokenResponse>(TOKEN_URL).pipe(
       map(response => {
+        console.log('[AuthService] Respuesta recibida de TOKEN_URL:', response);
         const token = response?.data?.token || (response as any)?.token || null;
         if (token) {
           this.setToken(token);
+          this.testRedisSession(token);
           return token;
         }
+        console.warn('[AuthService] TOKEN_URL no incluyó token en la respuesta:', response);
+        this.testRedisSession();
         return null;
       }),
       catchError(error => {
-        console.warn('[AuthService] No se pudo obtener token de Gateway:', error);
+        console.error('[AuthService] Error al obtener token para Gateway:', error);
         this.clearToken();
+        // Se ejecuta la prueba aun si falla la obtención del token para evaluar cookies/sesión
+        this.testRedisSession();
         return of(null);
       }),
       tap(() => {
@@ -78,6 +94,7 @@ export class AuthService {
     if (!this.cachedToken || !this.tokenExpirationTime) {
       return false;
     }
+    // Margen de seguridad de 60 segundos antes del vencimiento
     const now = Math.floor(Date.now() / 1000);
     return this.tokenExpirationTime - now > 60;
   }
@@ -89,6 +106,7 @@ export class AuthService {
     this.cachedToken = token;
     const expiration = this.extractExpirationFromJwt(token);
 
+    // Si no se puede extraer del JWT, usar 50 minutos por defecto (~3000 segs)
     const fallbackExp = Math.floor(Date.now() / 1000) + 3000;
     this.tokenExpirationTime = expiration || fallbackExp;
 
@@ -149,5 +167,35 @@ export class AuthService {
       console.warn('[AuthService] No se pudo decodificar la expiración del JWT:', e);
     }
     return null;
+  }
+
+  /**
+   * Consulta de diagnóstico para verificar el funcionamiento de la sesión en Redis.
+   * Se ejecuta de forma asíncrona sin bloquear el flujo principal del MFE.
+   */
+  public testRedisSession(token?: string): void {
+    const authToken = token || this.cachedToken;
+    const testUrl = 'https://preproduccion9-jcc.nexura.com.co/apig/core/auth/redis-session-test';
+
+    console.log('[AuthService] ==> Iniciando petición a redis-session-test...');
+    console.log('[AuthService] URL destino:', testUrl);
+    console.log('[AuthService] Bearer token:', authToken ? `Presente (${authToken.substring(0, 15)}...)` : 'No disponible');
+
+    const headers: Record<string, string> = {};
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+
+    this.http.get(testUrl, {
+      headers,
+      withCredentials: true
+    }).subscribe({
+      next: (res) => {
+        console.log('[AuthService] ✅ redis-session-test respuesta exitosa:', res);
+      },
+      error: (err) => {
+        console.warn('[AuthService] ❌ redis-session-test error:', err);
+      }
+    });
   }
 }
