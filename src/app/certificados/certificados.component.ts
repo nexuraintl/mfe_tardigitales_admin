@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { CertificadosService } from '../core/services/certificados.service';
 import { CertificadoItem, FiltroCertificados } from '../core/models/certificados.models';
 import { ModalDetalleCertificadoComponent } from './components/modal-detalle-certificado/modal-detalle-certificado.component';
+import { HasPermissionDirective } from '../shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-certificados',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalDetalleCertificadoComponent],
+  imports: [CommonModule, FormsModule, ModalDetalleCertificadoComponent, HasPermissionDirective],
   templateUrl: './certificados.component.html'
 })
 export class CertificadosComponent implements OnInit {

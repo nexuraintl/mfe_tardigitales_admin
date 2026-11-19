@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { formatTipoSolicitud, getEstadoTarjetaBadgeClass } from '../../../core/constants/tarjetas.constants';
 import { TarjetaCredencialComponent, CredencialDatos, CredencialBranding } from '../tarjeta-credencial/tarjeta-credencial.component';
 import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
+import { TarjetaPermissionScope } from '../../../core/constants/permissions.constants';
 
 @Component({
   selector: 'app-modal-detalle-tarjeta',
@@ -207,6 +209,7 @@ import { TarjetaPdfService } from '../../../core/services/tarjeta-pdf.service';
           <div class="card-modal-footer">
             <button type="button" class="btn btn-light btn-sm px-3.5 py-1.5 fw-semibold border text-secondary" (click)="cerrarTarjeta.emit()">Cerrar</button>
             <button
+              *ngIf="canExportarTarjeta"
               type="button"
               class="btn btn-primary btn-sm px-3.5 py-1.5 fw-semibold d-flex align-items-center gap-2 shadow-sm"
               (click)="exportarTarjetaPdf()"
@@ -367,6 +370,7 @@ export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
   }
   @Input() selectedTarjeta: any = null;
   @Input() tipoTarjeta: 'contadores' | 'sociedades' = 'contadores';
+  @Input() esModoReporte: boolean = false;
   @Input() brandingColorFondo: string = '#14275f';
   @Input() brandingColorLetra: string = '#ffffff';
   @Input() brandingLogoUrl: string | null = null;
@@ -382,7 +386,19 @@ export class ModalDetalleTarjetaComponent implements OnChanges, OnDestroy {
   @Output() cerrarTarjeta = new EventEmitter<void>();
 
   private pdfService = inject(TarjetaPdfService);
+  private permissionsService = inject(PermissionsService);
   exportandoPdf: boolean = false;
+
+  get canExportarTarjeta(): boolean {
+    const scope: TarjetaPermissionScope = this.isSociedades
+      ? this.esModoReporte
+        ? 'repSoc'
+        : 'soc'
+      : this.esModoReporte
+        ? 'repCont'
+        : 'cont';
+    return this.permissionsService.canInContext(scope, 'exportar');
+  }
 
   async exportarTarjetaPdf(): Promise<void> {
     if (!this.selectedTarjeta || this.exportandoPdf) return;
