@@ -10,6 +10,7 @@
   [sortColumn]="sortColumn" [sortDirection]="sortDirection" (sort)="ordenarPorColumna($event)"
   (cambiarPagina)="cambiarPagina($event)" (abrirDetalle)="abrirDetalle($event)" (abrirTarjeta)="abrirTarjeta($event)"
   (obtenerConstanciaActivacion)="descargarConstanciaActivacion($event)" (regenerarTarjeta)="regenerarTarjeta($event)"
+  [actualizandoRowId]="actualizandoRowId" (actualizarDatosPersonales)="abrirModalActualizarDatos($event)"
   (abrirHistorial)="abrirHistorial($event)" (resetColumns)="resetColumns()"
   (toggleColumnChange)="saveColumnsPreference()"></app-tabla-sociedades>
 
@@ -39,3 +40,14 @@
   [brandingColorLetraImpresion]="brandingColorLetraImpresion" [brandingNombreDirector]="brandingNombreDirector"
   [brandingFirmaDirector]="brandingFirmaDirector" [getFotoUrlFn]="getFotoUrl.bind(this)" (cerrar)="cerrarDetalle()"
   (cerrarTarjeta)="cerrarTarjeta()"></app-modal-detalle-tarjeta>
+
+<app-modal-actualizar-datos
+  [isOpen]="isActualizarDatosModalOpen"
+  tipoTarjeta="sociedades"
+  [registro]="registroActualizarDatos"
+  [estado]="estadoActualizarDatos"
+  [auditoria]="auditoriaActualizarDatos"
+  [mensajeError]="errorActualizarDatosMsg"
+  (confirmar)="confirmarActualizarDatos()"
+  (cerrar)="cerrarModalActualizarDatos()"
+></app-modal-actualizar-datos>
