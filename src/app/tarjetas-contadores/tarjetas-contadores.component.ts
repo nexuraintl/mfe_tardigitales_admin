@@ -16,6 +16,11 @@ import { FormEmisionContadoresComponent } from './components/form-emision-contad
 import { EmisionMasivaContadoresComponent } from './components/emision-masiva-contadores/emision-masiva-contadores.component';
 import { HistorialContadoresComponent } from './components/historial-contadores/historial-contadores.component';
 import { ModalDetalleTarjetaComponent } from '../shared/components/modal-detalle-tarjeta/modal-detalle-tarjeta.component';
+import {
+  ModalActualizarDatosComponent,
+  EstadoModalActualizarDatos,
+  AuditoriaActualizacionDatos
+} from '../shared/components/modal-actualizar-datos/modal-actualizar-datos.component';
 import { FilterColumnConfig, ActiveFilter } from '../shared/components/filter-builder/filter-builder.component';
 
 export interface TableColumn {
@@ -52,6 +57,7 @@ export interface TarjetaContador {
   seccional?: string;
   fecha_emision?: string;
   fecha_activacion?: string;
+  version_firma?: number;
   foto?: string | null;
   hash_sha256?: string | null;
 }
@@ -66,7 +72,8 @@ export interface TarjetaContador {
     FormEmisionContadoresComponent,
     EmisionMasivaContadoresComponent,
     HistorialContadoresComponent,
-    ModalDetalleTarjetaComponent
+    ModalDetalleTarjetaComponent,
+    ModalActualizarDatosComponent
   ],
   templateUrl: './tarjetas-contadores.component.html',
   styleUrl: './tarjetas-contadores.component.css'
@@ -106,6 +113,14 @@ export class TarjetasContadoresComponent implements OnInit {
   selectedTarjeta: TarjetaContador | null = null;
   isDetailModalOpen: boolean = false;
   isCardModalOpen: boolean = false;
+
+  // Modal Actualización de Datos Personales (HU MYJCC)
+  isActualizarDatosModalOpen: boolean = false;
+  registroActualizarDatos: TarjetaContador | null = null;
+  estadoActualizarDatos: EstadoModalActualizarDatos = 'confirm';
+  auditoriaActualizarDatos: AuditoriaActualizacionDatos | null = null;
+  errorActualizarDatosMsg: string = '';
+  actualizandoRowId: number | null = null;
 
   // Semilla QR para simular matriz dinámica
   qrSeed: number = 0.5;
@@ -369,6 +384,8 @@ export class TarjetasContadoresComponent implements OnInit {
                 label = 'Fecha de radicación';
               } else if (c.key === 'fecha_activacion') {
                 label = 'Fecha activación';
+              } else if (c.key === 'version_firma') {
+                label = 'Versión firma';
               }
               return {
                 key: c.key,
@@ -385,6 +402,15 @@ export class TarjetasContadoresComponent implements OnInit {
                 visible: true,
                 es_filtrable: true,
                 tipo_dato: 'datetime'
+              });
+            }
+            if (!this.dbColumns.some(c => c.key === 'version_firma')) {
+              this.dbColumns.push({
+                key: 'version_firma',
+                label: 'Versión firma',
+                visible: true,
+                es_filtrable: true,
+                tipo_dato: 'number'
               });
             }
             this.availableColumns = this.dbColumns.map(c => ({ ...c }));
@@ -534,6 +560,7 @@ export class TarjetasContadoresComponent implements OnInit {
             seccional: item.seccional ?? '',
             fecha_emision: item.fecha_emision ?? '',
             fecha_activacion: item.fecha_activacion ?? '',
+            version_firma: Number(item.version_firma || 1),
             foto: item.foto ?? null,
             hash_sha256: item.hash_sha256 ?? null
           }));
@@ -567,7 +594,8 @@ export class TarjetasContadoresComponent implements OnInit {
     { key: 'acta_jcc', label: 'Acta JCC', tipo: 'string' },
     { key: 'fecha_grado', label: 'Fecha de grado', tipo: 'date' },
     { key: 'seccional', label: 'Seccional', tipo: 'string' },
-    { key: 'fecha_activacion', label: 'Fecha activación', tipo: 'date' }
+    { key: 'fecha_activacion', label: 'Fecha activación', tipo: 'date' },
+    { key: 'version_firma', label: 'Versión firma', tipo: 'number' }
   ];
 
   onApplyMultiFilters(filters: ActiveFilter[]): void {
@@ -995,7 +1023,122 @@ export class TarjetasContadoresComponent implements OnInit {
   }
 
   regenerarTarjeta(t: TarjetaContador): void {
-    // HU-JCC-010: Regeneración de credencial digital (sin funcionalidad por ahora)
+    this.abrirModalActualizarDatos(t);
+  }
+
+  abrirModalActualizarDatos(t: TarjetaContador): void {
+    if (!t || this.actualizandoRowId === t.id) return;
+    this.registroActualizarDatos = t;
+    this.estadoActualizarDatos = 'confirm';
+    this.auditoriaActualizarDatos = null;
+    this.errorActualizarDatosMsg = '';
+    this.isActualizarDatosModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalActualizarDatos(): void {
+    if (this.estadoActualizarDatos === 'loading') return;
+    this.isActualizarDatosModalOpen = false;
+    this.registroActualizarDatos = null;
+    this.auditoriaActualizarDatos = null;
+    this.errorActualizarDatosMsg = '';
+    this.cdr.detectChanges();
+  }
+
+  confirmarActualizarDatos(): void {
+    if (!this.registroActualizarDatos || this.estadoActualizarDatos === 'loading') return;
+    const targetId = this.registroActualizarDatos.id;
+    this.estadoActualizarDatos = 'loading';
+    this.actualizandoRowId = targetId;
+    this.errorActualizarDatosMsg = '';
+    this.cdr.detectChanges();
+
+    this.http
+      .post<any>(
+        `${API_BASE}/tarjetas/${targetId}/actualizar-datos-personales?tipo_tarjeta=contadores&client_id=${this.clientId}`,
+        {}
+      )
+      .subscribe({
+        next: (res) => {
+          this.actualizandoRowId = null;
+          this.auditoriaActualizarDatos = res?.auditoria || null;
+          this.estadoActualizarDatos = 'success';
+
+          if (res?.data) {
+            const item = res.data;
+            const actualizado: TarjetaContador = {
+              id: item.id,
+              client_id: this.clientId,
+              tipo_tarjeta: item.tipo_tarjeta ?? 'contadores',
+              no_tarjeta: item.no_tarjeta ?? '',
+              no_expd: item.no_expd ?? 0,
+              nombre_completo:
+                item.nombre_completo ||
+                [item.nombres, item.primer_apellido, item.segundo_apellido].filter(Boolean).join(' ').trim(),
+              nombres: item.nombres ?? '',
+              primer_apellido: item.primer_apellido ?? '',
+              segundo_apellido: item.segundo_apellido ?? '',
+              tipo_documento: item.tipo_documento ?? 'CC',
+              no_documento: String(item.no_documento ?? ''),
+              correo: item.correo ?? '',
+              universidad: item.universidad ?? '',
+              estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
+              tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+              estado_contador: item.estado_contador ?? 'ACTIVO',
+              resolucion: item.resolucion ?? '',
+              fecha_resolucion: item.fecha_resolucion ?? '',
+              acta_jcc: item.acta_jcc ?? '',
+              fecha_estado: item.fecha_estado ?? '',
+              fecha_radicacion: item.fecha_radicacion ?? '',
+              fecha_grado: item.fecha_grado ?? '',
+              seccional: item.seccional ?? '',
+              fecha_emision: item.fecha_emision ?? '',
+              fecha_activacion: item.fecha_activacion ?? '',
+              version_firma: Number(item.version_firma || 1),
+              foto: item.foto ?? null,
+              hash_sha256: item.hash_sha256 ?? null
+            };
+
+            this.registroActualizarDatos = actualizado;
+            const idx = this.tarjetas.findIndex(r => r.id === targetId);
+            if (idx !== -1) {
+              this.tarjetas[idx] = { ...this.tarjetas[idx], ...actualizado };
+              this.tarjetas = [...this.tarjetas];
+            }
+            if (this.selectedTarjeta && this.selectedTarjeta.id === targetId) {
+              this.selectedTarjeta = { ...this.selectedTarjeta, ...actualizado };
+            }
+            if (this.selectedTarjetaHistorial && this.selectedTarjetaHistorial.tarjeta?.id === targetId) {
+              this.selectedTarjetaHistorial.tarjeta = {
+                ...this.selectedTarjetaHistorial.tarjeta,
+                ...actualizado
+              };
+              if (res.auditoria) {
+                const acts = Array.isArray(this.selectedTarjetaHistorial.actualizaciones)
+                  ? this.selectedTarjetaHistorial.actualizaciones
+                  : [];
+                this.selectedTarjetaHistorial.actualizaciones = [res.auditoria, ...acts];
+              }
+            }
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.actualizandoRowId = null;
+          const etapa = err?.error?.error?.etapa || err?.error?.etapa || '';
+          const status = err?.status || 500;
+          if (status === 404 || etapa === 'SIN_INFORMACION_MYJCC') {
+            this.estadoActualizarDatos = 'not_found';
+          } else {
+            this.estadoActualizarDatos = 'error';
+            this.errorActualizarDatosMsg =
+              err?.error?.error?.mensaje ||
+              err?.error?.detail ||
+              'No fue posible consultar el servicio MYJCC en este momento. La información del registro se conserva sin cambios.';
+          }
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   cargarHistorialPorId(id: number): void {
@@ -1092,7 +1235,8 @@ export class TarjetasContadoresComponent implements OnInit {
           fecha_grado: item.fecha_grado ?? '',
           seccional: item.seccional ?? '',
           fecha_emision: item.fecha_emision ?? '',
-          fecha_activacion: item.fecha_activacion ?? ''
+          fecha_activacion: item.fecha_activacion ?? '',
+          version_firma: Number(item.version_firma || 1)
         }));
 
         if (this.multiFilters && this.multiFilters.length > 0) {
@@ -1150,6 +1294,10 @@ export class TarjetasContadoresComponent implements OnInit {
         }
         if (c.key === 'tipo_asociado' && val) {
           val = formatTipoSolicitud(val);
+        }
+        if (c.key === 'version_firma' && val) {
+          const s = String(val).trim();
+          val = s.toLowerCase().startsWith('v') ? s : `v${s}`;
         }
         if (val === undefined || val === null) val = '';
         return `"${String(val).replace(/"/g, '""')}"`;
