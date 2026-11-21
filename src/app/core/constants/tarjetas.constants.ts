@@ -55,6 +55,7 @@ export function getEstadoTarjetaBadgeClass(estado?: string | null): string {
  * Siempre deben mostrarse en mayúscula sostenida en toda la solución.
  */
 export const CANONICAL_ACRONYMS: readonly string[] = [
+  'MYJCC',
   'NIT',
   'JCC',
   'IES',

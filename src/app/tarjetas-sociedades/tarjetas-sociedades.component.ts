@@ -16,6 +16,11 @@ import { FormEmisionSociedadesComponent } from './components/form-emision-socied
 import { EmisionMasivaSociedadesComponent } from './components/emision-masiva-sociedades/emision-masiva-sociedades.component';
 import { HistorialSociedadesComponent } from './components/historial-sociedades/historial-sociedades.component';
 import { ModalDetalleTarjetaComponent } from '../shared/components/modal-detalle-tarjeta/modal-detalle-tarjeta.component';
+import {
+  ModalActualizarDatosComponent,
+  EstadoModalActualizarDatos,
+  AuditoriaActualizacionDatos
+} from '../shared/components/modal-actualizar-datos/modal-actualizar-datos.component';
 import { FilterColumnConfig, ActiveFilter } from '../shared/components/filter-builder/filter-builder.component';
 
 export interface TableColumn {
@@ -48,6 +53,7 @@ export interface TarjetaSociedad {
   tipo_solicitud?: string;
   fecha_emision?: string;
   fecha_activacion?: string;
+  version_firma?: number;
   foto?: string | null;
   hash_sha256?: string | null;
 }
@@ -62,7 +68,8 @@ export interface TarjetaSociedad {
     FormEmisionSociedadesComponent,
     EmisionMasivaSociedadesComponent,
     HistorialSociedadesComponent,
-    ModalDetalleTarjetaComponent
+    ModalDetalleTarjetaComponent,
+    ModalActualizarDatosComponent
   ],
   templateUrl: './tarjetas-sociedades.component.html',
   styleUrl: './tarjetas-sociedades.component.css'
@@ -102,6 +109,14 @@ export class TarjetasSociedadesComponent implements OnInit {
   selectedTarjeta: TarjetaSociedad | null = null;
   isDetailModalOpen: boolean = false;
   isCardModalOpen: boolean = false;
+
+  // Modal Actualización de Datos Personales (HU MYJCC)
+  isActualizarDatosModalOpen: boolean = false;
+  registroActualizarDatos: TarjetaSociedad | null = null;
+  estadoActualizarDatos: EstadoModalActualizarDatos = 'confirm';
+  auditoriaActualizarDatos: AuditoriaActualizacionDatos | null = null;
+  errorActualizarDatosMsg: string = '';
+  actualizandoRowId: number | null = null;
 
   // Semilla QR para simular matriz dinámica
   qrSeed: number = 0.8;
@@ -364,6 +379,8 @@ export class TarjetasSociedadesComponent implements OnInit {
                 label = 'Fecha de radicación';
               } else if (c.key === 'fecha_activacion') {
                 label = 'Fecha activación';
+              } else if (c.key === 'version_firma') {
+                label = 'Versión firma';
               }
               return {
                 key: c.key,
@@ -389,6 +406,15 @@ export class TarjetasSociedadesComponent implements OnInit {
                 visible: true,
                 es_filtrable: true,
                 tipo_dato: 'datetime'
+              });
+            }
+            if (!cols.some((c: any) => c.key === 'version_firma')) {
+              cols.push({
+                key: 'version_firma',
+                label: 'Versión firma',
+                visible: true,
+                es_filtrable: true,
+                tipo_dato: 'number'
               });
             }
             this.dbColumns = cols;
@@ -532,6 +558,7 @@ export class TarjetasSociedadesComponent implements OnInit {
             estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
             fecha_emision: item.fecha_emision ?? '',
             fecha_activacion: item.fecha_activacion ?? '',
+            version_firma: Number(item.version_firma || 1),
             foto: item.foto ?? null,
             hash_sha256: item.hash_sha256 ?? null
           }));
@@ -561,7 +588,8 @@ export class TarjetasSociedadesComponent implements OnInit {
     { key: 'resolucion', label: 'Resolución', tipo: 'string' },
     { key: 'fecha_resolucion', label: 'Fecha de resolución', tipo: 'date' },
     { key: 'fecha_radicacion', label: 'Fecha de radicación', tipo: 'date' },
-    { key: 'fecha_activacion', label: 'Fecha activación', tipo: 'date' }
+    { key: 'fecha_activacion', label: 'Fecha activación', tipo: 'date' },
+    { key: 'version_firma', label: 'Versión firma', tipo: 'number' }
   ];
 
   onApplyMultiFilters(filters: ActiveFilter[]): void {
@@ -1030,7 +1058,116 @@ export class TarjetasSociedadesComponent implements OnInit {
   }
 
   regenerarTarjeta(t: TarjetaSociedad): void {
-    // HU-JCC-010: Regeneración de credencial digital (sin funcionalidad por ahora)
+    this.abrirModalActualizarDatos(t);
+  }
+
+  abrirModalActualizarDatos(t: TarjetaSociedad): void {
+    if (!t || this.actualizandoRowId === t.id) return;
+    this.registroActualizarDatos = t;
+    this.estadoActualizarDatos = 'confirm';
+    this.auditoriaActualizarDatos = null;
+    this.errorActualizarDatosMsg = '';
+    this.isActualizarDatosModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalActualizarDatos(): void {
+    if (this.estadoActualizarDatos === 'loading') return;
+    this.isActualizarDatosModalOpen = false;
+    this.registroActualizarDatos = null;
+    this.auditoriaActualizarDatos = null;
+    this.errorActualizarDatosMsg = '';
+    this.cdr.detectChanges();
+  }
+
+  confirmarActualizarDatos(): void {
+    if (!this.registroActualizarDatos || this.estadoActualizarDatos === 'loading') return;
+    const targetId = this.registroActualizarDatos.id;
+    this.estadoActualizarDatos = 'loading';
+    this.actualizandoRowId = targetId;
+    this.errorActualizarDatosMsg = '';
+    this.cdr.detectChanges();
+
+    this.http
+      .post<any>(
+        `${API_BASE}/tarjetas/${targetId}/actualizar-datos-personales?tipo_tarjeta=sociedades&client_id=${this.clientId}`,
+        {}
+      )
+      .subscribe({
+        next: (res) => {
+          this.actualizandoRowId = null;
+          this.auditoriaActualizarDatos = res?.auditoria || null;
+          this.estadoActualizarDatos = 'success';
+
+          if (res?.data) {
+            const item = res.data;
+            const actualizado: TarjetaSociedad = {
+              id: item.id,
+              client_id: this.clientId,
+              tipo_tarjeta: item.tipo_tarjeta ?? 'sociedades',
+              no_expd: item.no_expd ?? 0,
+              razon_social: item.razon_social ?? '',
+              nit: String(item.nit ?? ''),
+              inscripcion: item.inscripcion ?? '',
+              tipo_sociedad: item.tipo_sociedad ?? '',
+              correo: item.correo ?? '',
+              representante_legal: item.representante_legal ?? '',
+              resolucion: item.resolucion ?? '',
+              fecha_resolucion: item.fecha_resolucion ?? '',
+              acta_jcc: item.acta_jcc ?? '',
+              fecha_radicacion: item.fecha_radicacion ?? '',
+              tipo_asociado: item.tipo_asociado ?? 'primeraVez',
+              tipo_solicitud: item.tipo_solicitud ?? '',
+              estado_solicitud: item.estado_solicitud ?? '',
+              estado_sociedad: item.estado_sociedad ?? 'ACTIVO',
+              estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
+              fecha_emision: item.fecha_emision ?? '',
+              fecha_activacion: item.fecha_activacion ?? '',
+              version_firma: Number(item.version_firma || 1),
+              foto: item.foto ?? null,
+              hash_sha256: item.hash_sha256 ?? null
+            };
+
+            this.registroActualizarDatos = actualizado;
+            const idx = this.tarjetas.findIndex(r => r.id === targetId);
+            if (idx !== -1) {
+              this.tarjetas[idx] = { ...this.tarjetas[idx], ...actualizado };
+              this.tarjetas = [...this.tarjetas];
+            }
+            if (this.selectedTarjeta && this.selectedTarjeta.id === targetId) {
+              this.selectedTarjeta = { ...this.selectedTarjeta, ...actualizado };
+            }
+            if (this.selectedTarjetaHistorial && this.selectedTarjetaHistorial.tarjeta?.id === targetId) {
+              this.selectedTarjetaHistorial.tarjeta = {
+                ...this.selectedTarjetaHistorial.tarjeta,
+                ...actualizado
+              };
+              if (res.auditoria) {
+                const acts = Array.isArray(this.selectedTarjetaHistorial.actualizaciones)
+                  ? this.selectedTarjetaHistorial.actualizaciones
+                  : [];
+                this.selectedTarjetaHistorial.actualizaciones = [res.auditoria, ...acts];
+              }
+            }
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.actualizandoRowId = null;
+          const etapa = err?.error?.error?.etapa || err?.error?.etapa || '';
+          const status = err?.status || 500;
+          if (status === 404 || etapa === 'SIN_INFORMACION_MYJCC') {
+            this.estadoActualizarDatos = 'not_found';
+          } else {
+            this.estadoActualizarDatos = 'error';
+            this.errorActualizarDatosMsg =
+              err?.error?.error?.mensaje ||
+              err?.error?.detail ||
+              'No fue posible consultar el servicio MYJCC en este momento. La información del registro se conserva sin cambios.';
+          }
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   cargarHistorialPorId(id: number): void {
@@ -1123,7 +1260,8 @@ export class TarjetasSociedadesComponent implements OnInit {
           tipo_asociado: item.tipo_asociado ?? 'primeraVez',
           estado_tarjeta: item.estado_tarjeta ?? 'Emitida',
           representante_legal: item.representante_legal ?? '',
-          fecha_activacion: item.fecha_activacion ?? ''
+          fecha_activacion: item.fecha_activacion ?? '',
+          version_firma: Number(item.version_firma || 1)
         }));
 
         if (this.multiFilters && this.multiFilters.length > 0) {
@@ -1178,6 +1316,10 @@ export class TarjetasSociedadesComponent implements OnInit {
         let val = (t as any)[c.key];
         if (c.key === 'tipo_asociado' && val) {
           val = formatTipoSolicitud(val);
+        }
+        if (c.key === 'version_firma' && val) {
+          const s = String(val).trim();
+          val = s.toLowerCase().startsWith('v') ? s : `v${s}`;
         }
         if (val === undefined || val === null) val = '';
         return `"${String(val).replace(/"/g, '""')}"`;

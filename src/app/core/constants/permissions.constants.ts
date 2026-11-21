@@ -12,6 +12,7 @@ export const PERMISSIONS = {
   CONT_VER_TARJETA: 'contVerTarjeta',
   CONT_EXPORTAR_TARJETA: 'contExportarTarjeta',
   CONT_REGENERAR: 'contRegenerar',
+  CONT_ACTUALIZAR_DATOS: 'contActualizarDatos',
   CONT_HISTORIAL: 'contHistorial',
 
   // 2. Tarjeta digital para sociedades (Gestión)
@@ -22,6 +23,7 @@ export const PERMISSIONS = {
   SOC_VER_TARJETA: 'socVerTarjeta',
   SOC_EXPORTAR_TARJETA: 'socExportarTarjeta',
   SOC_REGENERAR: 'socRegenerar',
+  SOC_ACTUALIZAR_DATOS: 'socActualizarDatos',
   SOC_HISTORIAL: 'socHistorial',
 
   // 3. Notificaciones
@@ -37,6 +39,7 @@ export const PERMISSIONS = {
   REP_CONT_VER_TARJETA: 'repContVerTarjeta',
   REP_CONT_EXPORTAR: 'repContExportar',
   REP_CONT_REGENERAR: 'repContRegenerar',
+  REP_CONT_ACTUALIZAR_DATOS: 'repContActualizar',
   REP_CONT_HISTORIAL: 'repContHistorial',
 
   // 6. Reportes — Sociedades
@@ -45,6 +48,7 @@ export const PERMISSIONS = {
   REP_SOC_VER_TARJETA: 'repSocVerTarjeta',
   REP_SOC_EXPORTAR: 'repSocExportar',
   REP_SOC_REGENERAR: 'repSocRegenerar',
+  REP_SOC_ACTUALIZAR_DATOS: 'repSocActualizar',
   REP_SOC_HISTORIAL: 'repSocHistorial',
 
   // 7. Reportes — Notificaciones
@@ -76,6 +80,10 @@ export const PERMISSIONS = {
 
   // 13. Auditoría API
   AUDITORIA_API_REG: 'auditoriaApiReg',
+
+  // 14. Plantilla de activación
+  PLANT_ACT_CONTADORES: 'plantActContadores',
+  PLANT_ACT_SOCIEDADES: 'plantActSociedades',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS] | string;
@@ -92,6 +100,7 @@ export type TarjetaGranularAction =
   | 'verTarjeta'
   | 'exportar'
   | 'regenerar'
+  | 'actualizarDatos'
   | 'historial'
   | 'nueva'
   | 'emisionMasiva';
@@ -108,6 +117,7 @@ export const TARJETA_CONTEXT_PERMISSIONS: Record<
     verTarjeta: PERMISSIONS.CONT_VER_TARJETA,
     exportar: PERMISSIONS.CONT_EXPORTAR_TARJETA,
     regenerar: PERMISSIONS.CONT_REGENERAR,
+    actualizarDatos: PERMISSIONS.CONT_ACTUALIZAR_DATOS,
     historial: PERMISSIONS.CONT_HISTORIAL,
     nueva: PERMISSIONS.CONT_NUEVA_TARJETA,
     emisionMasiva: PERMISSIONS.CONT_EMISION_MASIVA,
@@ -118,6 +128,7 @@ export const TARJETA_CONTEXT_PERMISSIONS: Record<
     verTarjeta: PERMISSIONS.REP_CONT_VER_TARJETA,
     exportar: PERMISSIONS.REP_CONT_EXPORTAR,
     regenerar: PERMISSIONS.REP_CONT_REGENERAR,
+    actualizarDatos: PERMISSIONS.REP_CONT_ACTUALIZAR_DATOS,
     historial: PERMISSIONS.REP_CONT_HISTORIAL,
   },
   soc: {
@@ -126,6 +137,7 @@ export const TARJETA_CONTEXT_PERMISSIONS: Record<
     verTarjeta: PERMISSIONS.SOC_VER_TARJETA,
     exportar: PERMISSIONS.SOC_EXPORTAR_TARJETA,
     regenerar: PERMISSIONS.SOC_REGENERAR,
+    actualizarDatos: PERMISSIONS.SOC_ACTUALIZAR_DATOS,
     historial: PERMISSIONS.SOC_HISTORIAL,
     nueva: PERMISSIONS.SOC_NUEVA_TARJETA,
     emisionMasiva: PERMISSIONS.SOC_EMISION_MASIVA,
@@ -136,6 +148,7 @@ export const TARJETA_CONTEXT_PERMISSIONS: Record<
     verTarjeta: PERMISSIONS.REP_SOC_VER_TARJETA,
     exportar: PERMISSIONS.REP_SOC_EXPORTAR,
     regenerar: PERMISSIONS.REP_SOC_REGENERAR,
+    actualizarDatos: PERMISSIONS.REP_SOC_ACTUALIZAR_DATOS,
     historial: PERMISSIONS.REP_SOC_HISTORIAL,
   },
 };
@@ -164,6 +177,8 @@ export const ORDERED_ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { path: '/branding-institucional', permission: PERMISSIONS.BRAND_FIRMA_VER },
   { path: '/validador-qr-contadores', permission: PERMISSIONS.VAL_QR_CONTADORES },
   { path: '/validador-qr-sociedades', permission: PERMISSIONS.VAL_QR_SOCIEDADES },
+  { path: '/plantilla-activacion/contadores', permission: PERMISSIONS.PLANT_ACT_CONTADORES },
+  { path: '/plantilla-activacion/sociedades', permission: PERMISSIONS.PLANT_ACT_SOCIEDADES },
   { path: '/auditoria', permission: PERMISSIONS.AUDITORIA_API_REG },
 ];
 

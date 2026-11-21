@@ -40,8 +40,8 @@ import { TarjetaSociedad } from '../../tarjetas-sociedades.component';
 
       <!-- DOS COLUMNAS DE HISTORIAL -->
       <div class="row g-4 mb-4">
-        <div class="col-md-6">
-          <div class="card shadow-sm border-0 h-100">
+        <div class="col-md-6 d-flex flex-column gap-4">
+          <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3 border-bottom">
               <h5 class="card-title fw-bold mb-0 text-dark">Historial de estado</h5>
             </div>
@@ -49,7 +49,7 @@ import { TarjetaSociedad } from '../../tarjetas-sociedades.component';
               <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.estados && selectedTarjetaHistorial.estados.length > 0" class="d-flex flex-column gap-3">
                 <div *ngFor="let estado of selectedTarjetaHistorial.estados" class="border-bottom pb-2.5 last-border-0">
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="text-primary fw-bold" style="font-size: 14px;">• {{ estado.estado }}</span>
+                    <span class="text-primary fw-bold">• {{ estado.estado }}</span>
                   </div>
                   <div class="text-muted small ps-3">
                     {{ estado.fecha }} - {{ estado.descripcion }} <span *ngIf="estado.realizado_por" class="opacity-75">({{ estado.realizado_por }})</span>
@@ -62,6 +62,34 @@ import { TarjetaSociedad } from '../../tarjetas-sociedades.component';
               </div>
               <div *ngIf="selectedTarjetaHistorial && (!selectedTarjetaHistorial.estados || selectedTarjetaHistorial.estados.length === 0)" class="text-muted small py-3 text-center">
                 No hay registros de estado disponibles.
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Historial actualización de datos personales (Prototipos 8 y 9) -->
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+              <h5 class="card-title fw-bold mb-0 text-dark">Historial actualización de datos personales</h5>
+            </div>
+            <div class="card-body p-4">
+              <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.actualizaciones && selectedTarjetaHistorial.actualizaciones.length > 0" class="d-flex flex-column gap-3">
+                <div *ngFor="let act of selectedTarjetaHistorial.actualizaciones" class="border-bottom pb-2.5 last-border-0">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="text-primary fw-bold">• Actualización de datos personales</span>
+                  </div>
+                  <div class="text-muted small ps-3">
+                    {{ act.fecha }} - Datos actualizados desde MYJCC · Usuario: <strong class="text-dark">{{ act.usuario }}</strong>
+                    <span *ngIf="act.ip" class="opacity-75">({{ act.ip }})</span>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="!selectedTarjetaHistorial" class="text-muted small py-3 text-center">
+                <span class="spinner-border spinner-border-sm me-1"></span> Cargando historial de actualizaciones...
+              </div>
+              <div *ngIf="selectedTarjetaHistorial && (!selectedTarjetaHistorial.actualizaciones || selectedTarjetaHistorial.actualizaciones.length === 0)" class="text-muted small py-4 text-center">
+                <span class="fa fa-history fs-4 d-block mb-2 text-secondary opacity-50"></span>
+                <span>No hay actualizaciones de datos personales registradas.</span>
               </div>
             </div>
           </div>
