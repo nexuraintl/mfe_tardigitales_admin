@@ -111,6 +111,11 @@ import { TarjetaPermissionScope } from '../../../core/constants/permissions.cons
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha activación</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion || '-' }}</div>
                   </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Versión firma</label>
+                    <div class="fw-semibold text-dark" style="font-size: 13px;">v{{ selectedTarjeta.version_firma || 1 }}</div>
+                  </div>
                 </div>
               </ng-container>
 
@@ -165,6 +170,11 @@ import { TarjetaPermissionScope } from '../../../core/constants/permissions.cons
                   <div class="col-md-6">
                     <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Fecha activación</label>
                     <div class="fw-semibold text-dark" style="font-size: 13px;">{{ selectedTarjeta.fecha_activacion || '-' }}</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label text-muted small fw-semibold mb-0.5 d-block" style="font-size: 11px;">Versión firma</label>
+                    <div class="fw-semibold text-dark" style="font-size: 13px;">v{{ selectedTarjeta.version_firma || 1 }}</div>
                   </div>
                 </div>
               </ng-container>

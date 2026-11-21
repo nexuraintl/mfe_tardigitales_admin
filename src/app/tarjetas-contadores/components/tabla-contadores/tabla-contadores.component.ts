@@ -162,6 +162,10 @@ import { TarjetaPermissionScope } from '../../../core/constants/permissions.cons
                       {{ getCellValue(row, 'fecha_activacion') }}
                     </span>
 
+                    <span *ngSwitchCase="'version_firma'" class="badge bg-light text-dark border">
+                      {{ getCellValue(row, 'version_firma') }}
+                    </span>
+
                     <span *ngSwitchDefault class="small text-muted">
                       {{ getCellValue(row, col.key) }}
                     </span>
@@ -208,10 +212,15 @@ import { TarjetaPermissionScope } from '../../../core/constants/permissions.cons
                         <span>Constancia de activación</span>
                       </button>
                     </li>
-                    <li *ngIf="canRegenerar && row.estado_tarjeta === 'Emitida'">
-                      <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="regenerarTarjeta.emit(row); activeDropdownId = null">
-                        <span class="fa fa-refresh text-muted" style="width: 16px;"></span>
-                        <span>Regenerar</span>
+                    <li *ngIf="canActualizarDatos">
+                      <button
+                        class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark"
+                        type="button"
+                        [disabled]="actualizandoRowId === row.id"
+                        (click)="actualizarDatosPersonales.emit(row); activeDropdownId = null"
+                      >
+                        <span class="fa fa-refresh text-muted" [class.fa-spin]="actualizandoRowId === row.id" style="width: 16px;"></span>
+                        <span>Actualizar datos personales</span>
                       </button>
                     </li>
                     <li *ngIf="canHistorial">
@@ -306,6 +315,13 @@ export class TablaContadoresComponent {
     return this.permissionsService.canInContext(this.permissionScope, 'regenerar');
   }
 
+  get canActualizarDatos(): boolean {
+    return (
+      this.permissionsService.canInContext(this.permissionScope, 'actualizarDatos') ||
+      this.permissionsService.canInContext(this.permissionScope, 'regenerar')
+    );
+  }
+
   get canHistorial(): boolean {
     return this.permissionsService.canInContext(this.permissionScope, 'historial');
   }
@@ -315,7 +331,7 @@ export class TablaContadoresComponent {
       this.canDetalles ||
       this.canVerTarjeta ||
       this.canExportar ||
-      this.canRegenerar ||
+      this.canActualizarDatos ||
       this.canHistorial
     );
   }
@@ -324,7 +340,7 @@ export class TablaContadoresComponent {
     return (
       this.canVerTarjeta ||
       (this.canExportar && this.esTarjetaActiva(row)) ||
-      (this.canRegenerar && row.estado_tarjeta === 'Emitida') ||
+      this.canActualizarDatos ||
       this.canHistorial
     );
   }
@@ -361,11 +377,13 @@ export class TablaContadoresComponent {
   @Input() sortDirection: 'asc' | 'desc' = 'desc';
   @Output() sort = new EventEmitter<string>();
 
+  @Input() actualizandoRowId: number | null = null;
   @Output() cambiarPagina = new EventEmitter<number>();
   @Output() abrirDetalle = new EventEmitter<TarjetaContador>();
   @Output() abrirTarjeta = new EventEmitter<TarjetaContador>();
   @Output() obtenerConstanciaActivacion = new EventEmitter<TarjetaContador>();
   @Output() regenerarTarjeta = new EventEmitter<TarjetaContador>();
+  @Output() actualizarDatosPersonales = new EventEmitter<TarjetaContador>();
   @Output() abrirHistorial = new EventEmitter<TarjetaContador>();
   @Output() resetColumns = new EventEmitter<void>();
   @Output() toggleColumnChange = new EventEmitter<TableColumn>();
@@ -423,6 +441,10 @@ export class TablaContadoresComponent {
     if (val === undefined || val === null || val === '') return '-';
     if (key === 'tipo_asociado') {
       return formatTipoSolicitud(val);
+    }
+    if (key === 'version_firma') {
+      const strVal = String(val).trim();
+      return strVal.toLowerCase().startsWith('v') ? strVal : `v${strVal}`;
     }
     return val;
   }

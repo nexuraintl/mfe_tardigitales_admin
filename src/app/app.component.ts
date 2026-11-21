@@ -64,6 +64,9 @@ export class App implements OnInit, AfterViewInit {
     '/branding-contadores': 'Branding de credenciales — Contadores',
     '/branding-sociedades': 'Branding de credenciales — Sociedades',
     '/branding-institucional': 'Branding — Firma institucional',
+    '/plantilla-activacion/contadores': 'Plantilla de activación — Contadores',
+    '/plantilla-activacion/sociedades': 'Plantilla de activación — Sociedades',
+    '/plantilla-activacion': 'Plantilla de activación',
     '/auditoria': 'Auditoría API',
     '/procesos-lotes': 'Gestión de colas y procesos en lote',
     '/usuarios': 'Usuarios',
@@ -142,6 +145,25 @@ export class App implements OnInit, AfterViewInit {
               icon: 'fa fa-history',
               path: '/historial',
               permission: PERMISSIONS.NOTIF_HISTORIAL
+            }
+          ]
+        },
+        {
+          id: 'grupo-plantilla-activacion',
+          label: 'Plantilla de activación',
+          icon: 'fa fa-file-word-o',
+          children: [
+            {
+              label: 'Contadores',
+              icon: 'fa fa-user',
+              path: '/plantilla-activacion/contadores',
+              permission: PERMISSIONS.PLANT_ACT_CONTADORES
+            },
+            {
+              label: 'Sociedades',
+              icon: 'fa fa-building-o',
+              path: '/plantilla-activacion/sociedades',
+              permission: PERMISSIONS.PLANT_ACT_SOCIEDADES
             }
           ]
         }
@@ -449,6 +471,17 @@ export class App implements OnInit, AfterViewInit {
           }
         ]
         : [];
+    } else if (cleanUrl.includes('plantilla-activacion')) {
+      this.primaryAction = null;
+      this.viewActions = [
+        {
+          id: 'descargar-formato-ejemplo',
+          label: 'Descargar formato de ejemplo',
+          icon: 'fa fa-download',
+          btnClass: 'btn btn-outline-secondary',
+          action: () => this.activeComponent?.descargarFormatoEjemplo?.()
+        }
+      ];
     } else if (cleanUrl.includes('crud')) {
       this.primaryAction = null;
       this.viewActions = [

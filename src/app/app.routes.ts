@@ -12,6 +12,7 @@ import { AuditoriaComponent } from './auditoria/auditoria.component';
 import { BrandingComponent } from './branding/branding.component';
 import { BrandingInstitucionalComponent } from './branding-institucional/branding-institucional.component';
 import { ProcesosLotesComponent } from './procesos-lotes/procesos-lotes.component';
+import { PlantillaActivacionComponent } from './plantilla-activacion/plantilla-activacion.component';
 import { authAndPermissionGuard } from './core/guards/permission.guard';
 import { PERMISSIONS } from './core/constants/permissions.constants';
 
@@ -195,6 +196,23 @@ export const routes: Routes = [
     component: ValidadorQrComponent,
     canActivate: [authAndPermissionGuard],
     data: { tipo: 'sociedades', permission: PERMISSIONS.VAL_QR_SOCIEDADES },
+  },
+  {
+    path: 'plantilla-activacion',
+    redirectTo: 'plantilla-activacion/contadores',
+    pathMatch: 'full',
+  },
+  {
+    path: 'plantilla-activacion/contadores',
+    component: PlantillaActivacionComponent,
+    canActivate: [authAndPermissionGuard],
+    data: { tipo: 'contadores', permission: PERMISSIONS.PLANT_ACT_CONTADORES },
+  },
+  {
+    path: 'plantilla-activacion/sociedades',
+    component: PlantillaActivacionComponent,
+    canActivate: [authAndPermissionGuard],
+    data: { tipo: 'sociedades', permission: PERMISSIONS.PLANT_ACT_SOCIEDADES },
   },
   {
     path: 'auditoria',
