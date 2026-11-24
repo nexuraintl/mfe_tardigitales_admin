@@ -467,6 +467,7 @@ export class PermissionsService {
         id: key,
         name: item.display || key,
         color: meta.color,
+        iconUrl: `/mod/${key}/img/admin.png`,
         iconClass: meta.icon,
         path: item.link || '/admin',
         active: normKey === AUTH_MODULE.toLowerCase(),

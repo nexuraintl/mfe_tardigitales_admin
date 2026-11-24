@@ -32,6 +32,7 @@ export interface AppTile {
   color?: string;
   iconText?: string;
   iconClass?: string;
+  iconUrl?: string;
   path?: string;
   url?: string;
   active?: boolean;
