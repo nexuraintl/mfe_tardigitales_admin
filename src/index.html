@@ -14,20 +14,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- 1. Carga dinámica del Web Component según la URL del entorno -->
-  <script>
-    (() => {
-      const isPreprod = location.href.includes('https://preproduccion9-jcc.nexura.com.co');
-      const cdnUrl = isPreprod
-        ? 'https://preproduccion9-jcc.nexura.com.co/mod/Galeria/js/web-components/admin/v1/layout.esm.js'
-        : '/web-components/admin/v1/layout.esm.js';
-
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.src = cdnUrl;
-      document.head.appendChild(script);
-    })();
-  </script>
+  <!-- 1. Carga del Web Component de layout desde el módulo TarjetasDigitales (ruta relativa al dominio) -->
+  <script type="module" src="/mod/TarjetasDigitales/js/web-components/admin/v1/layout.esm.js"></script>
 </head>
 
 <body>
