@@ -1,250 +1,420 @@
-<section class="view">
-  <header class="page-header">
-    <div>
-      <h1>Historial de notificaciones enviadas</h1>
-      <p>Consulte las alertas enviadas a contadores, sociedades y usuarios del sistema.</p>
-    </div>
+<!-- Alertas de Éxito y Error -->
+<nx-alert *ngIf="successMsg" type="success" [message]="successMsg" (onClose)="successMsg = ''"></nx-alert>
+<nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
 
-    <div class="header-actions">
-      <button class="btn btn-outline-primary">⬇ Exportar CSV</button>
-      <button class="btn btn-primary" routerLink="/crear-notificacion">＋ Nueva notificación</button>
-    </div>
-  </header>
-
-  <!-- Alerta de Error -->
-  <nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-
-  <!-- Tarjetas Estadísticas -->
-  <section class="history-summary">
-    <article class="card summary-card">
-      <div class="summary-icon blue">✉️</div>
-      <div>
-        <div class="summary-label">Total registradas</div>
-        <div class="summary-value" id="historyTotal">{{ totalCount }}</div>
-      </div>
-    </article>
-
-    <article class="card summary-card">
-      <div class="summary-icon green">✓</div>
-      <div>
-        <div class="summary-label">Entregadas</div>
-        <div class="summary-value" id="historyDelivered">{{ deliveredCount }}</div>
-      </div>
-    </article>
-
-    <article class="card summary-card">
-      <div class="summary-icon yellow">⏱</div>
-      <div>
-        <div class="summary-label">Programadas</div>
-        <div class="summary-value" id="historyScheduled">{{ scheduledCount }}</div>
-      </div>
-    </article>
-
-    <article class="card summary-card">
-      <div class="summary-icon red">!</div>
-      <div>
-        <div class="summary-label">Fallidas</div>
-        <div class="summary-value" id="historyFailed">{{ failedCount }}</div>
-      </div>
-    </article>
-  </section>
-
-  <!-- Tabla y Filtros -->
-  <section class="card table-card">
-    <div class="table-card-head">
-      <div>
-        <h3>Registro de envíos</h3>
-        <p>Seleccione el botón de acción para consultar el detalle completo.</p>
+<!-- Tarjetas Estadísticas (Grid Bootstrap) -->
+<div class="row g-3 mb-4">
+    <!-- Total -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="p-3 bg-primary-subtle text-primary rounded-3 fs-4">
+            <span class="fa fa-envelope-o"></span>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Total registradas</div>
+            <div class="h3 fw-bold text-dark mb-0" id="historyTotal">{{ totalCount }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Barra de Filtros -->
-    <div class="history-filters">
-      <div class="field">
-        <label for="historySearch">Buscar</label>
+    <!-- Entregadas -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="p-3 bg-success-subtle text-success rounded-3 fs-4">
+            <span class="fa fa-check-circle-o"></span>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Entregadas</div>
+            <div class="h3 fw-bold text-success mb-0" id="historyDelivered">{{ deliveredCount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Programadas -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="p-3 bg-warning-subtle text-warning rounded-3 fs-4">
+            <span class="fa fa-clock-o"></span>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Programadas</div>
+            <div class="h3 fw-bold text-warning mb-0" id="historyScheduled">{{ scheduledCount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fallidas -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="p-3 bg-danger-subtle text-danger rounded-3 fs-4">
+            <span class="fa fa-exclamation-triangle"></span>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold">Fallidas</div>
+            <div class="h3 fw-bold text-danger mb-0" id="historyFailed">{{ failedCount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros Robustos -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label for="historySearch" class="form-label small fw-semibold">Buscar</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><span class="fa fa-search"></span></span>
+            <input 
+              class="form-control border-start-0 ps-0" 
+              id="historySearch" 
+              placeholder="Título o audiencia..."
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="onFilterChange()"
+            >
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <label for="historyChannel" class="form-label small fw-semibold">Canal</label>
+          <select class="form-select" id="historyChannel" [(ngModel)]="selectedChannel" (ngModelChange)="onFilterChange()">
+            <option value="">Todos los canales</option>
+            <option value="Push">Push</option>
+            <option value="Alerta estándar">Alerta estándar</option>
+            <option value="Notificación interna">Notificación interna</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="historyStatus" class="form-label small fw-semibold">Estado</label>
+          <select class="form-select" id="historyStatus" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+            <option value="">Todos los estados</option>
+            <option value="Entregada">Entregada</option>
+            <option value="Programada">Programada</option>
+            <option value="Fallida">Fallida</option>
+            <option value="En proceso">En proceso</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label for="historyFrom" class="form-label small fw-semibold">Desde</label>
+          <input class="form-control" type="date" id="historyFrom" [(ngModel)]="dateFrom" (ngModelChange)="onFilterChange()">
+        </div>
+
+        <div class="col-md-2">
+          <label for="historyTo" class="form-label small fw-semibold">Hasta</label>
+          <input class="form-control" type="date" id="historyTo" [(ngModel)]="dateTo" (ngModelChange)="onFilterChange()">
+        </div>
+
+        <div class="col-md-1">
+          <button class="btn btn-outline-secondary w-100" id="clearHistoryFilters" (click)="limpiarFiltros()" data-nx-tooltip="Limpiar filtros" aria-label="Limpiar filtros">
+            <span class="fa fa-eraser"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Datos 100% Nativa Angular -->
+  <div class="nx-table-card shadow-sm mb-4">
+    <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="card-title fw-bold mb-0 text-dark">
+          Registro de envíos
+        </h5>
+        <small class="text-muted">Historial completo de notificaciones y alertas emitidas.</small>
+      </div>
+    </div>
+
+    <!-- Barra de Herramientas: Buscador y Selector de Registros -->
+    <div class="nx-table-toolbar">
+      <div class="nx-table-search-wrap">
         <input 
-          class="control" 
-          id="historySearch" 
-          placeholder="Título, código o audiencia"
-          [(ngModel)]="searchQuery"
+          type="text" 
+          class="nx-table-search-input" 
+          placeholder="Escriba para filtrar..." 
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="onFilterChange()"
         >
+        <button 
+          *ngIf="searchQuery" 
+          type="button" 
+          class="btn btn-sm btn-link text-muted position-absolute end-0 me-2 p-0 text-decoration-none"
+          (click)="searchQuery = ''; onFilterChange()"
+          data-nx-tooltip="Limpiar búsqueda"
+          aria-label="Limpiar búsqueda"
+        >
+          <span class="fa fa-times"></span>
+        </button>
       </div>
 
-      <div class="field">
-        <label for="historyChannel">Canal</label>
-        <select class="control" id="historyChannel" [(ngModel)]="selectedChannel">
-          <option value="">Todos</option>
-          <option value="Push">Push</option>
-          <option value="Alerta estándar">Alerta estándar</option>
-          <option value="Notificación interna">Notificación interna</option>
+      <div class="nx-table-length">
+        <span>Mostrar</span>
+        <select class="nx-table-length-select" [ngModel]="pageSize" (ngModelChange)="cambiarTamanoPagina($event)">
+          <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
         </select>
+        <span>registros</span>
       </div>
-
-      <div class="field">
-        <label for="historyStatus">Estado</label>
-        <select class="control" id="historyStatus" [(ngModel)]="selectedStatus">
-          <option value="">Todos</option>
-          <option value="Entregada">Entregada</option>
-          <option value="Programada">Programada</option>
-          <option value="Fallida">Fallida</option>
-          <option value="En proceso">En proceso</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="historyFrom">Desde</label>
-        <input class="control" type="date" id="historyFrom" [(ngModel)]="dateFrom">
-      </div>
-
-      <div class="field">
-        <label for="historyTo">Hasta</label>
-        <input class="control" type="date" id="historyTo" [(ngModel)]="dateTo">
-      </div>
-
-      <button class="btn btn-light" id="clearHistoryFilters" (click)="limpiarFiltros()">Limpiar</button>
     </div>
 
-    <!-- Contenedor de la Tabla -->
-    <div class="table-wrap">
-      <table class="history-table">
-        <thead>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 w-100">
+        <thead class="table-light">
           <tr>
-            <th>No</th>
-            <th>Título</th>
-            <th>Canal</th>
-            <th>Audiencia</th>
-            <th>Destinatarios</th>
-            <th>Fecha y hora</th>
-            <th>Estado</th>
-            <th>Creado por</th>
-            <th>Acción</th>
+            <th scope="col" class="ps-3 nx-sortable" style="width: 60px;" (click)="ordenarPor('id')">
+              #
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'id',
+                'fa-sort-asc': sortColumn === 'id' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'id' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('titulo')">
+              Título
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'titulo',
+                'fa-sort-asc': sortColumn === 'titulo' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'titulo' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('canal')">
+              Canal
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'canal',
+                'fa-sort-asc': sortColumn === 'canal' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'canal' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('audiencia')">
+              Audiencia
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'audiencia',
+                'fa-sort-asc': sortColumn === 'audiencia' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'audiencia' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('destinatarios')">
+              Destinatarios
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'destinatarios',
+                'fa-sort-asc': sortColumn === 'destinatarios' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'destinatarios' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('fecha')">
+              Fecha y hora
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'fecha',
+                'fa-sort-asc': sortColumn === 'fecha' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'fecha' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('estado')">
+              Estado
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'estado',
+                'fa-sort-asc': sortColumn === 'estado' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'estado' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="nx-sortable" (click)="ordenarPor('creadoPor')">
+              Creado por
+              <span class="fa nx-sort-icon" [ngClass]="{
+                'fa-sort': sortColumn !== 'creadoPor',
+                'fa-sort-asc': sortColumn === 'creadoPor' && sortDirection === 'asc',
+                'fa-sort-desc': sortColumn === 'creadoPor' && sortDirection === 'desc'
+              }"></span>
+            </th>
+            <th scope="col" class="text-end pe-3" style="width: 80px;">Acciones</th>
           </tr>
         </thead>
         <tbody id="historyTableBody">
-          <tr *ngFor="let item of filteredNotifications; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td><strong>{{ item.titulo }}</strong></td>
+          <tr *ngIf="loading">
+            <td colspan="9" class="text-center py-5 text-muted">
+              <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+              Cargando historial de notificaciones...
+            </td>
+          </tr>
+          <tr *ngFor="let item of (loading ? [] : pagedNotifications); trackBy: trackByNotifId">
+            <td class="ps-3 text-muted small">#{{ item.id }}</td>
             <td>
-              <span class="channel-label">
-                <span *ngIf="item.canal === 'Push'">📲</span>
-                <span *ngIf="item.canal === 'Alerta estándar'">📣</span>
-                <span *ngIf="item.canal === 'Notificación interna'">🔔</span>
+              <strong class="text-dark">{{ item.titulo }}</strong>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">
+                <span *ngIf="item.canal === 'Push'" class="fa fa-mobile text-primary me-1"></span>
+                <span *ngIf="item.canal === 'Alerta estándar'" class="fa fa-bullhorn text-warning me-1"></span>
+                <span *ngIf="item.canal === 'Notificación interna'" class="fa fa-bell text-info me-1"></span>
                 {{ item.canal }}
               </span>
             </td>
             <td>{{ item.audiencia }}</td>
             <td>{{ item.destinatarios.toLocaleString('es-CO') }}</td>
-            <td>{{ item.fecha }}</td>
+            <td class="text-muted small">{{ item.fecha }}</td>
             <td>
               <span 
                 class="badge" 
                 [ngClass]="{
-                  'success': item.estado === 'Entregada',
-                  'warning': item.estado === 'Programada',
-                  'danger': item.estado === 'Fallida',
-                  'neutral': item.estado === 'En proceso'
+                  'bg-success': item.estado === 'Entregada',
+                  'bg-warning text-dark': item.estado === 'Programada',
+                  'bg-danger': item.estado === 'Fallida',
+                  'bg-secondary': item.estado === 'En proceso'
                 }"
               >
                 {{ item.estado }}
               </span>
             </td>
-            <td>{{ item.creadoPor }}</td>
-            <td>
+            <td class="text-muted small">{{ item.creadoPor }}</td>
+            <td class="text-end pe-3">
               <button 
                 type="button" 
-                class="btn btn-outline-primary btn-sm btn-icon" 
-                title="Ver detalle"
+                class="btn btn-outline-primary btn-sm" 
+                data-nx-tooltip="Ver detalle"
+                aria-label="Ver detalle"
                 (click)="verDetalle(item)"
               >
-                👁️
+                <span class="fa fa-eye"></span>
               </button>
             </td>
           </tr>
-          <tr *ngIf="filteredNotifications.length === 0">
-            <td colspan="9">
-              <div class="empty-state">
-                No se encontraron notificaciones que coincidan con los filtros seleccionados.
-              </div>
+          <tr *ngIf="!loading && pagedNotifications.length === 0">
+            <td colspan="9" class="text-center py-4 text-muted">
+              <span class="fa fa-info-circle me-1"></span> No se encontraron notificaciones con los filtros seleccionados.
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="table-footer">
-      <span id="historyRecordInfo">
-        Mostrando {{ filteredNotifications.length }} de {{ totalCount }} registros
-      </span>
-      <div class="pagination" id="historyPagination">
-        <button class="page-btn" disabled>&lt;</button>
-        <button class="page-btn active">1</button>
-        <button class="page-btn" disabled>&gt;</button>
+    <!-- Pie de Tabla con Paginación Nativa -->
+    <div class="nx-table-footer">
+      <div class="nx-table-info">
+        Mostrando {{ startRecord }} a {{ endRecord }} de {{ totalRecords }} registros
+        <span *ngIf="searchQuery || selectedChannel || selectedStatus || dateFrom || dateTo" class="text-muted">
+          (filtrado de {{ notificaciones.length }} totales)
+        </span>
       </div>
-    </div>
-  </section>
-</section>
 
-<!-- Modal de Detalle (Glassmorphism & Clean Style) -->
-<div class="modal-backdrop" [ngClass]="{'open': isModalOpen}" *ngIf="isModalOpen && selectedNotification" (click)="cerrarModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div>
-        <h3>Detalle de Notificación</h3>
-        <p>ID de Registro: #{{ selectedNotification.id }}</p>
-      </div>
-      <button type="button" class="close-btn" (click)="cerrarModal()">×</button>
+      <ul class="nx-table-pagination" *ngIf="totalPages > 1">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button type="button" class="page-link" (click)="cambiarPagina(1)" [disabled]="currentPage === 1" data-nx-tooltip="Primera página" aria-label="Primera página">
+            ««
+          </button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button type="button" class="page-link" (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1" data-nx-tooltip="Página anterior" aria-label="Página anterior">
+            «
+          </button>
+        </li>
+
+        <li 
+          class="page-item" 
+          *ngFor="let p of pagesArray" 
+          [class.active]="p === currentPage"
+        >
+          <button type="button" class="page-link" (click)="cambiarPagina(p)">
+            {{ p }}
+          </button>
+        </li>
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button type="button" class="page-link" (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages" data-nx-tooltip="Página siguiente" aria-label="Página siguiente">
+            »
+          </button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button type="button" class="page-link" (click)="cambiarPagina(totalPages)" [disabled]="currentPage === totalPages" data-nx-tooltip="Última página" aria-label="Última página">
+            »»
+          </button>
+        </li>
+      </ul>
     </div>
-    
-    <div class="modal-body">
-      <div class="detail-grid">
-        <div class="detail-item">
-          <label>Título</label>
-          <strong>{{ selectedNotification.titulo }}</strong>
+  </div>
+
+<!-- Modal de Detalle (Bootstrap 5.3 Modal) -->
+<div class="modal fade show d-block" tabindex="-1" *ngIf="isModalOpen && selectedNotification" role="dialog" aria-modal="true" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow border-0">
+      
+      <div class="modal-header bg-light border-bottom">
+        <div>
+          <h5 class="modal-title fw-bold text-dark">Detalle de notificación</h5>
+          <small class="text-muted">ID de registro: #{{ selectedNotification.id }}</small>
         </div>
-        <div class="detail-item">
-          <label>Estado</label>
-          <span 
-            class="badge" 
-            [ngClass]="{
-              'success': selectedNotification.estado === 'Entregada',
-              'warning': selectedNotification.estado === 'Programada',
-              'danger': selectedNotification.estado === 'Fallida',
-              'neutral': selectedNotification.estado === 'En proceso'
-            }"
-          >
-            {{ selectedNotification.estado }}
-          </span>
+        <button type="button" class="btn-close" (click)="cerrarModal()" aria-label="Cerrar" data-nx-tooltip="Cerrar"></button>
+      </div>
+      
+      <div class="modal-body p-4">
+        <!-- Título de la Alerta -->
+        <div class="mb-4 pb-3 border-bottom">
+          <label class="form-label text-muted small fw-semibold mb-1">Título de la alerta</label>
+          <h5 class="fw-bold text-dark mb-0 text-break" style="word-break: break-word;">{{ selectedNotification.titulo }}</h5>
         </div>
-        <div class="detail-item">
-          <label>Canal</label>
-          <strong>{{ selectedNotification.canal }}</strong>
+
+        <!-- Cuadrícula Uniforme de Metadatos (3 columnas alineadas) -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Estado</label>
+            <div>
+              <span 
+                class="badge" 
+                [ngClass]="{
+                  'bg-success-subtle text-success border border-success-subtle': selectedNotification.estado === 'Entregada',
+                  'bg-warning-subtle text-warning-emphasis border border-warning-subtle': selectedNotification.estado === 'Programada',
+                  'bg-danger-subtle text-danger border border-danger-subtle': selectedNotification.estado === 'Fallida',
+                  'bg-secondary-subtle text-secondary border border-secondary-subtle': selectedNotification.estado === 'En proceso'
+                }"
+              >
+                {{ selectedNotification.estado }}
+              </span>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Canal de envío</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.canal }}</div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Audiencia objetivo</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.audiencia }}</div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Destinatarios</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.destinatarios.toLocaleString('es-CO') }} usuarios</div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Fecha de envío</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.fecha }}</div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label text-muted small fw-semibold mb-1">Creado por</label>
+            <div class="fw-semibold text-dark">{{ selectedNotification.creadoPor }}</div>
+          </div>
         </div>
-        <div class="detail-item">
-          <label>Audiencia</label>
-          <strong>{{ selectedNotification.audiencia }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>Destinatarios</label>
-          <strong>{{ selectedNotification.destinatarios.toLocaleString('es-CO') }} usuarios</strong>
-        </div>
-        <div class="detail-item">
-          <label>Fecha de Envío</label>
-          <strong>{{ selectedNotification.fecha }}</strong>
-        </div>
-        <div class="detail-item" style="grid-column: 1 / -1;">
-          <label>Creado por</label>
-          <strong>{{ selectedNotification.creadoPor }}</strong>
+        
+        <!-- Mensaje Transmitido -->
+        <div class="p-3 bg-light rounded-3 border">
+          <label class="form-label text-muted small fw-semibold mb-1">Mensaje transmitido</label>
+          <p class="mb-0 text-dark text-break" style="word-break: break-word; white-space: pre-wrap;">{{ selectedNotification.mensaje }}</p>
         </div>
       </div>
       
-      <div class="detail-message" style="margin-top: 15px;">
-        <label style="display:block; margin-bottom: 5px; font-size: 9px; font-weight: 800; text-transform: uppercase; color: #5f6368;">Mensaje Enviado</label>
-        <p style="margin:0; font-size: 13px; color: #202124;">{{ selectedNotification.mensaje }}</p>
+      <div class="modal-footer bg-light border-top">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
       </div>
-    </div>
-    
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="cerrarModal()">Cerrar</button>
+
     </div>
   </div>
 </div>

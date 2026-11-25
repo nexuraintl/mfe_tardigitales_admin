@@ -1,20 +1,16 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# MFE Tarjetas Digitales Admin (`mfe_tardigitales_admin`)
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+Microfrontend Angular para el portal de administración del sistema de Tarjetas Digitales de la Junta Central de Contadores (JCC).
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+## Tecnologías y Herramientas
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+- **Framework:** Angular 22 (Standalone Components)
+- **Componentes:** Angular Material, Web Components (`wc_admin_layout` / Lit)
+- **Autenticación:** OAuth2 / OIDC (`angular-oauth2-oidc`)
+- **Empaquetado MFE:** Custom Single-Bundle script (`build-mfe.js`)
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+## Comandos Principales
+
+- `npm start`: Inicia el servidor de desarrollo local en el puerto `4300`.
+- `npm run build:mfe`: Compila la aplicación y genera los bundles unificados para distribución en `dist/jcc-portal-mfe/`.
+- `npm run docker:compose`: Despliega el contenedor Docker local.

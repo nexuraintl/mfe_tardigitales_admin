@@ -1,417 +1,53 @@
-<section class="view">
-  <ng-container *ngIf="vistaActiva === 'listado'">
-  <!-- Banner del Módulo -->
-  <section class="card module-banner sociedades">
-    <div class="banner-layout">
-      <div class="banner-icon">🏢</div>
-      <div class="banner-content">
-        <div class="banner-title-line">
-          <h2>Tarjeta Digital para Sociedades</h2>
-          <span class="banner-badge">PERSONA JURÍDICA</span>
-        </div>
-        <p>Gestión de solicitudes y credenciales de sociedades de contadores y firmas registradas.</p>
-      </div>
-    </div>
-  </section>
+<app-tabla-sociedades *ngIf="vistaActiva === 'listado'" [(currentError)]="currentError" [(mensajeExito)]="mensajeExito"
+  [availableColumns]="availableColumns" [filterColumns]="filterColumnsConfig" [esModoReporte]="esModoReporte"
+  (applyFilters)="onApplyMultiFilters($event)" (clearFilters)="onClearMultiFilters()"
+  [visibleColumnsCount]="visibleColumnsCount" [columnMessageWarning]="columnMessageWarning"
+  [(searchQuery)]="searchQuery" (searchQueryChange)="onSearchChange()" [(pageSize)]="pageSize"
+  (pageSizeChange)="cambiarTamanoPagina($event)" [pageSizeOptions]="pageSizeOptions"
+  [loading]="loading || availableColumns.length === 0" [paginatedTarjetas]="paginatedTarjetas"
+  [totalOriginal]="tarjetas.length" [totalRecords]="totalRecords" [totalPages]="totalPages" [currentPage]="currentPage"
+  [pagesArray]="pagesArray" [recordRangeStart]="recordRangeStart" [recordRangeEnd]="recordRangeEnd"
+  [sortColumn]="sortColumn" [sortDirection]="sortDirection" (sort)="ordenarPorColumna($event)"
+  (cambiarPagina)="cambiarPagina($event)" (abrirDetalle)="abrirDetalle($event)" (abrirTarjeta)="abrirTarjeta($event)"
+  (obtenerConstanciaActivacion)="descargarConstanciaActivacion($event)" (regenerarTarjeta)="regenerarTarjeta($event)"
+  [actualizandoRowId]="actualizandoRowId" (actualizarDatosPersonales)="abrirModalActualizarDatos($event)"
+  (abrirHistorial)="abrirHistorial($event)" (resetColumns)="resetColumns()"
+  (toggleColumnChange)="saveColumnsPreference()"></app-tabla-sociedades>
 
-  <!-- Alertas del Sistema -->
-  <nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-  <nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" (onClose)="mensajeExito = ''"></nx-alert>
+<app-form-emision-sociedades *ngIf="vistaActiva === 'emision-individual'" [(tipoSolicitud)]="tipoSolicitud"
+  [(nuevaIdentificacion)]="nuevaIdentificacion" [errorTipoSolicitud]="errorTipoSolicitud"
+  [errorIdentificacion]="errorIdentificacion" [cargandoBusqueda]="cargandoBusqueda"
+  [busquedaRealizada]="busquedaRealizada" [datosConsulta]="datosConsulta" [(mensajeError)]="mensajeError"
+  [(mensajeExito)]="mensajeExito" [tipoAlerta]="tipoAlerta" [loading]="loading"
+  [brandingColorFondo]="brandingColorFondo" [brandingColorLetra]="brandingColorLetra"
+  [brandingLogoUrl]="brandingLogoUrl" [brandingPatronUrl]="brandingPatronUrl" [getFotoUrlFn]="getFotoUrl.bind(this)"
+  (consultarSociedad)="consultarSociedad()" (confirmarEmision)="confirmarEmision()"></app-form-emision-sociedades>
 
-  <!-- Barra de Herramientas -->
-  <section class="card toolbar">
-    <button class="btn btn-primary btn-sm" (click)="abrirNuevaTarjeta()">🏢 Nueva tarjeta</button>
-    <button class="btn btn-outline-primary btn-sm" (click)="abrirEmisionMasiva()">Emisión masiva</button>
-  </section>
+<app-emision-masiva-sociedades *ngIf="vistaActiva === 'emision-masiva'" [bulkResultText]="bulkResultText"
+  [bulkResultClass]="bulkResultClass" [archivoSeleccionado]="bulkFile" [(tipoTramite)]="bulkTipoTramite"
+  (descargarPlantillaCSV)="descargarPlantillaCSV()" (seleccionarArchivo)="seleccionarArchivo($event)"
+  (procesarEmisionMasiva)="procesarEmisionMasiva()"></app-emision-masiva-sociedades>
 
-  <!-- Tarjeta de Filtros -->
-  <section class="card filters-card">
-    <div class="filter-grid">
-      <div class="field">
-        <label for="cardsFilterColumn">Columna</label>
-        <select class="control" id="cardsFilterColumn" [(ngModel)]="filterColumn">
-          <option value="">Seleccione una columna</option>
-          <option value="razonSocial">Razón social</option>
-          <option value="nit">NIT</option>
-          <option value="registro">N.° registro</option>
-          <option value="representante">Representante legal</option>
-          <option value="tarjeta">Estado de tarjeta</option>
-        </select>
-      </div>
+<app-historial-sociedades *ngIf="vistaActiva === 'historial' && selectedTarjeta" [selectedTarjeta]="selectedTarjeta"
+  [selectedTarjetaHistorial]="selectedTarjetaHistorial" [getFotoUrlFn]="getFotoUrl.bind(this)"
+  [getFechaEmisionFn]="getFechaEmision.bind(this)"></app-historial-sociedades>
 
-      <div class="field">
-        <label for="cardsFilterValue">Valor</label>
-        <input class="control" id="cardsFilterValue" placeholder="Escribe para filtrar..." [(ngModel)]="filterValue">
-      </div>
-    </div>
-  </section>
+<app-modal-detalle-tarjeta [isOpen]="isDetailModalOpen" [isCardModalOpen]="isCardModalOpen"
+  [selectedTarjeta]="selectedTarjeta" [tipoTarjeta]="'sociedades'" [esModoReporte]="esModoReporte"
+  [brandingColorFondo]="brandingColorFondo" [brandingColorLetra]="brandingColorLetra"
+  [brandingLogoUrl]="brandingLogoUrl" [brandingPatronUrl]="brandingPatronUrl"
+  [brandingLogoImpresionUrl]="brandingLogoImpresionUrl" [brandingPatronImpresionUrl]="brandingPatronImpresionUrl"
+  [brandingColorLetraImpresion]="brandingColorLetraImpresion" [brandingNombreDirector]="brandingNombreDirector"
+  [brandingFirmaDirector]="brandingFirmaDirector" [getFotoUrlFn]="getFotoUrl.bind(this)" (cerrar)="cerrarDetalle()"
+  (cerrarTarjeta)="cerrarTarjeta()"></app-modal-detalle-tarjeta>
 
-  <!-- Tabla de Datos -->
-  <section class="card table-card">
-    <div class="table-card-head">
-      <div>
-        <h3>Solicitudes de tarjetas para sociedades</h3>
-        <p>Resultados del módulo de persona jurídica.</p>
-      </div>
-
-      <div class="table-head-actions">
-        <button type="button" class="btn btn-outline-primary" style="white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">⬇ Exportar CSV</button>
-        <input class="control" placeholder="Buscar en la tabla..." [(ngModel)]="searchQuery">
-        <select class="control" style="min-width:130px" [(ngModel)]="pageSize">
-          <option [ngValue]="5">5 registros</option>
-          <option [ngValue]="10">10 registros</option>
-          <option [ngValue]="25">25 registros</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Expediente</th>
-            <th>Razón social</th>
-            <th>NIT</th>
-            <th>N.° registro</th>
-            <th>Representante legal</th>
-            <th>Tarjeta</th>
-            <th>Fecha</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of paginatedTarjetas; let i = index">
-            <td>{{ recordRangeStart + i }}</td>
-            <td>{{ row.expediente }}</td>
-            <td><strong>{{ row.solicitante }}</strong></td>
-            <td>{{ row.documento }}</td>
-            <td><code>{{ row.matricula }}</code></td>
-            <td>{{ row.representante }}</td>
-            <td>
-              <span class="badge" [ngClass]="{
-                'success': row.tarjeta === 'Activa' || row.tarjeta === 'Emitida',
-                'warning': row.tarjeta === 'Pendiente',
-                'danger': row.tarjeta === 'Cancelada' || row.tarjeta === 'Suspendida'
-              }">{{ row.tarjeta }}</span>
-            </td>
-            <td>{{ row.fecha }}</td>
-            <td>
-              <div class="row-actions">
-                <button class="btn btn-outline-primary btn-sm btn-icon" title="Ver detalle" (click)="abrirDetalle(row)">👁️</button>
-                <div class="card-actions-host">
-                  <button class="btn btn-outline-secondary btn-sm btn-icon card-actions-toggle" [attr.aria-expanded]="activeMenuId === row.id" (click)="toggleActionsMenu($event, row.id)" title="Más acciones">⋮</button>
-                  <div class="card-actions-menu" [ngClass]="{'open': activeMenuId === row.id}">
-                    <button type="button" class="view-card-btn" (click)="abrirTarjeta(row); activeMenuId = null">▣ Ver tarjeta</button>
-                    <button type="button" class="view-card-history-btn" (click)="abrirHistorial(row); activeMenuId = null">◷ Historial</button>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="filteredTarjetas.length === 0">
-            <td colspan="9">
-              <div class="empty-state">No se encontraron solicitudes con los filtros seleccionados.</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="table-footer">
-      <span>Mostrando {{ recordRangeStart }} a {{ recordRangeEnd }} de {{ filteredTarjetas.length }} registros</span>
-      <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="cambiarPagina(currentPage - 1)">&lt;</button>
-        <button class="page-btn" *ngFor="let p of [].constructor(totalPages); let idx = index" [ngClass]="{'active': currentPage === idx + 1}" (click)="cambiarPagina(idx + 1)">
-          {{ idx + 1 }}
-        </button>
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="cambiarPagina(currentPage + 1)">&gt;</button>
-      </div>
-    </div>
-  </section>
-</ng-container>
-
-<!-- VISTA NUEVA TARJETA - EMISION INDIVIDUAL (SOCIEDADES) -->
-<ng-container *ngIf="vistaActiva === 'emision-individual'">
-  <header class="page-header">
-    <div>
-      <h1>Nueva tarjeta — emisión individual</h1>
-      <p id="individualIssueHeaderText">Emita una tarjeta profesional para una sociedad registrada.</p>
-    </div>
-    <div class="header-actions">
-      <button type="button" class="btn btn-outline-secondary" (click)="cerrarNuevaTarjeta()">← Volver</button>
-    </div>
-  </header>
-
-  <div class="individual-issue-content">
-    <section class="card individual-issue-card">
-      <div class="individual-issue-card-header" id="individualIssueStepTitle">1. Identificación de la sociedad</div>
-      <div class="individual-issue-card-body">
-        <p class="individual-issue-help" id="individualIssueHelp">Ingrese el NIT. El sistema consulta el registro de la sociedad y muestra una vista previa antes de emitir.</p>
-        <div class="individual-issue-search">
-          <input type="text" id="individualIssueIdentification" inputmode="numeric" maxlength="20" class="control" placeholder="NIT de la sociedad" [(ngModel)]="nuevaIdentificacion" (keyup.enter)="consultarSociedad()">
-          <button type="button" class="btn btn-primary btn-sm" id="individualIssueSearch" (click)="consultarSociedad()">
-            <span *ngIf="!cargandoBusqueda">⌕ Consultar sociedad</span>
-            <span *ngIf="cargandoBusqueda">Buscando...</span>
-          </button>
-        </div>
-        <div *ngIf="mensajeError" class="text-danger" style="margin-top: 10px; font-size: 12px; color: var(--danger);">{{ mensajeError }}</div>
-      </div>
-    </section>
-
-    <section id="individualIssuePreview" class="card individual-issue-card individual-issue-preview" [ngClass]="{'visible': busquedaRealizada && datosConsulta}">
-      <div class="individual-issue-card-header preview">2. Vista previa de la tarjeta</div>
-      <div class="individual-issue-card-body">
-        <div class="individual-holder">
-          <div class="individual-holder-avatar" id="individualIssueAvatar">🏢</div>
-          <div style="flex:1">
-            <h3 id="individualIssueName">{{ datosConsulta?.razonSocial }}</h3>
-            <div class="individual-holder-details">
-              <p><span>NIT de la sociedad</span><strong id="individualIssueDocument">{{ datosConsulta?.nit }}</strong></p>
-              <p><span>N.° Registro</span><strong id="individualIssueRegistration">{{ datosConsulta?.registro }}</strong></p>
-              <p><span id="individualIssueExtraLabel">Resolución</span><strong id="individualIssueExtraValue">{{ datosConsulta?.resolucion }}</strong></p>
-              <p><span>Estado</span><strong><span class="status approved">Activo</span></strong></p>
-            </div>
-          </div>
-        </div>
-
-        <div class="individual-confirm-row" *ngIf="!mensajeExito">
-          <button type="button" id="individualIssueConfirm" class="btn btn-success individual-confirm-button" (click)="confirmarEmision()" [disabled]="loading">
-            <span *ngIf="!loading">Confirmar emisión</span>
-            <span *ngIf="loading">Procesando...</span>
-          </button>
-        </div>
-        
-        <div id="individualIssueResult" class="individual-result" [ngClass]="{'visible': mensajeExito}" role="status" style="margin-top: 15px;">
-          {{ mensajeExito }}
-        </div>
-      </div>
-    </section>
-  </div>
-</ng-container>
-
-  <!-- VISTA EMISION MASIVA (SOCIEDADES) -->
-  <ng-container *ngIf="vistaActiva === 'emision-masiva'">
-    <header class="page-header">
-      <div>
-        <h1>Emisión masiva de credenciales</h1>
-        <p id="bulkIssueHeaderText">Emita credenciales para varias sociedades mediante un archivo CSV.</p>
-      </div>
-      <div class="header-actions">
-        <button type="button" class="btn btn-outline-secondary" (click)="cerrarEmisionMasiva()">← Volver</button>
-      </div>
-    </header>
-
-    <div class="individual-issue-content">
-      <section class="card individual-issue-card">
-        <div class="individual-issue-card-header">Carga masiva por archivo CSV</div>
-        <div class="individual-issue-card-body">
-          <ol class="bulk-issue-steps">
-            <li id="bulkIssueTemplateHelp">Descargue la plantilla y complete <code>nit</code> por fila.</li>
-            <li id="bulkIssueProcessHelp">Suba el archivo: el sistema consulta el registro de cada sociedad, emite cada credencial y envía la notificación. Los duplicados se omiten y los errores se listan.</li>
-          </ol>
-
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="bulkIssueDownload" (click)="descargarPlantillaCSV()">↓ Descargar plantilla</button>
-
-          <div class="bulk-issue-actions" style="margin-top:14px">
-            <input type="file" id="bulkIssueFile" accept=".csv,.txt,text/csv,text/plain" class="control bulk-file-control" (change)="seleccionarArchivo($event)">
-            <button type="button" class="btn btn-primary btn-sm" id="bulkIssueProcess" (click)="procesarEmisionMasiva()">↑ Procesar</button>
-          </div>
-
-          <div id="bulkIssueResult" [class]="bulkResultClass" style="margin-top: 15px;">
-            {{ bulkResultText }}
-          </div>
-        </div>
-      </section>
-    </div>
-  </ng-container>
-
-  <!-- VISTA HISTORIAL DE TARJETA (SOCIEDADES) -->
-  <ng-container *ngIf="vistaActiva === 'historial' && selectedTarjeta">
-    <header class="page-header">
-      <div>
-        <h1>Historial de tarjeta</h1>
-        <p id="cardHistorySubtitle">Estados y verificaciones públicas de la credencial {{ selectedTarjeta.codigo }}.</p>
-      </div>
-      <div class="header-actions">
-        <button type="button" class="btn btn-outline-secondary" (click)="cerrarHistorial()">← Volver</button>
-      </div>
-    </header>
-
-    <div class="card-history-content">
-      <section class="card">
-        <div class="card-history-person">
-          <div class="card-history-avatar">🏢</div>
-          <div>
-            <h3>{{ selectedTarjeta.solicitante }}</h3>
-            <div class="card-history-meta">
-              <span><strong>NIT:</strong> {{ selectedTarjeta.documento }}</span>
-              <span><strong>REGISTRO:</strong> {{ selectedTarjeta.matricula }}</span>
-              <span><strong>EXPEDIENTE:</strong> {{ selectedTarjeta.expediente }}</span>
-              <span><strong>CÓDIGO:</strong> {{ selectedTarjeta.codigo }}</span>
-              <span><strong>CORREO:</strong> {{ selectedTarjeta.correo || 'No registrado' }}</span>
-              <span><strong>FECHA:</strong> {{ selectedTarjeta.fecha }}</span>
-              <span><strong>REPRESENTANTE:</strong> {{ selectedTarjeta.representante }}</span>
-              <span><strong>ESTADO:</strong> <span class="badge" [ngClass]="{
-                'success': selectedTarjeta.tarjeta === 'Activa',
-                'warning': selectedTarjeta.tarjeta === 'Emitida' || selectedTarjeta.tarjeta === 'Pendiente',
-                'danger': selectedTarjeta.tarjeta === 'Cancelada' || selectedTarjeta.tarjeta === 'Suspendida'
-              }">{{ selectedTarjeta.tarjeta }}</span></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="card-history-sections">
-        <section class="credential-history-card">
-          <h4>Historial de estado</h4>
-          <ul class="credential-timeline" *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.estados.length > 0">
-            <li *ngFor="let estado of selectedTarjetaHistorial.estados">
-              <strong>{{ estado.estado }}</strong>
-              <span>{{ estado.fecha }} — {{ estado.descripcion }} <span style="font-style: italic; opacity: 0.85;">(Por: {{ estado.realizado_por }})</span></span>
-            </li>
-          </ul>
-          <div *ngIf="!selectedTarjetaHistorial" style="font-size: 10px; color: var(--muted); padding: 12px;">Cargando historial...</div>
-          <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.estados.length === 0" style="font-size: 10px; color: var(--muted); padding: 12px;">No hay registro de estados.</div>
-        </section>
-
-        <section class="credential-history-card">
-          <h4>Historial de lecturas del QR</h4>
-          <ul class="credential-readings" *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.lecturas.length > 0">
-            <li *ngFor="let lectura of selectedTarjetaHistorial.lecturas">
-              <strong>Verificación pública exitosa</strong>
-              <span>{{ lectura.fecha }} — {{ lectura.ip }} ({{ lectura.endpoint }})</span>
-            </li>
-          </ul>
-          <div *ngIf="!selectedTarjetaHistorial" style="font-size: 10px; color: var(--muted); padding: 12px;">Cargando lecturas...</div>
-          <div *ngIf="selectedTarjetaHistorial && selectedTarjetaHistorial.lecturas.length === 0" style="font-size: 10px; color: var(--muted); padding: 12px;">La credencial no registra lecturas QR.</div>
-        </section>
-      </div>
-    </div>
-  </ng-container>
-
-<!-- Modal de Detalle -->
-<div class="modal-backdrop" [ngClass]="{'open': isDetailModalOpen}" *ngIf="isDetailModalOpen && selectedTarjeta" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div>
-        <h3>Detalle de Solicitud (Sociedad)</h3>
-        <p>Código: {{ selectedTarjeta.codigo }}</p>
-      </div>
-      <button class="close-btn" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detail-grid">
-        <div class="detail-item">
-          <label>Expediente</label>
-          <strong>{{ selectedTarjeta.expediente }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>Razón Social</label>
-          <strong>{{ selectedTarjeta.solicitante }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>NIT</label>
-          <strong>{{ selectedTarjeta.documento }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>Número de Registro</label>
-          <strong>{{ selectedTarjeta.matricula }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>Representante Legal</label>
-          <strong>{{ selectedTarjeta.representante }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>Correo Electrónico</label>
-          <strong>{{ selectedTarjeta.correo }}</strong>
-        </div>
-        <div class="detail-item">
-          <label>Estado de Tarjeta</label>
-          <span class="badge success">{{ selectedTarjeta.tarjeta }}</span>
-        </div>
-        <div class="detail-item">
-          <label>Fecha de Emisión</label>
-          <strong>{{ selectedTarjeta.fecha }}</strong>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline-secondary" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Tarjeta Profesional Digital (Premium Aesthetic - Sociedad) -->
-<div class="modal-backdrop" [ngClass]="{'open': isCardModalOpen}" *ngIf="isCardModalOpen && selectedTarjeta" (click)="cerrarTarjeta()">
-  <div class="modal card-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Visualización de Tarjeta de Registro</h3>
-      <button class="close-btn" (click)="cerrarTarjeta()">×</button>
-    </div>
-    
-    <div class="modal-body card-render-container" style="display:flex; justify-content:center; align-items:center; padding: 25px 0;">
-      <!-- Credencial Digital Premium Sociedad -->
-      <div class="virtual-card sociedades">
-        <div class="virtual-card-front">
-          <div class="card-glow"></div>
-          <div class="card-front-header">
-            <div class="card-logo-area">
-              <span class="card-emblem">🇨🇴</span>
-              <div>
-                <h2>JUNTA CENTRAL</h2>
-                <h3>DE CONTADORES</h3>
-              </div>
-            </div>
-            <div class="card-type-tag">PERSONA JURÍDICA</div>
-          </div>
-          
-          <div class="card-front-body">
-            <div class="card-photo-box">
-              <div class="card-photo-avatar">🏢</div>
-            </div>
-            
-            <div class="card-info-box">
-              <div class="card-holder-name">{{ selectedTarjeta.solicitante }}</div>
-              <div class="card-holder-meta">
-                <div>
-                  <small>NIT</small>
-                  <strong>{{ selectedTarjeta.documento }}</strong>
-                </div>
-                <div>
-                  <small>N.° REGISTRO</small>
-                  <strong>{{ selectedTarjeta.matricula }}</strong>
-                </div>
-                <div style="grid-column: 1 / -1; margin-top: 5px;">
-                  <small>REPRESENTANTE LEGAL</small>
-                  <strong>{{ selectedTarjeta.representante }}</strong>
-                </div>
-              </div>
-            </div>
-
-            <!-- Código QR Simulado -->
-            <div class="card-qr-box">
-              <div class="qr-matrix-grid">
-                <div *ngFor="let row of [].constructor(15); let r = index" class="qr-row">
-                  <div *ngFor="let col of [].constructor(15); let c = index" 
-                       class="qr-dot" 
-                       [ngClass]="{'black': getQrDot(r, c)}">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="card-front-footer">
-            <span>República de Colombia</span>
-            <span>VIGENTE</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="modal-footer">
-      <button class="btn btn-outline-secondary" (click)="cerrarTarjeta()">Cerrar</button>
-    </div>
-  </div>
-</div>
+<app-modal-actualizar-datos
+  [isOpen]="isActualizarDatosModalOpen"
+  tipoTarjeta="sociedades"
+  [registro]="registroActualizarDatos"
+  [estado]="estadoActualizarDatos"
+  [auditoria]="auditoriaActualizarDatos"
+  [mensajeError]="errorActualizarDatosMsg"
+  (confirmar)="confirmarActualizarDatos()"
+  (cerrar)="cerrarModalActualizarDatos()"
+></app-modal-actualizar-datos>

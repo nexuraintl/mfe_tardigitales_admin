@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ERROR_MESSAGES, ErrorMessageKey, ErrorMessageDefinition } from '../constants/error-messages.constants';
 
 export interface AppError {
   code: string;
+  codigo_error?: number;
+  etapa?: string;
   title: string;
   message: string;
+  mensaje_base?: string;
+  detalle_tecnico?: string;
+  tabla_afectada?: string;
+  cliente_id?: number;
   httpStatus: number;
   suggestion?: string;
   timestamp: Date;
@@ -18,16 +23,17 @@ export interface AppError {
 export class ErrorHandlerService {
   
   /**
-   * Procesa un error HTTP y retorna un objeto de error estandarizado según la serie MS-38XX.
+   * Procesa un error HTTP y retorna de forma 100% transparente el error enviado por el Backend MS.
+   * No inventa ni quema mensajes en el MFE.
    */
   public parseError(
     error: unknown,
-    contextKey?: ErrorMessageKey,
+    contextKey?: string,
     endpointHint?: string
   ): AppError {
     let status = 0;
     let endpoint = endpointHint || '';
-    let serverDetail = '';
+    let rawError: any = null;
 
     if (error instanceof HttpErrorResponse) {
       status = error.status;
@@ -39,65 +45,124 @@ export class ErrorHandlerService {
           endpoint = error.url;
         }
       }
-      if (error.error && typeof error.error === 'object' && error.error.message) {
-        serverDetail = error.error.message;
-      }
-    } else if (error && typeof error === 'object' && 'status' in error) {
+      rawError = error.error;
+    } else if (error && typeof error === 'object') {
       status = (error as any).status || 0;
+      rawError = (error as any).error || error;
     }
 
-    // Determinar la definición de mensaje a utilizar
-    let def: ErrorMessageDefinition;
+    let codigoError: number | string = '';
+    let etapa = '';
+    let mensaje = '';
+    let detalleTecnico = '';
+    let tablaAfectada = '';
+    let clienteId: number | undefined = undefined;
 
+    // Extraer la estructura del PipelineException del Microservicio
+    if (rawError && typeof rawError === 'object') {
+      const errObj = rawError.error || rawError;
+      if (errObj && typeof errObj === 'object') {
+        codigoError = errObj.codigo_error || errObj.code || status;
+        etapa = errObj.etapa || '';
+        mensaje = errObj.mensaje || errObj.message || errObj.detail || '';
+        detalleTecnico = errObj.detalle_tecnico || '';
+        tablaAfectada = errObj.tabla_afectada || '';
+        clienteId = errObj.cliente_id;
+      } else if (typeof errObj === 'string') {
+        mensaje = errObj;
+      }
+    }
+
+    // Fallbacks solo cuando el servidor no responde o no envía JSON (ej. sin red)
+    if (!mensaje) {
+      if (status === 0) {
+        mensaje = 'No fue posible conectar con el microservicio. Verifique la red o el Gateway de Docker.';
+        codigoError = 3800;
+        etapa = 'CONEXION_RED';
+      } else if (status === 401 || status === 403) {
+        mensaje = 'No cuenta con permisos de autorización para ejecutar esta acción.';
+        codigoError = 3802;
+        etapa = 'NO_AUTORIZADO';
+      } else if (status === 404) {
+        mensaje = 'El recurso o endpoint solicitado no fue localizado en el servidor.';
+        codigoError = 3806;
+        etapa = 'RECURSO_NO_ENCONTRADO';
+      } else {
+        mensaje = `Error en el servidor al procesar la solicitud (Código HTTP ${status}).`;
+        codigoError = codigoError || status || 500;
+        etapa = etapa || 'HTTP_ERROR';
+      }
+    }
+
+    // Diagnóstico técnico en consola: trazabilidad completa para desarrollo y auditoría sin exponer internals a la UI
+    if (detalleTecnico || tablaAfectada || (rawError && status >= 400)) {
+      console.groupCollapsed(`[Microservicio Error] ${endpoint || 'HTTP ' + status} (Código ${codigoError || status})`);
+      console.error('Mensaje original:', mensaje);
+      if (tablaAfectada) console.error('Tabla afectada:', tablaAfectada);
+      if (detalleTecnico) console.error('Detalle técnico:', detalleTecnico);
+      if (etapa) console.error('Etapa:', etapa);
+      if (endpoint) console.error('Endpoint:', endpoint);
+      console.error('Payload completo:', rawError || error);
+      console.groupEnd();
+    }
+
+    // Detección genérica de conflictos de integridad, registros duplicados o errores de base de datos
+    const isConstraintDuplicate = status === 409 ||
+      /duplicate key|already exists|unique constraint|llave duplicada|ya existe/i.test(mensaje) ||
+      /duplicate key|already exists|unique constraint|llave duplicada|ya existe/i.test(detalleTecnico);
+
+    const isForeignKeyConflict = /foreign key|llave for[aá]nea|violates foreign key/i.test(mensaje) ||
+      /foreign key|llave for[aá]nea/i.test(detalleTecnico);
+
+    let cleanMessage = mensaje;
+    if (isConstraintDuplicate) {
+      cleanMessage = 'El registro que intenta ingresar ya se encuentra registrado en el sistema.';
+    } else if (isForeignKeyConflict) {
+      cleanMessage = 'No fue posible completar la operación debido a una inconsistencia en los datos asociados.';
+    } else if (/syntax error|syntaxerror|relation .* does not exist|column .* does not exist/i.test(mensaje) || /syntax error/i.test(detalleTecnico)) {
+      cleanMessage = 'Ocurrió un error interno al procesar los datos en el servidor.';
+    }
+
+    let title = 'No fue posible completar la solicitud';
     if (status === 0) {
-      def = ERROR_MESSAGES.MS_3800_NO_CONNECTION;
-    } else if (status === 502 || status === 503 || status === 504) {
-      def = ERROR_MESSAGES.MS_3801_GATEWAY_TIMEOUT;
+      title = 'Error de conexión';
     } else if (status === 401 || status === 403) {
-      def = ERROR_MESSAGES.MS_3802_UNAUTHORIZED;
-    } else if (status === 400 && serverDetail && serverDetail.toLowerCase().includes('client_id')) {
-      def = ERROR_MESSAGES.MS_3803_INVALID_CLIENT;
-    } else if (contextKey && ERROR_MESSAGES[contextKey]) {
-      def = ERROR_MESSAGES[contextKey];
+      title = 'Acceso no autorizado';
     } else if (status === 404) {
-      def = ERROR_MESSAGES.MS_3806_NOT_FOUND;
-    } else if (status === 500) {
-      def = ERROR_MESSAGES.MS_3804_DATABASE_ERROR;
-    } else {
-      def = ERROR_MESSAGES.MS_3800_NO_CONNECTION;
+      title = 'Recurso no encontrado';
+    } else if (isConstraintDuplicate) {
+      title = 'Registro ya existente';
+    } else if (isForeignKeyConflict) {
+      title = 'Conflicto de integridad';
+    } else if (codigoError && etapa) {
+      title = `Error ${codigoError}`;
     }
-
-    // Formatear plantilla
-    const endpointLabel = endpoint ? ` ${endpoint}` : '';
-    const statusLabel = status > 0 ? `${status}` : 'Sin conexión';
-    const formattedMessage = def.template
-      .replace('{endpoint}', endpointLabel)
-      .replace('{status}', statusLabel);
 
     return {
-      code: def.code,
-      title: `${def.title} ${def.code}`,
-      message: formattedMessage,
+      code: String(codigoError || status),
+      codigo_error: typeof codigoError === 'number' ? codigoError : parseInt(String(codigoError), 10) || undefined,
+      etapa: etapa,
+      title: title,
+      message: cleanMessage,
+      mensaje_base: mensaje,
+      detalle_tecnico: detalleTecnico,
+      tabla_afectada: tablaAfectada,
+      cliente_id: clienteId,
       httpStatus: status,
-      suggestion: def.suggestion,
       timestamp: new Date(),
       endpoint: endpoint
     };
   }
 
   /**
-   * Genera el texto estándar de alerta para compatibilidad o soporte técnico.
+   * Genera el texto plano del error de forma transparente.
    */
   public formatErrorMessage(
     error: unknown,
-    contextKey?: ErrorMessageKey,
+    contextKey?: string,
     endpointHint?: string
   ): string {
     const err = this.parseError(error, contextKey, endpointHint);
-    let output = `${err.title}\n${err.message}`;
-    if (err.suggestion) {
-      output += `\n\n${err.suggestion}`;
-    }
-    return output;
+    return `${err.title}\n${err.message}`;
   }
 }

@@ -40,3 +40,6 @@ docs/
 Dockerfile
 docker-compose.yml
 .dockerignore
+
+# Agent configuration
+.agents/

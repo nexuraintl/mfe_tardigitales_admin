@@ -1,0 +1,85 @@
+/* Desactivar completamente el efecto hover de Bootstrap en la fila y celdas de detalle expandido */
+.table-hover > tbody > tr.audit-detail-row,
+.table-hover > tbody > tr.audit-detail-row:hover,
+.table-hover > tbody > tr.audit-detail-row > td,
+.table-hover > tbody > tr.audit-detail-row:hover > td,
+.table-hover > tbody > tr.audit-detail-row > *,
+.table-hover > tbody > tr.audit-detail-row:hover > * {
+  --bs-table-hover-bg: transparent !important;
+  --bs-table-bg-state: transparent !important;
+  --bs-table-accent-bg: transparent !important;
+  --bs-table-hover-color: inherit !important;
+  box-shadow: none !important;
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+  color: inherit !important;
+}
+
+.audit-detail-cell {
+  padding: 16px 20px !important;
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+.audit-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.audit-detail-grid strong {
+  display: block;
+  margin: 8px 0 6px;
+  font-size: 11px;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.audit-detail-grid strong:first-child {
+  margin-top: 0;
+}
+
+.audit-code {
+  max-height: 240px;
+  margin: 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid #dce5ee;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* Indicadores sutiles para métodos y status */
+.bg-primary-subtle {
+  background-color: #e0f2fe !important;
+}
+
+.bg-success-subtle {
+  background-color: #dcfce7 !important;
+}
+
+.bg-danger-subtle {
+  background-color: #fee2e2 !important;
+}
+
+.border-primary-subtle {
+  border-color: #bae6fd !important;
+}
+
+.border-success-subtle {
+  border-color: #bbf7d0 !important;
+}
+
+.border-danger-subtle {
+  border-color: #fecaca !important;
+}

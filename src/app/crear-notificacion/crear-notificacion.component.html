@@ -1,208 +1,255 @@
-<section class="view">
-  <header class="page-header">
-    <div>
-      <h1>Configuración de Notificaciones</h1>
-      <p>Administre notificaciones push, alertas estándar y mensajes informativos.</p>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-outline-primary" (click)="cancelar()">🕘 Ver historial</button>
-    </div>
-  </header>
+<!-- Alertas del Sistema -->
+<nx-alert *ngIf="successMsg" type="success" [message]="successMsg" [autoScroll]="true" [duration]="5000" (onClose)="successMsg = ''"></nx-alert>
+<nx-alert [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
+<nx-alert *ngIf="warningMsg" type="warning" [message]="warningMsg" [autoScroll]="true" (onClose)="warningMsg = ''"></nx-alert>
 
-  <!-- Alertas del Sistema -->
-  <nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-  <nx-alert *ngIf="warningMsg" type="warning" [message]="warningMsg" (onClose)="warningMsg = ''"></nx-alert>
 
-  <div class="notification-layout">
-    <div>
+  <div class="row g-4">
+    <!-- Columna Principal de Formularios -->
+    <div class="col-lg-7 col-xl-8">
+      
       <!-- 1. Rango Horario -->
-      <section class="card section-card">
-        <div class="section-title">🕒 1. Rango horario para envío</div>
-        <div class="grid-3">
-          <div class="field">
-            <label for="startTime">Hora de inicio</label>
-            <input class="control" type="time" id="startTime" [(ngModel)]="startTime">
-          </div>
-          <div class="field">
-            <label for="endTime">Hora de fin</label>
-            <input class="control" type="time" id="endTime" [(ngModel)]="endTime">
-          </div>
-          <div class="field">
-            <label for="maxDaily">Máximo de notificaciones por día *</label>
-            <input class="control" type="number" id="maxDaily" min="1" max="99" [(ngModel)]="maxDaily">
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="card-title fw-bold mb-0 text-dark">
+            1. Rango horario para envío
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="startTime" class="form-label fw-semibold">Hora de inicio</label>
+              <input class="form-control" [class.is-invalid]="!!errorHoras" type="time" id="startTime" [(ngModel)]="startTime" (ngModelChange)="validarHoras()">
+            </div>
+            <div class="col-md-4">
+              <label for="endTime" class="form-label fw-semibold">Hora de fin</label>
+              <input class="form-control" [class.is-invalid]="!!errorHoras" type="time" id="endTime" [(ngModel)]="endTime" (ngModelChange)="validarHoras()">
+            </div>
+            <div class="col-md-4">
+              <label for="maxDaily" class="form-label fw-semibold">Máx. por día *</label>
+              <input class="form-control" [class.is-invalid]="!!errorMaxDaily" type="number" id="maxDaily" min="1" max="99" [(ngModel)]="maxDaily" (ngModelChange)="onMaxDailyChange($event)">
+              <nx-field-error [error]="errorMaxDaily"></nx-field-error>
+            </div>
+            <div *ngIf="errorHoras" class="col-12 mt-1">
+              <nx-field-error [error]="errorHoras"></nx-field-error>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- 2. Canales de Envío -->
-      <section class="card section-card">
-        <div class="section-title">✈️ 2. Canales de envío</div>
-        <div class="section-help">Seleccione los canales a través de los cuales se enviará la alerta.</div>
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="card-title fw-bold mb-0 text-dark">
+            2. Canales de envío
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">Seleccione los canales a través de los cuales se enviará la alerta.</p>
+          <nx-field-error *ngIf="errorCanales" [error]="errorCanales" class="mb-3"></nx-field-error>
 
-        <div class="channel-grid">
-          <!-- Push -->
-          <div class="channel-card" [ngClass]="{'active': pushActive}">
-            <div class="channel-icon" style="background:#e6efff" (click)="toggleChannel('push')">📲</div>
-            <div (click)="toggleChannel('push')">
-              <h4>Notificación Push</h4>
-              <p>Enviar mensajes a dispositivos móviles registrados.</p>
+          <div class="row g-3">
+            <!-- Push -->
+            <div class="col-12">
+              <div class="card border p-3" [ngClass]="pushActive ? 'border-primary bg-primary-subtle' : 'border-secondary-subtle'">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                  <div class="d-flex align-items-center gap-3 cursor-pointer" (click)="toggleChannel('push')">
+                    <div class="p-3 bg-primary text-white rounded-3 fs-5">
+                      <span class="fa fa-mobile"></span>
+                    </div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Notificación Push</h6>
+                      <p class="text-muted small mb-0">Enviar mensajes a dispositivos móviles registrados.</p>
+                    </div>
+                  </div>
+                  <div class="form-check form-switch fs-4 mb-0">
+                    <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="pushToggle" [(ngModel)]="pushActive">
+                  </div>
+                </div>
+              </div>
             </div>
-            <label class="switch">
-              <input type="checkbox" id="pushToggle" [(ngModel)]="pushActive">
-              <span class="slider"></span>
-            </label>
-          </div>
 
-          <!-- Standard -->
-          <div class="channel-card" [ngClass]="{'active': standardActive}">
-            <div class="channel-icon" style="background:#fff3d7" (click)="toggleChannel('standard')">📣</div>
-            <div (click)="toggleChannel('standard')">
-              <h4>Alerta estándar</h4>
-              <p>Mostrar una notificación móvil como modal emergente dentro de la app.</p>
+            <!-- Standard -->
+            <div class="col-12">
+              <div class="card border p-3" [ngClass]="standardActive ? 'border-warning bg-warning-subtle' : 'border-secondary-subtle'">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                  <div class="d-flex align-items-center gap-3 cursor-pointer" (click)="toggleChannel('standard')">
+                    <div class="p-3 bg-warning text-dark rounded-3 fs-5">
+                      <span class="fa fa-bullhorn"></span>
+                    </div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Alerta estándar</h6>
+                      <p class="text-muted small mb-0">Mostrar una notificación móvil como modal emergente dentro de la app.</p>
+                    </div>
+                  </div>
+                  <div class="form-check form-switch fs-4 mb-0">
+                    <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="standardToggle" [(ngModel)]="standardActive">
+                  </div>
+                </div>
+              </div>
             </div>
-            <label class="switch">
-              <input type="checkbox" id="standardToggle" [(ngModel)]="standardActive">
-              <span class="slider"></span>
-            </label>
-          </div>
 
-          <!-- Internal -->
-          <div class="channel-card" [ngClass]="{'active': internalActive}">
-            <div class="channel-icon" style="background:#f0e8ff" (click)="toggleChannel('internal')">🔔</div>
-            <div (click)="toggleChannel('internal')">
-              <h4>Notificación interna</h4>
-              <p>Registrar el mensaje en el centro de notificaciones.</p>
+            <!-- Internal -->
+            <div class="col-12">
+              <div class="card border p-3" [ngClass]="internalActive ? 'border-info bg-info-subtle' : 'border-secondary-subtle'">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                  <div class="d-flex align-items-center gap-3 cursor-pointer" (click)="toggleChannel('internal')">
+                    <div class="p-3 bg-info text-white rounded-3 fs-5">
+                      <span class="fa fa-bell"></span>
+                    </div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Notificación interna</h6>
+                      <p class="text-muted small mb-0">Registrar el mensaje en el centro de notificaciones.</p>
+                    </div>
+                  </div>
+                  <div class="form-check form-switch fs-4 mb-0">
+                    <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="internalToggle" [(ngModel)]="internalActive">
+                  </div>
+                </div>
+              </div>
             </div>
-            <label class="switch">
-              <input type="checkbox" id="internalToggle" [(ngModel)]="internalActive">
-              <span class="slider"></span>
-            </label>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- 3. Información de la Alerta -->
-      <section class="card section-card">
-        <div class="section-title">📄 3. Información de la alerta</div>
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="card-title fw-bold mb-0 text-dark">
+            3. Información de la alerta
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="notificationTitle" class="form-label fw-semibold">Título de la alerta *</label>
+              <input class="form-control" [class.is-invalid]="!!errorTitulo" id="notificationTitle" maxlength="255" [(ngModel)]="notificationTitle" (ngModelChange)="onTituloChange($event)" placeholder="Ej: Mantenimiento programado">
+              <nx-field-error [error]="errorTitulo"></nx-field-error>
+            </div>
 
-        <div class="grid-2">
-          <div class="field">
-            <label for="notificationTitle">Título de la alerta *</label>
-            <input class="control" id="notificationTitle" [(ngModel)]="notificationTitle">
-          </div>
+            <div class="col-12">
+              <label for="notificationMessage" class="form-label fw-semibold">Mensaje *</label>
+              <textarea class="form-control" [class.is-invalid]="!!errorMensaje" id="notificationMessage" maxlength="1000" [(ngModel)]="notificationMessage" (ngModelChange)="onMensajeChange($event)" rows="3" placeholder="Detalle del mensaje a transmitir..."></textarea>
+              <nx-field-error [error]="errorMensaje"></nx-field-error>
+            </div>
 
-          <div class="field">
-            <label for="notificationMessage">Mensaje *</label>
-            <textarea class="control" id="notificationMessage" [(ngModel)]="notificationMessage" style="min-height:90px"></textarea>
+            <div class="col-md-6">
+              <label for="notificationType" class="form-label fw-semibold">Tipo de alerta</label>
+              <select class="form-select" id="notificationType" [(ngModel)]="notificationType">
+                <option>Informativa</option>
+                <option>Preventiva</option>
+                <option>Urgente</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="audience" class="form-label fw-semibold">Audiencia objetivo</label>
+              <select class="form-select" id="audience" [(ngModel)]="audience">
+                <option>Todos</option>
+                <option>Contadores</option>
+                <option>Sociedades</option>
+              </select>
+            </div>
           </div>
         </div>
-
-        <div class="grid-2" style="margin-top:12px">
-          <div class="field">
-            <label for="notificationType">Tipo</label>
-            <select class="control" id="notificationType" [(ngModel)]="notificationType">
-              <option>Informativa</option>
-              <option>Preventiva</option>
-              <option>Urgente</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="audience">Audiencia</label>
-            <select class="control" id="audience" [(ngModel)]="audience">
-              <option>Todos</option>
-              <option>Contadores</option>
-              <option>Sociedades</option>
-            </select>
-          </div>
-        </div>
-      </section>
+      </div>
 
       <!-- 4. Programación -->
-      <section class="card section-card">
-        <div class="section-title">📅 4. Programación</div>
-
-        <div class="radio-line" style="display:flex; gap: 20px; margin-bottom: 12px;">
-          <label style="display:flex; gap:5px; align-items:center;">
-            <input type="radio" name="sendMode" value="now" [(ngModel)]="sendMode"> Enviar ahora
-          </label>
-          <label style="display:flex; gap:5px; align-items:center;">
-            <input type="radio" name="sendMode" value="scheduled" [(ngModel)]="sendMode"> Programar envío
-          </label>
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="card-title fw-bold mb-0 text-dark">
+            4. Programación
+          </h5>
         </div>
-
-        <div class="grid-3" *ngIf="sendMode === 'scheduled'">
-          <div class="field">
-            <label for="sendDate">Fecha de envío</label>
-            <input class="control" type="date" id="sendDate" [(ngModel)]="sendDate">
+        <div class="card-body">
+          <div class="d-flex gap-4 mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="sendMode" id="sendModeNow" value="now" [(ngModel)]="sendMode">
+              <label class="form-check-label fw-semibold" for="sendModeNow">Enviar ahora</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="sendMode" id="sendModeScheduled" value="scheduled" [(ngModel)]="sendMode">
+              <label class="form-check-label fw-semibold" for="sendModeScheduled">Programar envío</label>
+            </div>
           </div>
 
-          <div class="field">
-            <label for="sendTime">Hora de envío</label>
-            <input class="control" type="time" id="sendTime" [(ngModel)]="sendTime">
+          <div class="row g-3" *ngIf="sendMode === 'scheduled'">
+            <div class="col-md-4">
+              <label for="sendDate" class="form-label fw-semibold">Fecha de envío</label>
+              <input class="form-control" [class.is-invalid]="!!errorFecha" type="date" id="sendDate" [min]="minDate" [(ngModel)]="sendDate" (ngModelChange)="validarFecha()">
+              <nx-field-error [error]="errorFecha"></nx-field-error>
+            </div>
+
+            <div class="col-md-4">
+              <label for="sendTime" class="form-label fw-semibold">Hora de envío</label>
+              <input class="form-control" type="time" id="sendTime" [(ngModel)]="sendTime">
+            </div>
+
+            <div class="col-md-4">
+              <label for="recurrence" class="form-label fw-semibold">Recurrencia</label>
+              <select class="form-select" id="recurrence" [(ngModel)]="recurrence">
+                <option>No repetir</option>
+                <option>Diariamente</option>
+                <option>Semanalmente</option>
+                <option>Mensualmente</option>
+              </select>
+            </div>
           </div>
 
-          <div class="field">
-            <label for="recurrence">Recurrencia</label>
-            <select class="control" id="recurrence" [(ngModel)]="recurrence">
-              <option>No repetir</option>
-              <option>Diariamente</option>
-              <option>Semanalmente</option>
-              <option>Mensualmente</option>
-            </select>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="respectRange" [(ngModel)]="respectRange">
+            <label class="form-check-label text-muted small" for="respectRange">
+              Respetar el rango horario configurado
+            </label>
           </div>
         </div>
-
-        <label style="display:flex;gap:7px;align-items:center;margin-top:12px;font-size:12px">
-          <input type="checkbox" id="respectRange" [(ngModel)]="respectRange">
-          Respetar el rango horario configurado
-        </label>
-      </section>
+      </div>
 
       <!-- Botones de Acción -->
-      <div class="form-actions" style="margin-top:20px; display:flex; gap: 10px;">
-        <button class="btn btn-primary" id="saveNotificationBtn" (click)="guardarConfiguracion()" [disabled]="loading">
+      <div class="d-flex gap-2 mt-4 mb-5">
+        <button class="btn btn-primary px-4 py-2 fw-semibold" id="saveNotificationBtn" (click)="guardarConfiguracion()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
           {{ loading ? 'Guardando...' : 'Guardar configuración' }}
         </button>
-        <button class="btn btn-light" id="clearNotificationBtn" (click)="cancelar()">Cancelar</button>
+        <button class="btn btn-outline-secondary px-4 py-2" id="clearNotificationBtn" (click)="cancelar()">
+          Cancelar
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Columna Lateral de Vista Previa -->
+    <div class="col-lg-5 col-xl-4">
+      <div class="card shadow-sm border-0 sticky-top" style="top: 80px;">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="card-title fw-bold mb-0 text-dark">
+            Vista previa
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">Así verán los usuarios esta alerta en cada canal móvil.</p>
+
+          <h6 class="fw-bold small text-secondary mb-2">Vista en dispositivo móvil (Push)</h6>
+          <div class="p-3 bg-light rounded-3 border mb-4 shadow-sm">
+            <div class="d-flex justify-content-between text-muted small mb-1">
+              <span class="fw-bold">Junta Central de Contadores</span>
+              <span>Ahora</span>
+            </div>
+            <strong class="d-block text-dark mb-1 text-break" style="word-break: break-word;">{{ notificationTitle || 'Mantenimiento programado' }}</strong>
+            <p class="text-muted small mb-0 text-break" style="word-break: break-word; white-space: pre-wrap;">{{ notificationMessage || 'El sistema estará en mantenimiento temporal...' }}</p>
+          </div>
+
+          <h6 class="fw-bold small text-secondary mb-2">Vista en dispositivo móvil (Modal)</h6>
+          <div class="card border border-warning-subtle bg-warning-subtle p-3 text-center shadow-sm">
+            <div class="fs-2 text-warning mb-2">
+              <span class="fa fa-bullhorn"></span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1 text-break" style="word-break: break-word;">{{ notificationTitle || 'Mantenimiento programado' }}</h6>
+            <p class="text-muted small mb-3 text-break" style="word-break: break-word; white-space: pre-wrap;">{{ notificationMessage || 'El sistema estará en mantenimiento temporal...' }}</p>
+            <button class="btn btn-primary btn-sm w-100">Entendido</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Vista Previa Lateral -->
-    <aside class="card preview-card">
-      <h3>👁️ 5. Vista previa</h3>
-      <p class="intro" style="font-size:12px; color:#5f6368; margin-bottom: 15px;">Así verán los usuarios esta alerta en cada canal.</p>
-
-      <h4 style="font-size:11px; margin-bottom: 8px;">Vista en dispositivo móvil (Push)</h4>
-      <div class="phone" style="margin-bottom: 25px;">
-        <div class="notch"></div>
-        <div class="phone-time" style="font-size:12px; font-weight:700;">9:41</div>
-        <div class="phone-date" style="font-size:11px; color:#9aa0a6;">Lunes, 22 de mayo</div>
-
-        <div class="push-preview" style="background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px; margin-top: 15px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-          <div class="push-meta" style="display:flex; justify-content:space-between; font-size:10px; color:#5f6368; margin-bottom: 4px;">
-            <span>Junta Central de Contadores</span>
-            <span>Ahora</span>
-          </div>
-          <strong id="previewTitle" style="display:block; font-size:13px; color:#202124; margin-bottom: 3px;">{{ notificationTitle || 'Mantenimiento programado' }}</strong>
-          <p id="previewMessage" style="margin:0; font-size:11px; color:#5f6368; line-height: 1.4;">{{ notificationMessage || 'El sistema estará en mantenimiento...' }}</p>
-        </div>
-      </div>
-
-      <h4 style="font-size:11px; margin-bottom: 8px;">Vista en dispositivo móvil (Alerta estándar)</h4>
-      <div class="phone in-app-phone">
-        <div class="notch"></div>
-        <div class="in-app-screen" style="height: 100%; width: 100%; background: #f1f3f4; display:flex; justify-content:center; align-items:center; position:relative;">
-          <div class="in-app-backdrop" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; justify-content:center; align-items:center; padding: 12px;">
-            <div class="in-app-modal" style="background:#fff; border-radius:12px; padding:15px; text-align:center; box-shadow: 0 4px 20px rgba(0,0,0,0.25); width: 100%;">
-              <div class="in-app-modal-icon" style="font-size:24px; margin-bottom: 8px;">📣</div>
-              <h4 id="inAppPreviewTitle" style="font-size:14px; margin:0 0 6px 0; color:#202124; font-weight:700;">{{ notificationTitle || 'Mantenimiento programado' }}</h4>
-              <p id="inAppPreviewMessage" style="font-size:11px; color:#5f6368; margin:0 0 12px 0; line-height: 1.4;">{{ notificationMessage || 'El sistema estará en mantenimiento...' }}</p>
-              <button class="btn btn-primary btn-sm" style="width:100%;">Entendido</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
   </div>
-</section>

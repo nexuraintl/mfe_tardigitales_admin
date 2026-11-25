@@ -1,174 +1,47 @@
-<div (click)="closeDropdowns()">
-  <!-- Barra Superior (Header) -->
-  <header class="nx-topbar">
-    <div class="nx-topbar-brand">
-      <button 
-        type="button" 
-        id="nxSidebarToggle" 
-        class="nx-menu-button" 
-        aria-label="Abrir o cerrar menú" 
-        title="Menú"
-        (click)="toggleSidebar(); $event.stopPropagation()"
-      >
-        <span></span><span></span><span></span>
-      </button>
+<!-- 1. Header Web Component (Oculto en ruta de verificación pública) -->
+<nx-admin-header
+  *ngIf="!isPublicRoute"
+  [appTitle]="'Tarjetas Digitales'"
+  [currentUser]="currentUser"
+  [appGrid]="appGrid"
+  show-search="false"
+  (nx-toggle-sidebar)="onToggleSidebar()"
+  (nx-navigate)="onNavigate($any($event))"
+  (nx-app-change)="onAppChange($any($event))"
+  (nx-profile-action)="onProfileAction($any($event))">
+</nx-admin-header>
 
-      <a routerLink="/" class="nx-brand-link" aria-label="Ir a tarjetas digitales">
-        <img class="nx-platform-logo" src="logo-app-solution.svg" alt="Nexura Platform">
-      </a>
+<div [class.main-container]="!isPublicRoute" [style.display]="!isPublicRoute ? 'flex' : 'block'" [style.min-height]="!isPublicRoute ? 'calc(100vh - 64px)' : '100vh'" style="background-color: #f1f5f9;">
+  <!-- 2. Sidebar de navegación (Oculto en ruta pública) -->
+  <nx-admin-mod-sidebar
+    *ngIf="!isPublicRoute"
+    [menuSections]="menuSections"
+    [activePath]="currentUrl"
+    [primaryAction]="primaryAction"
+    [collapsed]="sidebarCollapsed"
+    (nx-sidebar-change)="sidebarCollapsed = $any($event).detail?.collapsed"
+    (nx-navigate)="onNavigate($any($event))"
+    (nx-primary-action)="onPrimaryAction($any($event))">
+  </nx-admin-mod-sidebar>
+
+  <!-- 3. Área principal de contenido -->
+  <main class="content-area" [style.flex]="!isPublicRoute ? '1' : 'none'" style="min-width: 0; display: flex; flex-direction: column; min-height: 100vh;">
+    <!-- Barra de opciones / Título de vista y botones dinámicos (Oculto en ruta pública) -->
+    <nx-admin-mod-options
+      *ngIf="!isPublicRoute"
+      [pageTitle]="pageTitle"
+      [showBackButton]="true"
+      [actions]="viewActions"
+      (nx-action)="ejecutarAccion($any($event).detail)"
+      (nx-back)="onBack()">
+    </nx-admin-mod-options>
+
+    <!-- 4. Contenedor de contenido ÚNICO donde se proyecta el router de Angular -->
+    <div [class.p-4]="!isPublicRoute" style="flex: 1; width: 100%;">
+      <router-outlet (activate)="onRouteActivate($event)"></router-outlet>
     </div>
 
-    <div class="nx-topbar-entity">
-      <img class="nx-topbar-entity-logo" src="logo (1).png" alt="Unidad Administrativa Especial Junta Central de Contadores">
-    </div>
-
-    <nav class="nx-topbar-actions" aria-label="Acciones de usuario">
-      <!-- Menú de Apps -->
-      <div class="nx-dropdown-host">
-        <button 
-          type="button" 
-          class="nx-circle-button nx-dropdown-trigger" 
-          title="Aplicaciones"
-          (click)="toggleDropdown('apps'); $event.stopPropagation()"
-        >
-          <span class="nx-grid-icon"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-        </button>
-        <div class="nx-dropdown nx-apps-menu" [ngClass]="{'open': appsMenuOpen}" id="nxAppsMenu">
-          <div class="nx-dropdown-title">Aplicaciones</div>
-          <div class="nx-app-grid">
-            <a routerLink="/tarjetas-contadores">
-              <span class="nx-app-tile blue">▣</span><span>Tarjetas</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Configuración -->
-      <div class="nx-dropdown-host">
-        <button 
-          type="button" 
-          class="nx-circle-button nx-dropdown-trigger" 
-          title="Configuración"
-          (click)="toggleDropdown('settings'); $event.stopPropagation()"
-        >
-          ⚙
-        </button>
-        <div class="nx-dropdown" [ngClass]="{'open': settingsMenuOpen}" id="nxSettingsMenu">
-          <div class="nx-dropdown-title">Configuración</div>
-          <button type="button">⚙ <span>Configuración general</span></button>
-          <button type="button">? <span>Ayuda</span></button>
-        </div>
-      </div>
-
-      <!-- Perfil -->
-      <div class="nx-dropdown-host">
-        <button 
-          type="button" 
-          class="nx-avatar-button nx-dropdown-trigger" 
-          title="Fabian Vargas"
-          (click)="toggleDropdown('profile'); $event.stopPropagation()"
-        >
-          F
-        </button>
-        <div class="nx-dropdown nx-profile-menu" [ngClass]="{'open': profileMenuOpen}" id="nxProfileMenu">
-          <div class="nx-profile-summary">
-            <div class="nx-profile-avatar">F</div>
-            <div>
-              <strong>Fabian Vargas</strong>
-              <small>fvargas@nexura.com</small>
-              <span>Administrador</span>
-            </div>
-          </div>
-          <button type="button">👤 <span>Mis datos</span></button>
-          <button type="button">🔒 <span>Cambiar contraseña</span></button>
-          <button type="button">⏻ <span>Cerrar sesión</span></button>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <div class="app">
-    <!-- Menú Lateral (Sidebar) -->
-    <aside class="sidebar" id="nxSidebar">
-      <nav class="menu">
-        <div class="menu-label">Gestión principal</div>
-
-        <a routerLink="/tarjetas-contadores" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">▣</span>
-          <span class="menu-text">Tarjetas Contadores</span>
-        </a>
-
-        <a routerLink="/sociedades" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">▣</span>
-          <span class="menu-text">Tarjetas Sociedades</span>
-        </a>
-
-        <a routerLink="/crear-notificacion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">●</span>
-          <span class="menu-text">Crear notificación</span>
-        </a>
-
-        <a routerLink="/historial" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">◷</span>
-          <span class="menu-text">Historial de notificaciones</span>
-        </a>
-
-        <a routerLink="/crud" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">▤</span>
-          <span class="menu-text">Gestión de Trámites (CRUD)</span>
-        </a>
-
-        <div class="menu-divider"></div>
-        <div class="menu-label">Administración</div>
-
-        <a routerLink="/reportes" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">▥</span>
-          <span class="menu-text">Reportes</span>
-        </a>
-
-        <a routerLink="/certificados" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">▤</span>
-          <span class="menu-text">Certificados</span>
-        </a>
-
-        <a routerLink="/branding" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">✎</span>
-          <span class="menu-text">Branding</span>
-        </a>
-
-        <a routerLink="/validador-qr" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">▦</span>
-          <span class="menu-text">Validador QR</span>
-        </a>
-
-        <a routerLink="/auditoria" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">↺</span>
-          <span class="menu-text">Auditoría API</span>
-        </a>
-
-        <a routerLink="/usuarios" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-          <span class="menu-icon">♙</span>
-          <span class="menu-text">Usuarios</span>
-        </a>
-      </nav>
-
-      <div class="profile">
-        <div class="avatar">FV</div>
-        <div class="profile-copy">
-          <strong>Fabian Vargas</strong>
-          <small>Administrador</small>
-        </div>
-      </div>
-
-      <div class="nx-sidebar-footer">
-        <img src="logo-app-solution.svg" alt="Nexura Platform">
-        <small>Versión 1.0.0</small>
-      </div>
-    </aside>
-
-    <!-- Contenido Principal -->
-    <main class="main">
-      <router-outlet></router-outlet>
-    </main>
-  </div>
+    <!-- 5. Footer Web Component (Oculto en ruta pública) -->
+    <nx-admin-footer *ngIf="!isPublicRoute" [version]="'Versión 1.0.0'"></nx-admin-footer>
+  </main>
 </div>

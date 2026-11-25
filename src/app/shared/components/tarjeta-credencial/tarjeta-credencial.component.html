@@ -1,0 +1,173 @@
+<div class="credencial-wrapper" [class.modo-impresion]="isImpresion">
+  
+  <!-- ===================== TARJETA DEL CONTADOR ===================== -->
+  <article
+    #tarjetaRef
+    *ngIf="tipo === 'contador'"
+    class="tarjeta tarjeta--contador"
+    [class.tarjeta--impresion]="isImpresion"
+    data-tipo="contador"
+    aria-label="Tarjeta profesional de Andrés Felipe Torres Cárdenas"
+  >
+    <div class="tarjeta__fondo" aria-hidden="true">
+      <!-- 1. Color de fondo / degradado angular con punto de luz -->
+      <div #degradadoRef class="tarjeta__degradado" [style.background]="degradadoFondo" [style.transform]="transformDegradado"></div>
+      
+      <!-- 2. Grano oficial de la plantilla (textura_overlay.png en mezcla overlay) -->
+      <img *ngIf="!isImpresion" class="tarjeta__textura tarjeta__textura--overlay" [src]="texturaOverlay" alt="Grano oficial">
+      
+      <!-- 3. Patrón de fondo configurable por el usuario -->
+      <div *ngIf="!isImpresion && patronFondoUrl" class="tarjeta__textura tarjeta__textura--patron" [style.backgroundImage]="'url(' + patronFondoUrl + ')'"></div>
+    </div>
+
+    <div class="tarjeta__contenido">
+      <img
+        class="logo-jcc"
+        [src]="logoUrl"
+        alt="Unidad Administrativa Especial Junta Central de Contadores"
+        (error)="onLogoError($event)"
+      >
+
+      <div class="separa-20"></div>
+
+      <!-- Foto 3:4 (máx. 175 de alto) + columna de datos de 147 -->
+      <div class="contador__fila-foto">
+        <div class="contador__foto-celda">
+          <div class="contador__foto" [class.campo-oculto]="!isFotoVisible">
+            <img [src]="fotoUrl" alt="Foto del titular">
+          </div>
+        </div>
+        <div class="contador__columna">
+          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" data-nx-tooltip="Copiar número de tarjeta" aria-label="Copiar número de tarjeta">
+            <p class="linea etiqueta">Tarjeta profesional</p>
+            <div class="linea numero__fila">
+              <span class="numero__cifra v-h4">{{ valorRegistro }}</span>
+              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" data-nx-tooltip="Copiar número de tarjeta">
+            </div>
+          </div>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isFechaVisible">
+            <p class="linea etiqueta">Fecha resolución de inscripción</p>
+            <p class="linea linea--valor v-b4-bold">{{ valorFecha }}</p>
+          </div>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isMedio3Visible">
+            <p class="linea etiqueta">Resolución de inscripción</p>
+            <p class="linea linea--valor v-b3-bold">{{ valorMedio3 }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="separa-20"></div>
+
+      <div class="fila-11">
+        <div class="dato izq" [class.campo-oculto]="!isTitularVisible">
+          <p class="linea etiqueta">Nombre</p>
+          <p class="linea linea--valor v-b3-bold">{{ valorTitular }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isDocumentoVisible">
+          <p class="linea etiqueta">Cédula de ciudadanía</p>
+          <p class="linea linea--valor v-b3-bold">{{ valorDocumento }}</p>
+        </div>
+      </div>
+
+      <div class="separa-12"></div>
+
+      <div class="fila-11">
+        <div class="dato izq" [class.campo-oculto]="!isExtraVisible">
+          <p class="linea etiqueta">Institución de educación superior</p>
+          <p class="linea linea--valor v-b3-bold">{{ valorExtra }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isPie2DerVisible">
+          <p class="linea etiqueta">Número de expediente</p>
+          <p class="linea linea--valor v-b4-bold">{{ valorPie2Der }}</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ===================== TARJETA DE LA SOCIEDAD ===================== -->
+  <article
+    #tarjetaRef
+    *ngIf="tipo === 'sociedad'"
+    class="tarjeta tarjeta--sociedad"
+    [class.tarjeta--impresion]="isImpresion"
+    data-tipo="sociedad"
+    aria-label="Tarjeta de registro de Innovación Financiera y Tributaria S.A.S."
+  >
+    <div class="tarjeta__fondo" aria-hidden="true">
+      <!-- 1. Color de fondo / degradado angular con punto de luz -->
+      <div #degradadoRef class="tarjeta__degradado" [style.background]="degradadoFondo" [style.transform]="transformDegradado"></div>
+      
+      <!-- 2. Grano oficial de la plantilla (textura_overlay.png en mezcla overlay) -->
+      <img *ngIf="!isImpresion" class="tarjeta__textura tarjeta__textura--overlay" [src]="texturaOverlay" alt="Grano oficial">
+      
+      <!-- 3. Patrón de fondo configurable por el usuario -->
+      <div *ngIf="!isImpresion && patronFondoUrl" class="tarjeta__textura tarjeta__textura--patron" [style.backgroundImage]="'url(' + patronFondoUrl + ')'"></div>
+    </div>
+
+    <div class="tarjeta__contenido">
+      <img
+        class="logo-jcc"
+        [src]="logoUrl"
+        alt="Unidad Administrativa Especial Junta Central de Contadores"
+        (error)="onLogoError($event)"
+      >
+
+      <div class="separa-20"></div>
+
+      <!-- Logo de la sociedad (mitad izquierda, 175 de alto) + columna (mitad derecha) -->
+      <div class="sociedad__fila-logo">
+        <div class="sociedad__logo" [class.campo-oculto]="!isFotoVisible">
+          <img [src]="fotoUrl" alt="Logo de la sociedad">
+        </div>
+        <div class="sociedad__columna">
+          <div class="numero" [class.campo-oculto]="!isRegistroVisible" (click)="copiarMatricula($event)" role="button" data-nx-tooltip="Copiar número de registro" aria-label="Copiar número de registro">
+            <p class="linea etiqueta">Número de registro</p>
+            <div class="linea numero__fila">
+              <span class="numero__cifra v-h4">{{ valorRegistro }}</span>
+              <img class="numero__copiar" src="assets/tarjeta/logos/icono_copiar.svg" alt="Copiar" data-nx-tooltip="Copiar número de registro">
+            </div>
+          </div>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isFechaVisible">
+            <p class="linea etiqueta">Fecha resolución de inscripción</p>
+            <p class="linea linea--valor v-b4-medium">{{ valorFecha }}</p>
+          </div>
+          <div class="separa-8"></div>
+          <div class="dato dato--fin dato--aire" [class.campo-oculto]="!isMedio3Visible">
+            <p class="linea etiqueta">Resolución de inscripción</p>
+            <p class="linea linea--valor v-b4-bold">{{ valorMedio3 }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="separa-20"></div>
+
+      <div class="fila-flex">
+        <div class="dato izq" [class.campo-oculto]="!isTitularVisible">
+          <p class="linea etiqueta">Nombre</p>
+          <p class="linea linea--valor v-b4-medium">{{ valorTitular }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isDocumentoVisible">
+          <p class="linea etiqueta">NIT</p>
+          <p class="linea linea--valor v-b4-medium">{{ valorDocumento }}</p>
+        </div>
+      </div>
+
+      <div class="separa-12"></div>
+
+      <div class="fila-flex">
+        <div class="dato izq" [class.campo-oculto]="!isExtraVisible">
+          <p class="linea etiqueta">Tipo de registro</p>
+          <p class="linea linea--valor v-b4-medium">{{ valorExtra }}</p>
+        </div>
+        <div class="dato dato--fin der" [class.campo-oculto]="!isPie2DerVisible">
+          <p class="linea etiqueta">Número de expediente</p>
+          <p class="linea linea--valor v-b4-bold">{{ valorPie2Der }}</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+</div>

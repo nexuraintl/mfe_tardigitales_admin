@@ -1,59 +1,294 @@
-<section class="view">
-  <header class="page-header">
-    <div>
-      <h1>Campos del validador (verificación pública)</h1>
-      <p>Defina la información visible al consultar el código QR de una tarjeta.</p>
-    </div>
-    <div class="header-actions">
-      <button type="button" class="btn btn-outline-secondary" (click)="volver()">← Volver</button>
-    </div>
-  </header>
+<!-- Alertas del Sistema -->
+<nx-alert [error]="currentError" [autoScroll]="true" (onClose)="currentError = null"></nx-alert>
+<nx-alert *ngIf="mensajeAdvertencia" type="warning" [message]="mensajeAdvertencia" [autoScroll]="true" (onClose)="mensajeAdvertencia = ''"></nx-alert>
+<nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="5000" (onClose)="mensajeExito = ''"></nx-alert>
 
-  <!-- Alertas del Sistema -->
-  <nx-alert [error]="currentError" (onClose)="currentError = null"></nx-alert>
-  <nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" (onClose)="mensajeExito = ''"></nx-alert>
 
-  <div class="qr-validator-content">
-    <section class="card individual-issue-card">
-      <div class="individual-issue-card-header">Seleccione los campos visibles al verificar el QR de una tarjeta</div>
-      <div class="individual-issue-card-body">
-        <form id="qrValidatorForm">
-          <div class="qr-field-list">
-            <label class="qr-field-option">
-              <input type="checkbox" [(ngModel)]="config.val_foto" name="val_foto">
-              <span>Fotografía</span>
-            </label>
-            <label class="qr-field-option">
-              <input type="checkbox" [(ngModel)]="config.val_nombres" name="val_nombres">
-              <span>Nombres</span>
-            </label>
-            <label class="qr-field-option">
-              <input type="checkbox" [(ngModel)]="config.val_matricula" name="val_matricula">
-              <span>Matrícula</span>
-            </label>
-            <label class="qr-field-option">
-              <input type="checkbox" [(ngModel)]="config.val_numero_identificacion" name="val_numero_identificacion">
-              <span>Identificación</span>
-            </label>
-            <label class="qr-field-option">
-              <input type="checkbox" [(ngModel)]="config.val_codigo_tarjeta" name="val_codigo_tarjeta">
-              <span>Código de tarjeta</span>
-            </label>
-            <label class="qr-field-option">
-              <input type="checkbox" [(ngModel)]="config.val_estado" name="val_estado">
-              <span>Estado (vigente)</span>
-            </label>
+
+<!-- Tarjeta Principal de Configuración -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white py-3 border-bottom">
+    <h5 class="card-title fw-bold mb-1 text-dark">
+      Campos visibles del validador QR — {{ isSociedades ? 'Sociedades' : 'Contadores' }}
+    </h5>
+    <small class="text-muted">
+      Seleccione los campos visibles para la consulta ciudadana por QR y verifique el resultado en la vista previa.
+    </small>
+  </div>
+  
+  <div class="card-body p-4">
+    <div class="row g-4 align-items-start">
+      <!-- Columna Izquierda: Opciones de Campos -->
+      <div class="col-12 col-lg-7">
+        <!-- FORMULARIO CONTADORES -->
+        <form *ngIf="!isSociedades" id="qrValidatorContadoresForm">
+          <div class="qr-fields-list">
+            <!-- 1. Tarjeta profesional -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valTarjetaProfesional">
+                  Tarjeta profesional
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valTarjetaProfesional" [(ngModel)]="configContador.val_tarjeta_profesional" name="val_tarjeta_profesional">
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Fecha resolución de inscripción -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valFechaResolucionCont">
+                  Fecha resolución de inscripción
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valFechaResolucionCont" [(ngModel)]="configContador.val_fecha_resolucion" name="val_fecha_resolucion">
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Resolución de inscripción -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valResolucionCont">
+                  Resolución de inscripción
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valResolucionCont" [(ngModel)]="configContador.val_resolucion" name="val_resolucion">
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Nombre -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valNombreCont">
+                  Nombre completo
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valNombreCont" [(ngModel)]="configContador.val_nombre" name="val_nombre">
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Cédula de ciudadanía -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valCedulaCont">
+                  Cédula de ciudadanía
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valCedulaCont" [(ngModel)]="configContador.val_cedula" name="val_cedula">
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Institución de educación superior -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valInstitucionCont">
+                  Institución de educación superior (IES)
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valInstitucionCont" [(ngModel)]="configContador.val_institucion" name="val_institucion">
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Número de expediente -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valExpedienteCont">
+                  Número de expediente
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valExpedienteCont" [(ngModel)]="configContador.val_expediente" name="val_expediente">
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. Estado (vigente) -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valEstadoCont">
+                  Estado (vigente)
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valEstadoCont" [(ngModel)]="configContador.val_estado" name="val_estado">
+                </div>
+              </div>
+            </div>
           </div>
         </form>
 
-        <div class="qr-validator-footer">
-          <button type="button" class="btn btn-primary btn-sm" (click)="guardarConfiguracion()" [disabled]="loading">
-            <span *ngIf="!loading">Guardar</span>
-            <span *ngIf="loading">Guardando...</span>
-          </button>
-          <small class="qr-validator-note">Aplica a la página pública <code>/demogen/verificar/&lt;token&gt;</code>.</small>
+        <!-- FORMULARIO SOCIEDADES -->
+        <form *ngIf="isSociedades" id="qrValidatorSociedadesForm">
+          <div class="qr-fields-list">
+            <!-- 1. Número de registro -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valNumeroRegistroSoc">
+                  Número de registro
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valNumeroRegistroSoc" [(ngModel)]="configSociedad.val_numero_registro" name="val_numero_registro">
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Fecha resolución inscripción -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valFechaResolucionSoc">
+                  Fecha resolución de inscripción
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valFechaResolucionSoc" [(ngModel)]="configSociedad.val_fecha_resolucion" name="val_fecha_resolucion">
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Número de expediente -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valExpedienteSoc">
+                  Número de expediente
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valExpedienteSoc" [(ngModel)]="configSociedad.val_expediente" name="val_expediente">
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Razón social -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valRazonSocialSoc">
+                  Razón social
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valRazonSocialSoc" [(ngModel)]="configSociedad.val_razon_social" name="val_razon_social">
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. NIT -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valNitSoc">
+                  NIT
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valNitSoc" [(ngModel)]="configSociedad.val_nit" name="val_nit">
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Tipo de registro -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valTipoRegistroSoc">
+                  Tipo de registro
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valTipoRegistroSoc" [(ngModel)]="configSociedad.val_tipo_registro" name="val_tipo_registro">
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Resolución de inscripción -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valResolucionSoc">
+                  Resolución de inscripción
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valResolucionSoc" [(ngModel)]="configSociedad.val_resolucion" name="val_resolucion">
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. Estado (vigente) -->
+            <div class="card border rounded-3 qr-field-card shadow-none">
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <label class="form-check-label small fw-semibold text-dark mb-0 cursor-pointer flex-grow-1" for="valEstadoSoc">
+                  Estado (vigente)
+                </label>
+                <div class="form-check form-switch m-0 p-0 flex-shrink-0 d-flex align-items-center">
+                  <input class="form-check-input cursor-pointer m-0" type="checkbox" role="switch" id="valEstadoSoc" [(ngModel)]="configSociedad.val_estado" name="val_estado">
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Columna Derecha: Vista Previa -->
+      <div class="col-12 col-lg-5">
+        <div class="card bg-light border p-3 shadow-none">
+          <div class="d-flex justify-content-center overflow-hidden">
+            <div class="qr-preview-card-holder">
+              <!-- Skeleton Loader Latente Gris -->
+              <div *ngIf="brandingLoading" class="tarjeta-skeleton-loader" aria-label="Cargando vista previa de la tarjeta...">
+                <div class="skeleton-shimmer"></div>
+                <div class="skeleton-content">
+                  <!-- Header skeleton: logo -->
+                  <div class="skeleton-block skeleton-logo"></div>
+                  <!-- Middle skeleton: photo + side column -->
+                  <div class="skeleton-middle">
+                    <div class="skeleton-block skeleton-photo"></div>
+                    <div class="skeleton-column">
+                      <div class="skeleton-block skeleton-line ms-auto" style="width: 70%;"></div>
+                      <div class="skeleton-block skeleton-line-lg ms-auto" style="width: 90%;"></div>
+                      <div class="skeleton-block skeleton-line ms-auto" style="width: 50%;"></div>
+                      <div class="skeleton-block skeleton-line ms-auto" style="width: 75%;"></div>
+                    </div>
+                  </div>
+                  <!-- Bottom skeleton: data lines -->
+                  <div class="skeleton-bottom">
+                    <div class="skeleton-row">
+                      <div class="skeleton-block skeleton-line" style="width: 48%;"></div>
+                      <div class="skeleton-block skeleton-line" style="width: 38%;"></div>
+                    </div>
+                    <div class="skeleton-row mt-2">
+                      <div class="skeleton-block skeleton-line" style="width: 56%;"></div>
+                      <div class="skeleton-block skeleton-line" style="width: 30%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Credencial ya cargada -->
+              <app-tarjeta-credencial
+                *ngIf="!brandingLoading"
+                [tipo]="isSociedades ? 'sociedad' : 'contador'"
+                modo="digital"
+                vista="ambas"
+                layout="auto"
+                [datos]="datosEjemplo"
+                [branding]="credencialBranding"
+                [camposVisibles]="isSociedades ? configSociedad : configContador"
+              ></app-tarjeta-credencial>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   </div>
-</section>
+
+  <div class="card-footer bg-light border-top p-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <small class="text-muted">
+      <span class="fa fa-info-circle me-1"></span> Los cambios impactan inmediatamente la verificación ciudadana por QR en <code>/admin/tardigitales/verificar</code>.
+    </small>
+    <button 
+      type="button" 
+      class="btn btn-primary px-4 py-2 fw-semibold" 
+      (click)="guardarConfiguracion()" 
+      [disabled]="saving || loading || !hasSelectedFields"
+      [title]="!hasSelectedFields ? 'Seleccione al menos un campo para habilitar el guardado' : ''"
+    >
+      <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+      {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+    </button>
+  </div>
+</div>

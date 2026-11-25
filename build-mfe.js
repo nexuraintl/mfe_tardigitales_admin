@@ -22,9 +22,14 @@ async function buildMfe() {
     // Leer archivos del directorio de origen
     const files = fs.readdirSync(srcDir);
 
-    // Filtrar archivos JS (excluyendo sourcemaps y licencias si existen)
-    // El orden de concatenación ideal en Angular suele ser polyfills -> main
-    const jsFiles = files.filter(f => f.endsWith('.js') && !f.endsWith('.map') && !f.includes('txt'));
+    // Filtrar archivos JS propios de Angular (excluyendo layout bundles, sourcemaps y licencias)
+    const jsFiles = files.filter(f => 
+      f.endsWith('.js') && 
+      !f.endsWith('.map') && 
+      !f.includes('txt') && 
+      !f.startsWith('layout') && 
+      !f.startsWith('nx-admin-layout')
+    );
     
     // Ordenar para asegurar que polyfills vaya primero
     jsFiles.sort((a, b) => {
@@ -47,8 +52,13 @@ async function buildMfe() {
     fs.writeFileSync(outputJsPath, concatenatedJs, 'utf8');
     console.log(`¡JS unificado creado con éxito en: ${outputJsPath}!`);
 
-    // Concatenar o copiar estilos CSS
-    const cssFiles = files.filter(f => f.endsWith('.css') && !f.endsWith('.map'));
+    // Concatenar estilos CSS de Angular (excluyendo estilos independientes de layout)
+    const cssFiles = files.filter(f => 
+      f.endsWith('.css') && 
+      !f.endsWith('.map') && 
+      !f.startsWith('layout') && 
+      !f.startsWith('nexura-theme')
+    );
     console.log('Archivos CSS detectados:', cssFiles);
 
     let concatenatedCss = '';
@@ -62,6 +72,25 @@ async function buildMfe() {
     fs.writeFileSync(outputCssPath, concatenatedCss, 'utf8');
     console.log(`¡CSS unificado creado con éxito en: ${outputCssPath}!`);
 
+    // Copiar favicon.ico si existe
+    ['favicon.ico'].forEach(fav => {
+      const favSrc = fs.existsSync(path.join(srcDir, fav)) 
+        ? path.join(srcDir, fav) 
+        : path.join(__dirname, 'public', fav);
+      if (fs.existsSync(favSrc)) {
+        fs.copyFileSync(favSrc, path.join(destDir, fav));
+        console.log(`¡${fav} copiado a: ${destDir}!`);
+      }
+    });
+
+    // Copiar carpeta assets si existe
+    const assetsSrc = path.join(srcDir, 'assets');
+    const assetsDest = path.join(destDir, 'assets');
+    if (fs.existsSync(assetsSrc)) {
+      fs.cpSync(assetsSrc, assetsDest, { recursive: true });
+      console.log(`¡Carpeta assets copiada a: ${assetsDest}!`);
+    }
+
     // Generar index.html para uso independiente
     const indexHtmlContent = `<!doctype html>
 <html lang="es">
@@ -70,7 +99,22 @@ async function buildMfe() {
     <title>JCC Portal</title>
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="jcc-portal-mfe.css">
+    <!-- Carga dinámica del Web Component Layout por CDN -->
+    <script>
+      (() => {
+        const isPreprod = location.href.includes('https://preproduccion9-jcc.nexura.com.co');
+        const cdnUrl = isPreprod
+          ? 'https://preproduccion9-jcc.nexura.com.co/mod/Galeria/js/web-components/admin/v1/layout.esm.js'
+          : 'http://local-cdn.nexura.com.co/web-components/admin/v1/layout.esm.js';
+
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = cdnUrl;
+        document.head.appendChild(script);
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>

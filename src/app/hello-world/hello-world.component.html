@@ -1,41 +1,48 @@
-<div class="mfe-container">
-  <div class="mfe-card">
-    <div class="mfe-badge">Microfrontend</div>
+<div class="container py-5 d-flex justify-content-center">
+  <div class="card shadow-sm border-0 text-center p-4" style="max-width: 520px; width: 100%;">
+    <div class="mb-3">
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+        Microfrontend
+      </span>
+    </div>
     
-    <h2 class="mfe-title">
+    <h2 class="h4 fw-bold text-dark mb-3">
       {{ nombre ? ('¡Hola, ' + nombre + '!') : saludoActual }}
     </h2>
     
-    <p class="mfe-description">
+    <p class="text-muted small mb-4">
       Este es un microfrontend independiente construido con Angular Elements e integrado sin dependencias del servidor PHP.
     </p>
 
     <!-- Sección de Input Reactivo -->
-    <div class="mfe-input-group">
-      <label for="nombreInput" class="mfe-label">¿Cómo te llamas?</label>
-      <input 
-        id="nombreInput" 
-        type="text" 
-        class="mfe-input" 
-        [(ngModel)]="nombre" 
-        placeholder="Escribe tu nombre aquí..."
-        autocomplete="off"
-      />
+    <div class="mb-4 text-start">
+      <label for="nombreInput" class="form-label small fw-semibold">¿Cómo te llamas?</label>
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted"><span class="fa fa-user"></span></span>
+        <input 
+          id="nombreInput" 
+          type="text" 
+          class="form-control border-start-0 ps-0" 
+          [(ngModel)]="nombre" 
+          placeholder="Escribe tu nombre aquí..."
+          autocomplete="off"
+        />
+      </div>
     </div>
 
     <!-- Sección de Controles Interactivos -->
-    <div class="mfe-controls">
-      <button class="mfe-btn mfe-btn-secondary" (click)="cambiarSaludo()">
-        <span class="mfe-btn-icon">🌐</span> Idioma: {{ saludos[saludoActualIndex].lang }}
+    <div class="d-flex justify-content-center gap-2 mb-4">
+      <button class="btn btn-outline-secondary" (click)="cambiarSaludo()">
+        <span class="fa fa-globe me-1"></span> Idioma: {{ saludos[saludoActualIndex].lang }}
       </button>
       
-      <button class="mfe-btn mfe-btn-primary" (click)="incrementar()">
-        <span class="mfe-btn-icon">⚡</span> Clics: {{ contador }}
+      <button class="btn btn-primary" (click)="incrementar()">
+        <span class="fa fa-bolt me-1"></span> Clics: {{ contador }}
       </button>
     </div>
 
-    <div class="mfe-footer">
-      <span>Powered by Angular v19 & nxPlatform</span>
+    <div class="card-footer bg-white border-top pt-3 pb-0 text-muted small">
+      Powered by Angular v19 & nxPlatform
     </div>
   </div>
 </div>

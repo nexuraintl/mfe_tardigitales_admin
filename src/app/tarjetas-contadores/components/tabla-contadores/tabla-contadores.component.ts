@@ -1,0 +1,464 @@
+import { Component, Input, Output, EventEmitter, HostListener, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TableColumn, TarjetaContador } from '../../tarjetas-contadores.component';
+import { NxAlertComponent } from '../../../shared/components/alert/alert.component';
+import { FilterBuilderComponent, FilterColumnConfig, ActiveFilter } from '../../../shared/components/filter-builder/filter-builder.component';
+import { AppError } from '../../../core/services/error-handler.service';
+import { formatTipoSolicitud, getEstadoTarjetaBadgeClass, formatCanonicalLabel } from '../../../core/constants/tarjetas.constants';
+import { PermissionsService } from '../../../core/services/permissions.service';
+import { TarjetaPermissionScope } from '../../../core/constants/permissions.constants';
+
+@Component({
+  selector: 'app-tabla-contadores',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NxAlertComponent, FilterBuilderComponent],
+  template: `
+    <!-- Alertas del Sistema -->
+    <nx-alert [error]="currentError" (onClose)="currentErrorChange.emit(null)"></nx-alert>
+    <nx-alert *ngIf="mensajeExito" type="success" [message]="mensajeExito" [autoScroll]="true" [duration]="6000" (onClose)="mensajeExitoChange.emit('')"></nx-alert>
+
+    <!-- Constructor de Múltiples Filtros Dinámicos (Exclusivo para Reportes) -->
+    <app-filter-builder
+      *ngIf="esModoReporte"
+      [columns]="filterColumns"
+      (applyFilters)="applyFilters.emit($event)"
+      (clearFilters)="clearFilters.emit()"
+    ></app-filter-builder>
+
+    <!-- Tabla de Datos 100% Nativa Angular -->
+    <div class="nx-table-card shadow-sm mb-4">
+      <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h5 class="card-title fw-bold mb-0 text-dark">
+            Solicitudes de tarjetas para contadores
+          </h5>
+          <small class="text-muted">Resultados del módulo de persona natural.</small>
+        </div>
+      </div>
+
+      <!-- Barra de Herramientas: Buscador y Selector de Registros -->
+      <div class="nx-table-toolbar">
+        <div class="nx-table-search-wrap">
+          <input 
+            type="text" 
+            class="nx-table-search-input" 
+            placeholder="Escriba para filtrar..." 
+            [ngModel]="searchQuery" 
+            (ngModelChange)="onSearchQueryChange($event)"
+          >
+          <button 
+            *ngIf="searchQuery" 
+            type="button" 
+            class="btn btn-sm btn-link text-muted position-absolute end-0 me-2 p-0 text-decoration-none"
+            (click)="clearSearch()"
+            data-nx-tooltip="Limpiar búsqueda"
+            aria-label="Limpiar búsqueda"
+          >
+            <span class="fa fa-times"></span>
+          </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Selector Dinámico de Columnas -->
+          <div class="columns-selector-host">
+            <button 
+              type="button" 
+              class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" 
+              (click)="toggleColumnsMenu($event)"
+              aria-haspopup="true"
+              [attr.aria-expanded]="isColumnsMenuOpen"
+              title="Mostrar u ocultar columnas"
+            >
+              <span class="fa fa-columns"></span>
+              <span>Columnas</span>
+              <span class="badge bg-secondary text-white">{{ visibleColumnsCount }}</span>
+            </button>
+
+            <div class="columns-selector-menu shadow" [class.open]="isColumnsMenuOpen" (click)="$event.stopPropagation()">
+              <div class="columns-selector-header">
+                <strong>Columnas visibles</strong>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small text-primary" (click)="resetColumns.emit()">
+                  Restablecer
+                </button>
+              </div>
+
+              <div *ngIf="columnMessageWarning" class="alert alert-warning py-1 px-2 mb-2 small text-center" style="font-size: 11px;">
+                {{ columnMessageWarning }}
+              </div>
+
+              <div class="columns-selector-list">
+                <label *ngFor="let col of availableColumns" class="columns-selector-option">
+                  <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col)">
+                  <span>{{ formatLabel(col.label) }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="nx-table-length">
+            <span>Mostrar</span>
+            <select class="nx-table-length-select" [ngModel]="pageSize" (ngModelChange)="pageSizeChange.emit($event)">
+              <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+            </select>
+            <span>registros</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle text-nowrap mb-0 w-100">
+          <thead class="table-light">
+            <tr>
+              <ng-container *ngFor="let col of availableColumns">
+                <th *ngIf="col.visible" scope="col" class="nx-sortable" (click)="sort.emit(col.key)">
+                  {{ formatLabel(col.label) }}
+                  <span class="fa nx-sort-icon" [ngClass]="{
+                    'fa-sort': sortColumn !== col.key,
+                    'fa-sort-asc': sortColumn === col.key && sortDirection === 'asc',
+                    'fa-sort-desc': sortColumn === col.key && sortDirection === 'desc'
+                  }"></span>
+                </th>
+              </ng-container>
+              <th *ngIf="hasAnyRowAction" scope="col" class="text-end pe-3" style="width: 120px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="loading">
+              <td [attr.colspan]="(visibleColumnsCount || 1) + (hasAnyRowAction ? 1 : 0)" class="text-center py-5 text-muted">
+                <span class="fa fa-spinner fa-spin fa-2x mb-2 d-block text-primary"></span>
+                Cargando solicitudes registradas...
+              </td>
+            </tr>
+            <tr *ngFor="let row of (loading ? [] : paginatedTarjetas); let i = index; trackBy: trackByFn">
+              <ng-container *ngFor="let col of availableColumns">
+                <td *ngIf="col.visible">
+                  <ng-container [ngSwitch]="col.key">
+                    <span *ngSwitchCase="'estado_tarjeta'" class="badge" [ngClass]="getEstadoBadgeClass(row.estado_tarjeta)">
+                      {{ row.estado_tarjeta || 'Emitida' }}
+                    </span>
+
+                    <span *ngSwitchCase="'estado_contador'" class="badge bg-success-subtle text-success border border-success-subtle">
+                      {{ row.estado_contador || 'Activo' }}
+                    </span>
+
+                    <span *ngSwitchCase="'no_tarjeta'" class="fw-semibold text-dark">
+                      {{ getCellValue(row, 'no_tarjeta') }}
+                    </span>
+
+                    <strong *ngSwitchCase="'nombre_completo'" class="text-dark">
+                      {{ getCellValue(row, 'nombre_completo') }}
+                    </strong>
+
+                    <span *ngSwitchCase="'no_expd'" class="text-dark">
+                      {{ getCellValue(row, 'no_expd') }}
+                    </span>
+
+                    <span *ngSwitchCase="'tipo_asociado'" class="text-secondary">
+                      {{ getCellValue(row, 'tipo_asociado') }}
+                    </span>
+
+                    <span *ngSwitchCase="'fecha_activacion'" class="text-secondary small">
+                      {{ getCellValue(row, 'fecha_activacion') }}
+                    </span>
+
+                    <span *ngSwitchCase="'version_firma'" class="badge bg-light text-dark border">
+                      {{ getCellValue(row, 'version_firma') }}
+                    </span>
+
+                    <span *ngSwitchDefault class="small text-muted">
+                      {{ getCellValue(row, col.key) }}
+                    </span>
+                  </ng-container>
+                </td>
+              </ng-container>
+              <td *ngIf="hasAnyRowAction" class="text-end pe-3 position-relative">
+                <div class="btn-group btn-group-sm">
+                  <button *ngIf="canDetalles" type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" (click)="abrirDetalle.emit(row)">
+                    <span class="fa fa-eye"></span>
+                    <span>Detalles</span>
+                  </button>
+                  <button 
+                    *ngIf="hasDropdownActions(row)"
+                    type="button" 
+                    class="btn btn-outline-secondary dropdown-toggle"
+                    [class.dropdown-toggle-split]="canDetalles"
+                    (click)="toggleRowDropdown($event, row.id)"
+                    aria-expanded="false"
+                    title="Más opciones"
+                  >
+                    <span *ngIf="!canDetalles" class="me-1">Opciones</span>
+                    <span class="visually-hidden">Más opciones</span>
+                  </button>
+                  <ul 
+                    *ngIf="hasDropdownActions(row)"
+                    class="dropdown-menu dropdown-menu-end shadow-sm border" 
+                    [class.show]="activeDropdownId === row.id"
+                    [style.top]="isDropup(i, paginatedTarjetas.length) ? 'auto' : '100%'"
+                    [style.bottom]="isDropup(i, paginatedTarjetas.length) ? '100%' : 'auto'"
+                    [style.margin-bottom]="isDropup(i, paginatedTarjetas.length) ? '4px' : '0'"
+                    [style.margin-top]="isDropup(i, paginatedTarjetas.length) ? '0' : '4px'"
+                    style="position: absolute; right: 0; z-index: 1050; min-width: 175px;"
+                  >
+                    <li *ngIf="canVerTarjeta">
+                      <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="abrirTarjeta.emit(row); activeDropdownId = null">
+                        <span class="fa fa-id-card-o text-muted" style="width: 16px;"></span>
+                        <span>Ver tarjeta</span>
+                      </button>
+                    </li>
+                    <li *ngIf="canExportar && esTarjetaActiva(row)">
+                      <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="obtenerConstanciaActivacion.emit(row); activeDropdownId = null">
+                        <span class="fa fa-file-text-o text-muted" style="width: 16px;"></span>
+                        <span>Constancia de activación</span>
+                      </button>
+                    </li>
+                    <li *ngIf="canActualizarDatos">
+                      <button
+                        class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark"
+                        type="button"
+                        [disabled]="actualizandoRowId === row.id"
+                        (click)="actualizarDatosPersonales.emit(row); activeDropdownId = null"
+                      >
+                        <span class="fa fa-refresh text-muted" [class.fa-spin]="actualizandoRowId === row.id" style="width: 16px;"></span>
+                        <span>Actualizar datos personales</span>
+                      </button>
+                    </li>
+                    <li *ngIf="canHistorial">
+                      <button class="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" type="button" (click)="abrirHistorial.emit(row); activeDropdownId = null">
+                        <span class="fa fa-history text-muted" style="width: 16px;"></span>
+                        <span>Historial</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!loading && paginatedTarjetas.length === 0">
+              <td [attr.colspan]="visibleColumnsCount + (hasAnyRowAction ? 1 : 0)" class="text-center py-4 text-muted">
+                <span class="fa fa-info-circle me-1"></span> No se encontraron solicitudes registradas.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pie de Tabla con Paginación Nativa -->
+      <div class="nx-table-footer">
+        <div class="nx-table-info">
+          Mostrando {{ recordRangeStart }} a {{ recordRangeEnd }} de {{ totalRecords }} registros
+          <span *ngIf="searchQuery" class="text-muted">(filtrado de {{ totalOriginal }} totales)</span>
+        </div>
+
+        <ul class="nx-table-pagination" *ngIf="totalRecords > 0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button type="button" class="page-link" (click)="cambiarPagina.emit(1)" [disabled]="currentPage === 1" data-nx-tooltip="Primera página" aria-label="Primera página">
+              ««
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button type="button" class="page-link" (click)="cambiarPagina.emit(currentPage - 1)" [disabled]="currentPage === 1" data-nx-tooltip="Página anterior" aria-label="Página anterior">
+              «
+            </button>
+          </li>
+
+          <li 
+            class="page-item" 
+            *ngFor="let p of pagesArray" 
+            [class.active]="p === currentPage"
+          >
+            <button type="button" class="page-link" (click)="cambiarPagina.emit(p)">
+              {{ p }}
+            </button>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <button type="button" class="page-link" (click)="cambiarPagina.emit(currentPage + 1)" [disabled]="currentPage === totalPages" data-nx-tooltip="Página siguiente" aria-label="Página siguiente">
+              »
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <button type="button" class="page-link" (click)="cambiarPagina.emit(totalPages)" [disabled]="currentPage === totalPages" data-nx-tooltip="Última página" aria-label="Última página">
+              »»
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  `
+})
+export class TablaContadoresComponent {
+  private permissionsService = inject(PermissionsService);
+
+  @Input() currentError: AppError | null = null;
+  @Output() currentErrorChange = new EventEmitter<AppError | null>();
+
+  @Input() mensajeExito: string = '';
+  @Output() mensajeExitoChange = new EventEmitter<string>();
+
+  get permissionScope(): TarjetaPermissionScope {
+    return this.esModoReporte ? 'repCont' : 'cont';
+  }
+
+  get canDetalles(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'detalles');
+  }
+
+  get canVerTarjeta(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'verTarjeta');
+  }
+
+  get canExportar(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'exportar');
+  }
+
+  get canRegenerar(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'regenerar');
+  }
+
+  get canActualizarDatos(): boolean {
+    return (
+      this.permissionsService.canInContext(this.permissionScope, 'actualizarDatos') ||
+      this.permissionsService.canInContext(this.permissionScope, 'regenerar')
+    );
+  }
+
+  get canHistorial(): boolean {
+    return this.permissionsService.canInContext(this.permissionScope, 'historial');
+  }
+
+  get hasAnyRowAction(): boolean {
+    return (
+      this.canDetalles ||
+      this.canVerTarjeta ||
+      this.canExportar ||
+      this.canActualizarDatos ||
+      this.canHistorial
+    );
+  }
+
+  hasDropdownActions(row: TarjetaContador): boolean {
+    return (
+      this.canVerTarjeta ||
+      (this.canExportar && this.esTarjetaActiva(row)) ||
+      this.canActualizarDatos ||
+      this.canHistorial
+    );
+  }
+
+  formatLabel(label?: string | null): string {
+    return formatCanonicalLabel(label);
+  }
+
+  @Input() availableColumns: TableColumn[] = [];
+  @Input() filterColumns: FilterColumnConfig[] = [];
+  @Input() esModoReporte: boolean = false;
+  @Output() applyFilters = new EventEmitter<ActiveFilter[]>();
+  @Output() clearFilters = new EventEmitter<void>();
+  @Input() visibleColumnsCount: number = 0;
+  @Input() columnMessageWarning: string = '';
+  @Input() searchQuery: string = '';
+  @Output() searchQueryChange = new EventEmitter<string>();
+
+  @Input() pageSize: number = 10;
+  @Output() pageSizeChange = new EventEmitter<number>();
+  @Input() pageSizeOptions: number[] = [10, 25, 50, 100];
+
+  @Input() loading: boolean = false;
+  @Input() paginatedTarjetas: TarjetaContador[] = [];
+  @Input() totalOriginal: number = 0;
+  @Input() totalRecords: number = 0;
+  @Input() totalPages: number = 0;
+  @Input() currentPage: number = 1;
+  @Input() pagesArray: number[] = [];
+  @Input() recordRangeStart: number = 0;
+  @Input() recordRangeEnd: number = 0;
+
+  @Input() sortColumn: string = 'fecha';
+  @Input() sortDirection: 'asc' | 'desc' = 'desc';
+  @Output() sort = new EventEmitter<string>();
+
+  @Input() actualizandoRowId: number | null = null;
+  @Output() cambiarPagina = new EventEmitter<number>();
+  @Output() abrirDetalle = new EventEmitter<TarjetaContador>();
+  @Output() abrirTarjeta = new EventEmitter<TarjetaContador>();
+  @Output() obtenerConstanciaActivacion = new EventEmitter<TarjetaContador>();
+  @Output() regenerarTarjeta = new EventEmitter<TarjetaContador>();
+  @Output() actualizarDatosPersonales = new EventEmitter<TarjetaContador>();
+  @Output() abrirHistorial = new EventEmitter<TarjetaContador>();
+  @Output() resetColumns = new EventEmitter<void>();
+  @Output() toggleColumnChange = new EventEmitter<TableColumn>();
+
+  isColumnsMenuOpen: boolean = false;
+  activeDropdownId: any = null;
+
+  isDropup(index: number, total: number): boolean {
+    return total > 2 && index >= total - 3;
+  }
+
+  toggleRowDropdown(event: MouseEvent, id: any): void {
+    event.stopPropagation();
+    this.activeDropdownId = this.activeDropdownId === id ? null : id;
+  }
+
+  toggleColumnsMenu(event?: MouseEvent): void {
+    if (event) event.stopPropagation();
+    this.isColumnsMenuOpen = !this.isColumnsMenuOpen;
+  }
+
+  toggleColumn(col: TableColumn): void {
+    const visibleCount = this.availableColumns.filter(c => c.visible).length;
+    if (col.visible && visibleCount <= 1) {
+      this.columnMessageWarning = 'Debe mantener al menos una columna visible.';
+      return;
+    }
+    this.columnMessageWarning = '';
+    col.visible = !col.visible;
+    this.toggleColumnChange.emit(col);
+  }
+
+  onSearchQueryChange(query: string): void {
+    this.searchQuery = query;
+    this.searchQueryChange.emit(query);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchQueryChange.emit('');
+  }
+
+  getEstadoBadgeClass(estado?: string | null): string {
+    return getEstadoTarjetaBadgeClass(estado);
+  }
+
+  esTarjetaActiva(row?: TarjetaContador | null): boolean {
+    const estado = String(row?.estado_tarjeta || '').trim().toLowerCase();
+    return estado === 'activa' || estado === 'activo';
+  }
+
+  getCellValue(row: any, key: string): any {
+    if (!row || !key) return '-';
+    const val = row[key];
+    if (val === undefined || val === null || val === '') return '-';
+    if (key === 'tipo_asociado') {
+      return formatTipoSolicitud(val);
+    }
+    if (key === 'version_firma') {
+      const strVal = String(val).trim();
+      return strVal.toLowerCase().startsWith('v') ? strVal : `v${strVal}`;
+    }
+    return val;
+  }
+
+  trackByFn(index: number, item: TarjetaContador): any {
+    return item.id || index;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    this.activeDropdownId = null;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.columns-selector-host')) {
+      this.isColumnsMenuOpen = false;
+    }
+  }
+}

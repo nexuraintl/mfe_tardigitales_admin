@@ -1,0 +1,444 @@
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE, CLIENT_ID } from '../core/config/api.config';
+import { ErrorHandlerService, AppError } from '../core/services/error-handler.service';
+import { NxAlertComponent } from '../shared/components/alert/alert.component';
+import { NxFieldErrorComponent } from '../shared/components/field-error/field-error.component';
+import { HasPermissionDirective } from '../shared/directives/has-permission.directive';
+
+export interface InstitucionalHistoryItem {
+  id: number;
+  version: number;
+  nombre_director: string;
+  cargo_director: string;
+  firma_director?: string;
+  publicado: boolean;
+  observacion?: string | null;
+  created_at_formatted?: string;
+}
+
+@Component({
+  selector: 'app-branding-institucional',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NxAlertComponent, NxFieldErrorComponent, HasPermissionDirective],
+  templateUrl: './branding-institucional.component.html',
+  styleUrls: ['./branding-institucional.component.css']
+})
+export class BrandingInstitucionalComponent implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+  private errorHandler = inject(ErrorHandlerService);
+
+  clientId: number = CLIENT_ID;
+
+  loading: boolean = false;
+  saving: boolean = false;
+  publishing: boolean = false;
+  versionBeingPublished: number | null = null;
+  currentError: AppError | null = null;
+  mensajeExito: string = '';
+
+  // Validaciones inline
+  errorNombreDirector: string = '';
+  errorCargoDirector: string = '';
+  errorFirma: string = '';
+
+  publishedVersion: number | null = null;
+  publishedObservacion: string = '';
+  selectedVersionNumber: number | null = null;
+  selectedVersionObservacion: string = '';
+
+  // Modal de justificación de publicación
+  isPublishModalOpen: boolean = false;
+  versionToPublish: number | null = null;
+  observacionPublicacion: string = '';
+  errorObservacionPublicacion: string = '';
+
+  // Form / Draft fields
+  nombreDirector: string = 'SANDRA MILENA BARRIOS PULIDO';
+  cargoDirector: string = 'DIRECTOR GENERAL';
+
+  firmaFile: File | null = null;
+  firmaPreviewUrl: string | null = null;
+  firmaSourceText: string = '';
+
+  selectedVersionBase: {
+    nombre_director: string;
+    cargo_director: string;
+    firma_director: string | null;
+  } | null = null;
+
+  historyVersions: InstitucionalHistoryItem[] = [];
+
+  get hasFormChanges(): boolean {
+    if (this.firmaFile !== null) return true;
+    if (!this.selectedVersionBase) return true;
+
+    const nombreChanged = (this.nombreDirector || '').trim().toLowerCase() !== (this.selectedVersionBase.nombre_director || '').trim().toLowerCase();
+    const cargoChanged = (this.cargoDirector || '').trim().toLowerCase() !== (this.selectedVersionBase.cargo_director || '').trim().toLowerCase();
+    const firmaChanged = (this.firmaPreviewUrl || null) !== (this.selectedVersionBase.firma_director || null);
+
+    return nombreChanged || cargoChanged || firmaChanged;
+  }
+
+  ngOnInit(): void {
+    this.cargarDatos();
+  }
+
+  cargarDatos(): void {
+    this.loading = true;
+    this.currentError = null;
+
+    this.http
+      .get<any>(`${API_BASE}/tarjetas/branding-credentials/institucional/info-published?client_id=${this.clientId}`)
+      .subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            const data = res.data;
+            this.publishedVersion = Number(data.version || 1);
+            this.publishedObservacion = data.observacion || '';
+            this.selectedVersionNumber = this.publishedVersion;
+            this.selectedVersionObservacion = data.observacion || '';
+
+            this.nombreDirector = data.nombre_director || 'SANDRA MILENA BARRIOS PULIDO';
+            this.cargoDirector = data.cargo_director || 'DIRECTOR GENERAL';
+            this.firmaPreviewUrl = data.firma_director || null;
+            this.firmaSourceText = this.firmaPreviewUrl ? `Versión v${this.publishedVersion}` : '';
+
+            this.selectedVersionBase = {
+              nombre_director: this.nombreDirector,
+              cargo_director: this.cargoDirector,
+              firma_director: this.firmaPreviewUrl
+            };
+          }
+          this.cargarHistorial();
+        },
+        error: (err) => {
+          console.warn('No se pudo cargar la configuración institucional vigente:', err);
+          this.cargarHistorial();
+        }
+      });
+  }
+
+  cargarHistorial(preferredVersionNumber?: number): void {
+    this.http
+      .get<any>(`${API_BASE}/tarjetas/branding-credentials/institucional/list-history-versions?client_id=${this.clientId}`)
+      .subscribe({
+        next: (res) => {
+          this.loading = false;
+          const rawItems = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
+          if (rawItems) {
+            this.historyVersions = rawItems.map((item: any) => {
+              const vNum = Number(item.version || 1);
+              const isItemPublished = item.publicado === true || item.publicado === 1 || item.publicado === '1';
+              if (isItemPublished) {
+                this.publishedVersion = vNum;
+                this.publishedObservacion = item.observacion || '';
+              }
+
+              return {
+                id: item.id,
+                version: vNum,
+                nombre_director: item.nombre_director || '',
+                cargo_director: item.cargo_director || 'DIRECTOR GENERAL',
+                firma_director: item.firma_director,
+                publicado: isItemPublished,
+                observacion: item.observacion || null,
+                created_at_formatted: item.created_at_formatted || 'Recientemente'
+              };
+            });
+
+            // Re-evaluar concordancia con publishedVersion
+            if (this.publishedVersion !== null) {
+              const pVer = Number(this.publishedVersion);
+              this.historyVersions.forEach(hv => {
+                hv.publicado = (hv.version === pVer);
+              });
+            }
+
+            // Seleccionar versión: preferencia explicita -> publicada -> primera disponible
+            let targetItem: InstitucionalHistoryItem | undefined;
+            if (preferredVersionNumber !== undefined && preferredVersionNumber !== null) {
+              targetItem = this.historyVersions.find(v => v.version === Number(preferredVersionNumber));
+            }
+            if (!targetItem && this.publishedVersion !== null) {
+              targetItem = this.historyVersions.find(v => v.version === Number(this.publishedVersion));
+            }
+            if (!targetItem && this.historyVersions.length > 0) {
+              targetItem = this.historyVersions[0];
+            }
+
+            if (targetItem) {
+              this.seleccionarVersionHistorial(targetItem);
+            }
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error al cargar historial institucional:', err);
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  onNombreChange(val: string): void {
+    this.nombreDirector = val;
+    if (val && val.length > 255) {
+      this.errorNombreDirector = 'El nombre del director general no debe superar los 255 caracteres.';
+    } else if (this.errorNombreDirector && val && val.trim()) {
+      this.errorNombreDirector = '';
+    }
+  }
+
+  onCargoChange(val: string): void {
+    this.cargoDirector = val;
+    if (val && val.length > 100) {
+      this.errorCargoDirector = 'El cargo institucional no debe superar los 100 caracteres.';
+    } else if (this.errorCargoDirector && val && val.trim()) {
+      this.errorCargoDirector = '';
+    }
+  }
+
+  onFirmaSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 500 * 1024) {
+      event.target.value = '';
+      this.errorFirma = 'El archivo de firma supera el tamaño máximo permitido de 500 KB.';
+      return;
+    }
+
+    if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
+      event.target.value = '';
+      this.errorFirma = 'Seleccione un formato de imagen válido para la firma (PNG con fondo transparente recomendado, JPG o SVG).';
+      return;
+    }
+
+    this.errorFirma = '';
+    this.firmaFile = file;
+    this.firmaSourceText = `Archivo: ${file.name}`;
+    this.currentError = null;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.firmaPreviewUrl = e.target.result;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  quitarFirma(): void {
+    this.firmaFile = null;
+    this.firmaPreviewUrl = null;
+    this.firmaSourceText = '';
+    this.errorFirma = '';
+    const input = document.getElementById('brandingFirmaDirector') as HTMLInputElement;
+    if (input) input.value = '';
+    this.cdr.detectChanges();
+  }
+
+  seleccionarVersionHistorial(v: InstitucionalHistoryItem): void {
+    this.errorNombreDirector = '';
+    this.errorCargoDirector = '';
+    this.errorFirma = '';
+    this.selectedVersionNumber = v.version;
+    this.selectedVersionObservacion = v.observacion || '';
+    this.nombreDirector = v.nombre_director;
+    this.cargoDirector = v.cargo_director || 'DIRECTOR GENERAL';
+
+    this.firmaFile = null;
+    this.firmaPreviewUrl = v.firma_director || null;
+    this.firmaSourceText = v.firma_director ? `Versión v${v.version}` : '';
+
+    this.selectedVersionBase = {
+      nombre_director: this.nombreDirector,
+      cargo_director: this.cargoDirector,
+      firma_director: this.firmaPreviewUrl
+    };
+
+    this.cdr.detectChanges();
+  }
+
+  guardarNuevaVersion(): void {
+    this.currentError = null;
+    this.mensajeExito = '';
+    this.errorNombreDirector = '';
+    this.errorCargoDirector = '';
+    this.errorFirma = '';
+
+    let hasErrors = false;
+
+    if (!this.nombreDirector || !this.nombreDirector.trim()) {
+      this.errorNombreDirector = 'El nombre completo del director general es obligatorio.';
+      hasErrors = true;
+    } else if (this.nombreDirector.length > 255) {
+      this.errorNombreDirector = 'El nombre del director general no debe superar los 255 caracteres.';
+      hasErrors = true;
+    }
+
+    if (!this.cargoDirector || !this.cargoDirector.trim()) {
+      this.errorCargoDirector = 'El cargo institucional es obligatorio.';
+      hasErrors = true;
+    } else if (this.cargoDirector.length > 100) {
+      this.errorCargoDirector = 'El cargo institucional no debe superar los 100 caracteres.';
+      hasErrors = true;
+    }
+
+    if (!this.firmaPreviewUrl) {
+      this.errorFirma = 'La imagen de la firma del director general es obligatoria para la emisión.';
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstInvalid = document.querySelector('.is-invalid, nx-field-error') as HTMLElement;
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 60);
+      return;
+    }
+
+    if (!this.hasFormChanges) {
+      this.currentError = {
+        code: 'MS-3803',
+        title: 'Sin cambios detectados',
+        message: 'No se han detectado modificaciones en el nombre, cargo o firma del director con respecto a la versión seleccionada.',
+        httpStatus: 400,
+        timestamp: new Date()
+      };
+      return;
+    }
+
+    this.saving = true;
+
+    const nextVersion = this.historyVersions.length
+      ? Math.max(...this.historyVersions.map((v) => v.version)) + 1
+      : 1;
+
+
+    const payload = {
+      nombre_director: this.nombreDirector.trim(),
+      cargo_director: this.cargoDirector.trim(),
+      firma_director: this.firmaPreviewUrl,
+      publicado: false,
+      usuario_creacion_id: 141
+    };
+
+    this.http
+      .post<any>(`${API_BASE}/tarjetas/branding-credentials/institucional/create?client_id=${this.clientId}`, payload)
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.firmaFile = null;
+          this.mensajeExito = `Versión v${nextVersion} guardada correctamente. Aún no está publicada.`;
+          this.cargarHistorial(nextVersion);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error al guardar versión institucional:', err);
+          this.saving = false;
+          this.currentError = this.errorHandler.parseError(
+            err,
+            'MS_3805_CONFIG_ERROR',
+            `${API_BASE}/tarjetas/branding-credentials/institucional/create`
+          );
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  abrirModalPublicar(item: InstitucionalHistoryItem, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.seleccionarVersionHistorial(item);
+    this.versionToPublish = item.version;
+    this.observacionPublicacion = item.observacion || '';
+    this.errorObservacionPublicacion = '';
+    this.isPublishModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalPublicar(): void {
+    if (this.publishing) return;
+    this.isPublishModalOpen = false;
+    this.versionToPublish = null;
+    this.observacionPublicacion = '';
+    this.errorObservacionPublicacion = '';
+    this.cdr.detectChanges();
+  }
+
+  onObservacionPublicacionChange(val: string): void {
+    this.observacionPublicacion = val;
+    if (val && val.length > 500) {
+      this.errorObservacionPublicacion = 'La observación no debe superar los 500 caracteres.';
+    } else if (this.errorObservacionPublicacion && val && val.trim().length >= 5) {
+      this.errorObservacionPublicacion = '';
+    }
+  }
+
+  confirmarPublicarVersion(): void {
+    const targetVersion = this.versionToPublish || this.selectedVersionNumber;
+    if (!targetVersion) return;
+
+    const obs = (this.observacionPublicacion || '').trim();
+    if (!obs) {
+      this.errorObservacionPublicacion = 'La observación o justificación es obligatoria para publicar la versión.';
+      return;
+    }
+    if (obs.length < 5) {
+      this.errorObservacionPublicacion = 'Ingrese una justificación válida de al menos 5 caracteres.';
+      return;
+    }
+    if (obs.length > 500) {
+      this.errorObservacionPublicacion = 'La observación no debe superar los 500 caracteres.';
+      return;
+    }
+
+    this.publishing = true;
+    this.versionBeingPublished = targetVersion;
+    this.currentError = null;
+    this.mensajeExito = '';
+    this.errorObservacionPublicacion = '';
+
+    this.http
+      .put<any>(
+        `${API_BASE}/tarjetas/branding-credentials/institucional/update/change-version/${targetVersion}?client_id=${this.clientId}`,
+        {
+          version_publicada: targetVersion,
+          observacion: obs
+        }
+      )
+      .subscribe({
+        next: () => {
+          this.publishing = false;
+          this.versionBeingPublished = null;
+          this.isPublishModalOpen = false;
+          this.versionToPublish = null;
+          this.observacionPublicacion = '';
+          this.publishedVersion = targetVersion;
+          this.publishedObservacion = obs;
+          this.selectedVersionObservacion = obs;
+          this.mensajeExito = `Versión v${targetVersion} publicada correctamente como institucional vigente.`;
+          this.cargarHistorial(targetVersion);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error al publicar versión institucional:', err);
+          this.publishing = false;
+          this.versionBeingPublished = null;
+          this.currentError = this.errorHandler.parseError(
+            err,
+            'MS_3805_CONFIG_ERROR',
+            `${API_BASE}/tarjetas/branding-credentials/institucional/update/change-version/${targetVersion}`
+          );
+          this.cdr.detectChanges();
+        }
+      });
+  }
+}

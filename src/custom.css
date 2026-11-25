@@ -1,0 +1,802 @@
+/**
+ * ============================================================================
+ * ESTILOS PERSONALIZADOS DEL MÓDULO: TARJETAS DIGITALES (ADMIN)
+ * ============================================================================
+ * Este archivo está destinado para código CSS específico y personalizado que se
+ * desarrolle exclusivamente para este módulo.
+ * 
+ * NOTA: El sistema de diseño global de Nexura, los componentes de layout,
+ * las utilidades base y los iconos de Font Awesome 7 se cargan y gestionan 
+ * de manera autónoma a través de layout.js.
+ */
+
+/* ============================================================================
+ * TIPOGRAFÍA OFICIAL EXCLUSIVA DE TARJETAS: SATOSHI VARIABLE (LOCAL)
+ * ============================================================================ */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('assets/fonts/Satoshi-Variable.woff2') format('woff2-variations'),
+       url('assets/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Escribe tus reglas CSS personalizadas para este módulo aquí abajo */
+
+/* Centrado garantizado de modales Bootstrap en todas las resoluciones */
+.modal-dialog {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+@media (max-width: 767px) {
+  .modal-dialog {
+    margin: 12px auto !important;
+    max-width: calc(100% - 24px) !important;
+  }
+}
+
+/* Tooltips en tablas: orientados hacia arriba y anclados al extremo derecho */
+.table td [data-nx-tooltip]:not([data-nx-tooltip-pos])::after,
+.table td [data-tooltip]:not([data-tooltip-pos])::after {
+  bottom: auto !important;
+  top: -30px !important;
+  transform: translateX(-50%) translateY(2px);
+}
+
+.table td [data-nx-tooltip]:not([data-nx-tooltip-pos]):hover::after,
+.table td [data-tooltip]:not([data-tooltip-pos]):hover::after {
+  display: block;
+  transform: translateX(-50%) translateY(0);
+}
+
+.table td:last-child [data-nx-tooltip]:not([data-nx-tooltip-pos])::after,
+.table td:last-child [data-tooltip]:not([data-tooltip-pos])::after,
+.table td:last-child [data-nx-tooltip-pos="top"]::after,
+.table td:last-child [data-tooltip-pos="top"]::after,
+.table td:last-child .btn-group > :last-child [data-tooltip]::after,
+.table td:last-child .btn-group > :last-child [data-nx-tooltip]::after {
+  bottom: auto !important;
+  top: -30px !important;
+  left: auto !important;
+  right: 0 !important;
+  transform: translateY(2px);
+}
+
+.table td:last-child [data-nx-tooltip]:not([data-nx-tooltip-pos]):hover::after,
+.table td:last-child [data-tooltip]:not([data-tooltip-pos]):hover::after,
+.table td:last-child [data-nx-tooltip-pos="top"]:hover::after,
+.table td:last-child [data-tooltip-pos="top"]:hover::after,
+.table td:last-child .btn-group > :last-child [data-tooltip]:hover::after,
+.table td:last-child .btn-group > :last-child [data-nx-tooltip]:hover::after,
+.table td:last-child [data-nx-tooltip]:not([data-nx-tooltip-pos]):focus-visible::after,
+.table td:last-child [data-tooltip]:not([data-tooltip-pos]):focus-visible::after,
+.table td:last-child [data-nx-tooltip-pos="top"]:focus-visible::after,
+.table td:last-child [data-tooltip-pos="top"]:focus-visible::after {
+  display: block;
+  transform: translateY(0);
+}
+
+/* Anular hover de Bootstrap en filas expandidas de detalle de auditoría */
+.table-hover > tbody > tr.audit-detail-row,
+.table-hover > tbody > tr.audit-detail-row:hover,
+.table-hover > tbody > tr.audit-detail-row > td,
+.table-hover > tbody > tr.audit-detail-row:hover > td,
+.table-hover > tbody > tr.audit-detail-row > *,
+.table-hover > tbody > tr.audit-detail-row:hover > * {
+  --bs-table-hover-bg: transparent !important;
+  --bs-table-bg-state: transparent !important;
+  --bs-table-accent-bg: transparent !important;
+  --bs-table-hover-color: inherit !important;
+  box-shadow: none !important;
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+  color: inherit !important;
+}
+
+/* ============================================================================
+   AJUSTE GLOBAL: VISIBILIDAD DE MENÚS Y SELECTORES SOBRE TABLAS Y CORNER FIX
+   ============================================================================ */
+.nx-table-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03) !important;
+  overflow: visible !important;
+}
+
+.nx-table-card > :first-child,
+.nx-table-card > .card-header {
+  background-color: #ffffff !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top-left-radius: 7px !important;
+  border-top-right-radius: 7px !important;
+}
+
+.nx-table-card > :last-child {
+  border-bottom-left-radius: 7px !important;
+  border-bottom-right-radius: 7px !important;
+}
+
+.nx-table-toolbar {
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+.table-responsive {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.columns-selector-host {
+  position: relative !important;
+  z-index: 1050 !important;
+}
+
+.columns-selector-menu {
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: calc(100% + 6px) !important;
+  z-index: 1060 !important;
+  width: 260px !important;
+  max-width: calc(100vw - 32px) !important;
+  max-height: 400px !important;
+  padding: 10px !important;
+  display: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  border: 1px solid #dce5ee !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16) !important;
+}
+
+.columns-selector-menu.open {
+  display: block !important;
+}
+
+.columns-selector-header {
+  position: sticky !important;
+  top: -10px !important;
+  z-index: 2 !important;
+  margin: -10px -10px 8px !important;
+  padding: 10px 12px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.columns-selector-header strong {
+  font-size: 12px !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+.columns-selector-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.columns-selector-option {
+  padding: 6px 8px !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  gap: 10px !important;
+  align-items: center !important;
+  color: #334155 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  margin-bottom: 0 !important;
+  user-select: none !important;
+  transition: background 0.15s ease !important;
+}
+
+.columns-selector-option:hover {
+  background: #f1f5f9 !important;
+}
+
+.columns-selector-option input[type="checkbox"] {
+  margin: 0 !important;
+  cursor: pointer !important;
+  accent-color: #174a7e !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Branding Layout y Credenciales */
+.branding-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(430px, 1.15fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.branding-layout > * {
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .branding-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Títulos refinados para tarjetas de secciones y formularios (Branding, Crear Notificación, Validador QR) */
+.card-title,
+.card-header h5,
+.card-header .h5,
+.card-section-header {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  letter-spacing: -0.01em;
+}
+
+/* Mantener el tamaño destacado para cabeceras principales de tablas */
+.nx-table-card .card-header .card-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+}
+
+/* ============================================================================
+   SISTEMA DE DISEÑO UNIFICADO DE COMPONENTES (ESTILO BRANDING)
+   ============================================================================ */
+
+/* 1. Estructura Global de Tarjetas (Cards) */
+.card {
+  border: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04) !important;
+  background-color: #ffffff !important;
+}
+
+/* 2. Cabeceras de Sección e Internas de Tarjetas */
+.card-header {
+  background-color: #ffffff !important;
+  padding: 14px 20px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+
+.card-header small,
+.card-header .text-muted {
+  font-size: 12px !important;
+  color: #64748b !important;
+}
+
+/* 3. Cuerpos de Tarjeta y Espaciado Generoso */
+.card-body {
+  padding: 20px 24px !important;
+}
+
+/* 4. Tipografía y Etiquetas de Campos (Labels & Values) */
+label.form-label,
+.field-label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  margin-bottom: 4px !important;
+}
+
+.field-value,
+.data-value {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+/* 5. Sub-contenedores y Bloques de Información Generales */
+.info-block-box {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 14px 18px !important;
+}
+
+/* 6. Badges de Estado Nativos Unificados */
+.badge.bg-success-subtle {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-primary-subtle {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-secondary-subtle {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-warning-subtle {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+.badge.bg-danger-subtle {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+}
+
+/* ============================================================================
+   ESTILOS GLOBALES VISTA PREVIA TARJETA DIGITAL (MOCKUP / BRANDING)
+   ============================================================================ */
+.branding-preview-card {
+  --branding-card-background: #14275f;
+  --branding-card-text: #ffffff;
+  --branding-card-font: Arial, sans-serif;
+  max-width: 100%;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid #dce5ee;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.branding-preview-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  width: 100%;
+  max-width: 880px;
+  min-width: 0;
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.branding-id-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  aspect-ratio: 1.598 / 1;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 4.5%;
+  border-radius: 16px;
+  background: var(--branding-card-background);
+  box-shadow: 0 10px 24px rgba(20, 39, 95, 0.2);
+  box-sizing: border-box;
+  color: var(--branding-card-text);
+  font-family: var(--branding-card-font);
+}
+
+.branding-id-card::before {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background-image: var(--branding-card-pattern);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  content: "";
+  opacity: 0.45;
+  border-radius: 16px;
+}
+
+.branding-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  min-height: 14%;
+}
+
+.branding-card-head.back {
+  justify-content: flex-end;
+}
+
+.branding-logo-badge {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 44px;
+  box-shadow: none;
+}
+
+.branding-logo-badge img {
+  max-height: 38px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.branding-logo-placeholder {
+  background: rgba(255, 255, 255, 0.95);
+  color: #174a7e;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.branding-card-status {
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #ffc107;
+  color: #000000;
+  font-size: clamp(8px, 1.25vw, 12px);
+  font-weight: 800;
+}
+
+.branding-card-status.activa {
+  background: #58e681;
+  color: #176233;
+}
+
+.branding-card-front-body {
+  display: grid;
+  grid-template-columns: 28% 1fr;
+  gap: 7%;
+  align-items: center;
+  flex: 1;
+  padding: 4% 0 2%;
+}
+
+.branding-card-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: 20%;
+  object-fit: cover;
+  background: #fff;
+}
+
+.branding-card-number {
+  text-align: right;
+}
+
+.branding-card-reg-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.branding-card-copy {
+  font-size: clamp(12px, 1.6vw, 16px);
+  opacity: 0.85;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+.branding-card-label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: clamp(8px, 1.05vw, 11px);
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0.85;
+}
+
+.branding-card-value {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(11.5px, 1.35vw, 15px);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.branding-card-number .branding-card-value {
+  font-size: clamp(16px, 2.1vw, 21px);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.branding-card-front-footer {
+  display: grid;
+  grid-template-columns: 1fr 34%;
+  gap: 8%;
+  align-items: end;
+}
+
+.branding-card-front-footer > div:last-child {
+  text-align: right;
+}
+
+.branding-card-front-footer .branding-card-value {
+  font-size: clamp(11.5px, 1.35vw, 14.5px);
+  font-weight: 500;
+}
+
+.branding-card-front-footer > div:last-child .branding-card-value {
+  font-size: clamp(12px, 1.5vw, 16px);
+  font-weight: 500;
+}
+
+.branding-card-back-details {
+  display: grid;
+  grid-template-columns: 58% 1fr;
+  gap: 8px 12px;
+  align-items: end;
+  margin-top: auto;
+}
+
+.branding-card-back-details > div:nth-child(even) {
+  text-align: right;
+}
+
+.branding-card-back-details .branding-card-value {
+  font-size: clamp(10.5px, 1.22vw, 13.5px);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.branding-card-back-details > div:nth-child(even) .branding-card-value {
+  font-weight: 500;
+}
+
+/* ============================================================================
+   ESTILOS CORPORATIVOS PARA ETIQUETAS CODE (EXPEDIENTES Y CÓDIGOS EN TABLAS)
+   ============================================================================ */
+code {
+  color: #334155 !important;
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================================================
+   AJUSTE GLOBAL DE TABLAS: PREVENIR SALTOS DE LÍNEA EN NITS, CÓDIGOS Y DATOS
+   ============================================================================ */
+.table td, 
+.table th {
+  white-space: nowrap !important;
+}
+
+/* ============================================================================
+   VALIDADOR QR: TARJETAS DE CAMPOS Y VISTA PREVIA COMPACTA SIN DESBORDE
+   ============================================================================ */
+.qr-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qr-field-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 11px 16px !important;
+  transition: all 0.2s ease;
+}
+
+.qr-field-card:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1 !important;
+}
+
+.qr-field-card .form-check-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.qr-field-card .form-check-input {
+  width: 2.3em !important;
+  height: 1.25em !important;
+  margin-top: 0 !important;
+  cursor: pointer;
+}
+
+.qr-preview-card-holder {
+  max-width: 358px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Skeleton Loader Latente para la Tarjeta Credencial */
+.tarjeta-skeleton-loader {
+  position: relative;
+  width: 100%;
+  max-width: 358px;
+  height: 425px;
+  border-radius: 24px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.tarjeta-skeleton-loader .skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeletonLatente 1.8s infinite ease-in-out;
+}
+
+@keyframes skeletonLatente {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.tarjeta-skeleton-loader .skeleton-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tarjeta-skeleton-loader .skeleton-block {
+  background-color: #e2e8f0;
+  border-radius: 6px;
+}
+
+.tarjeta-skeleton-loader .skeleton-logo {
+  width: 146px;
+  height: 42px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-skeleton-loader .skeleton-middle {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-skeleton-loader .skeleton-photo {
+  width: 131.25px;
+  height: 175px;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.tarjeta-skeleton-loader .skeleton-column {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.tarjeta-skeleton-loader .skeleton-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.tarjeta-skeleton-loader .skeleton-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tarjeta-skeleton-loader .skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+}
+
+.tarjeta-skeleton-loader .skeleton-line-lg {
+  height: 22px;
+  border-radius: 6px;
+}
+
+/* ============================================================================
+ * MEJORA GLOBAL: TOOLTIPS [data-nx-tooltip] Y BOTONES DE CIERRE (MODALES)
+ * ============================================================================ */
+/* Garantizar que el tooltip flote por encima de cualquier modal, header o backdrop */
+[data-nx-tooltip]::after,
+[data-tooltip]::after {
+  z-index: 999999 !important;
+}
+
+/* Evitar que cabeceras de modales o tarjetas recorten el tooltip */
+.modal-content {
+  overflow: visible !important;
+}
+.modal-header {
+  overflow: visible !important;
+}
+
+/* Evitar sombras o recuadros indeseados en el botón de cerrar al hacer hover o focus */
+.modal-header .btn-close,
+.card-modal-header .btn-close {
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 0.65;
+  transition: opacity 0.15s ease-in-out;
+}
+.modal-header .btn-close:hover,
+.card-modal-header .btn-close:hover {
+  opacity: 1;
+  box-shadow: none !important;
+}
+
+/* Tooltip para el botón de cerrar en modales: anclado hacia la izquierda centrado verticalmente */
+.modal-header .btn-close[data-nx-tooltip]::after,
+.modal-header .btn-close[data-tooltip]::after,
+.card-modal-header .btn-close[data-nx-tooltip]::after,
+.card-modal-header .btn-close[data-tooltip]::after {
+  bottom: auto !important;
+  top: 50% !important;
+  right: calc(100% + 8px) !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+}
+
+.modal-header .btn-close[data-nx-tooltip]:hover::after,
+.modal-header .btn-close[data-tooltip]:hover::after,
+.card-modal-header .btn-close[data-nx-tooltip]:hover::after,
+.card-modal-header .btn-close[data-tooltip]:hover::after {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(-50%) !important;
+}
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   BARRA DE OPCIONES Y TÍTULO DE VISTA FIJO AL HACER SCROLL (STICKY)
+   ============================================================================ */
+nx-admin-mod-options {
+  display: block !important;
+  width: 100% !important;
+  position: sticky !important;
+  top: 64px !important;
+  z-index: 850 !important;
+  background-color: #ffffff !important;
+}

@@ -1,0 +1,107 @@
+.branding-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(430px, 1.1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.branding-layout > * {
+  min-width: 0;
+}
+
+.active-version {
+  background-color: #eef5fb !important;
+  border-left: 4px solid var(--primary, #174a7e) !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.branding-history .list-group-item {
+  transition: all 0.2s ease;
+}
+
+.branding-history .list-group-item:hover {
+  background-color: #f8fafc;
+}
+
+.branding-preview-card {
+  max-width: 100%;
+  padding: 24px;
+  border: 1px solid var(--border, #dce5ee);
+  border-radius: 12px;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.official-signature-block {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.signature-img-container {
+  overflow: hidden;
+}
+
+.signature-img {
+  max-height: 70px;
+  max-width: 230px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.signature-line {
+  height: 1px;
+  background-color: #0f172a;
+  width: 75%;
+  margin: 0 auto;
+}
+
+.branding-preview-note {
+  color: var(--muted, #66788a);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* Skeleton Loader Shimmer */
+.skeleton-box {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background-color: #e2e8f0;
+  border-radius: 6px;
+}
+
+.skeleton-box::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.7) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.6s infinite;
+  content: '';
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 992px) {
+  .branding-layout {
+    grid-template-columns: 1fr;
+  }
+}
