@@ -226,11 +226,6 @@ export class CrearNotificacionComponent {
 
     this.loading = true;
 
-    // Calcular destinatarios según la audiencia
-    let destinatarios = 12458; // Todos
-    if (this.audience === 'Contadores') destinatarios = 9820;
-    if (this.audience === 'Sociedades') destinatarios = 640;
-
     // Generar la fecha de envío formateada
     let fechaEnvio = '';
     let estadoEnvio = 'Programada';
@@ -245,14 +240,13 @@ export class CrearNotificacionComponent {
       estadoEnvio = 'Programada';
     }
 
-    // Crear peticiones para cada canal seleccionado
+    // Crear peticiones para cada canal seleccionado (destinatarios lo calcula el MS con tarjetas activas reales)
     const requests = canales.map(canal => {
       const payload = {
         client_id: this.clientId,
         titulo: this.notificationTitle,
         canal: canal,
         audiencia: this.audience,
-        destinatarios: destinatarios,
         fecha: fechaEnvio,
         estado: estadoEnvio,
         creadoPor: 'Administrador',
