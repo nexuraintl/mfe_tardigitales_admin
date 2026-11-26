@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
@@ -24,10 +24,20 @@ export interface HeaderAction {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class App implements OnInit, AfterViewInit {
+export class App implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   public permissionsService = inject(PermissionsService);
+  private lastSessionCheckAt = 0;
+
+  private readonly onWindowFocusOrVisible = (): void => {
+    if (this.isPublicRoute) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    const now = Date.now();
+    if (now - this.lastSessionCheckAt < 5000) return;
+    this.lastSessionCheckAt = now;
+    this.permissionsService.verifyActiveSession().subscribe();
+  };
 
   currentUrl = (typeof window !== 'undefined' && window.location.pathname) ? window.location.pathname : '';
   pageTitle = 'Tarjeta digital para contadores';
@@ -288,6 +298,10 @@ export class App implements OnInit, AfterViewInit {
 
     if (!this.isPublicRoute) {
       this.permissionsService.ensureInitialized().subscribe();
+      if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', this.onWindowFocusOrVisible);
+        window.addEventListener('focus', this.onWindowFocusOrVisible);
+      }
     }
 
     this.updatePageTitle(this.currentUrl);
@@ -305,6 +319,13 @@ export class App implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.hideHeaderSearch();
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onWindowFocusOrVisible);
+      window.removeEventListener('focus', this.onWindowFocusOrVisible);
+    }
   }
 
   private hideHeaderSearch(): void {

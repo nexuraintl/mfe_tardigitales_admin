@@ -216,6 +216,38 @@ export class PermissionsService {
   }
 
   /**
+   * Verifica silenciosamente si la sesión sigue activa en el servidor (sin desmontar la UI).
+   * Útil al volver a enfocar la pestaña tras haber cerrado sesión en otra ventana.
+   */
+  public verifyActiveSession(): Observable<boolean> {
+    return this.http
+      .get<CoreSessionResponse>(AUTH_SESSION_URL, { withCredentials: true })
+      .pipe(
+        map((sessionRes) => {
+          const isAuth = sessionRes?.authenticated === true;
+          const uid = sessionRes?.session_info?.uid ?? sessionRes?.user?.id ?? null;
+          if (!isAuth || !uid) {
+            this.handleUnauthenticated();
+            this.redirectToAdminLogin();
+            return false;
+          }
+          return true;
+        }),
+        catchError((err: HttpErrorResponse) => {
+          if (this.isLocalUnmountedAuthEndpoint(err)) {
+            return of(true);
+          }
+          if (err.status === 401 || err.status === 403) {
+            this.handleUnauthenticated();
+            this.redirectToAdminLogin();
+            return of(false);
+          }
+          return of(true);
+        })
+      );
+  }
+
+  /**
    * Verifica si un permiso puntual está concedido al usuario actual,
    * evaluando también cualquier restricción manual o función custom registrada.
    */
