@@ -54,7 +54,7 @@ export class App implements OnInit, AfterViewInit {
     '/validador-qr': 'Campos del validador QR',
     '/validador-qr-contadores': 'Validador QR — Contadores',
     '/validador-qr-sociedades': 'Validador QR — Sociedades',
-    '/certificados': 'Certificados oficiales',
+    '/certificados': 'Certificados de vigencia y antecedentes',
     '/reportes/contadores': 'Reporte contadores',
     '/reportes/sociedades': 'Reporte sociedades',
     '/reportes/notificaciones': 'Reporte notificaciones',
