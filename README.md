@@ -13,4 +13,5 @@ Microfrontend Angular para el portal de administración del sistema de Tarjetas 
 
 - `npm start`: Inicia el servidor de desarrollo local en el puerto `4300`.
 - `npm run build:mfe`: Compila la aplicación y genera los bundles unificados para distribución en `dist/jcc-portal-mfe/`.
-- `npm run docker:compose`: Despliega el contenedor Docker local.
+- `npm run docker:compose`: Despliega el contenedor Docker local.
+<!-- Validacion trigger Cloud Build (GitHub App) - 2026-11-26 -->
