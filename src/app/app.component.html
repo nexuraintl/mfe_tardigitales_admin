@@ -1,3 +1,4 @@
+<ng-container *ngIf="isPublicRoute || (permissionsService.initialized() && permissionsService.authenticated())">
 <!-- 1. Header Web Component (Oculto en ruta de verificación pública) -->
 <nx-admin-header
   *ngIf="!isPublicRoute"
@@ -45,3 +46,4 @@
     <nx-admin-footer *ngIf="!isPublicRoute" [version]="'Versión 1.0.0'"></nx-admin-footer>
   </main>
 </div>
+</ng-container>
