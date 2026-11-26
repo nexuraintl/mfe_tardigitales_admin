@@ -21,10 +21,10 @@ variables:
   GITHUB_ORG: "nexuraintl"
 
   # Nombre del repo mirror en GitHub.
-  # OJO: el repo de origen en ADO es "mfe_tardigitales_admin" (guion bajo)
-  # pero el mirror en GitHub es "mfe-tardigitales-admin" (guion medio),
-  # por eso se fija explícito en vez de auto-detectarlo desde Build.Repository.Name.
-  GITHUB_REPO_NAME: "mfe-tardigitales-admin"
+  # El mirror se renombró de "mfe-tardigitales-admin" (guion medio) a
+  # "mfe_tardigitales_admin" (guion bajo), igual que el repo en ADO. Se deja
+  # fijo para no depender de la redirección de GitHub ni de Build.Repository.Name.
+  GITHUB_REPO_NAME: "mfe_tardigitales_admin"
 
   # Rama actual
   BRANCH_NAME: $(Build.SourceBranchName)
@@ -116,3 +116,4 @@ steps:
     env:
       GITHUB_TOKEN_NEXURAINTL: $(GITHUB_TOKEN_NEXURAINTL)
     displayName: "Sincronizar con GitHub"
+
